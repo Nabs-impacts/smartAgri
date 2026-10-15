@@ -27,7 +27,7 @@ venv/
 ENV/
 env.bak/
 venv.bak/
-smartagri-prompt-backend.md
+Backend/smartagri-prompt-backend.md
 
 # --- FastAPI / Environnement & Secrets ---
 .env
