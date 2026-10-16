@@ -1,6 +1,6 @@
-from typing import Any, Literal
+from typing import Annotated, Any, Literal
 from pydantic import field_validator
-from pydantic_settings import BaseSettings, SettingsConfigDict
+from pydantic_settings import BaseSettings, NoDecode, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -14,7 +14,10 @@ class Settings(BaseSettings):
     APP_ENV: Literal["local", "staging", "production"] = "local"
     APP_NAME: str = "SmartAgri API"
     API_PREFIX: str = "/api/v1"
-    CORS_ORIGINS: list[str] = ["http://localhost:3000", "http://localhost:8000"]
+    CORS_ORIGINS: Annotated[list[str], NoDecode] = [
+        "http://localhost:3000",
+        "http://localhost:8000",
+    ]
     LOG_LEVEL: str = "INFO"
     SENTRY_DSN: str | None = None
 
@@ -53,9 +56,16 @@ class Settings(BaseSettings):
     MAX_VIDEO_SECONDS: int = 15
     MAX_AUDIO_BYTES: int = 2097152
     MAX_AUDIO_SECONDS: int = 60
-    ALLOWED_IMAGE_MIME: list[str] = ["image/jpeg", "image/png", "image/webp"]
-    ALLOWED_VIDEO_MIME: list[str] = ["video/mp4", "video/quicktime"]
-    ALLOWED_AUDIO_MIME: list[str] = [
+    ALLOWED_IMAGE_MIME: Annotated[list[str], NoDecode] = [
+        "image/jpeg",
+        "image/png",
+        "image/webp",
+    ]
+    ALLOWED_VIDEO_MIME: Annotated[list[str], NoDecode] = [
+        "video/mp4",
+        "video/quicktime",
+    ]
+    ALLOWED_AUDIO_MIME: Annotated[list[str], NoDecode] = [
         "audio/mpeg",
         "audio/wav",
         "audio/ogg",
