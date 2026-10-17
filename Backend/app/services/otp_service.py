@@ -42,7 +42,7 @@ class OtpService:
         await session.commit()
 
         sms_provider = get_sms_provider()
-        message = f"Votre code de verification SmartAgri est: {code}"
+        message = f"Votre code de vérification SmartAgri est: {code}"
         await sms_provider.send_sms(phone=norm_phone, message=message)
 
     async def verify_otp(
@@ -66,17 +66,17 @@ class OtpService:
 
         if not record:
             raise UnauthorizedException(
-                message="Code de verification introuvable ou invalide."
+                message="Code de vérification introuvable ou invalide."
             )
 
         if record.expires_at < now:
             raise UnauthorizedException(
-                message="Code de verification expire."
+                message="Code de vérification expiré."
             )
 
         if record.attempts >= settings.OTP_MAX_ATTEMPTS:
             raise UnauthorizedException(
-                message="Nombre maximal de tentatives depasse."
+                message="Nombre maximal de tentatives dépassé."
             )
 
         record.attempts += 1
@@ -84,7 +84,7 @@ class OtpService:
         if not verify_otp_hash(code, record.code_hash):
             await session.commit()
             raise UnauthorizedException(
-                message="Code de verification incorrect."
+                message="Code de vérification incorrect."
             )
 
         record.consumed_at = now

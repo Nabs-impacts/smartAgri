@@ -39,8 +39,14 @@ os.environ["REFRESH_REUSE_GRACE_SECONDS"] = "0"
 import asyncpg
 import pytest
 from httpx import ASGITransport, AsyncClient
+import redis.asyncio as redis
 from sqlalchemy import text
-from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from sqlalchemy.ext.asyncio import (
+    AsyncConnection,
+    AsyncSession,
+    async_sessionmaker,
+    create_async_engine,
+)
 from sqlalchemy.pool import NullPool
 
 import app.core.rate_limit as rate_limit_module
@@ -86,6 +92,19 @@ def prepare_database() -> None:
     )
 
 
+async def _assert_test_targets(
+    connection: AsyncConnection, redis_client: redis.Redis
+) -> None:
+    database_name = await connection.scalar(text("SELECT current_database()"))
+    assert database_name == TEST_DATABASE_NAME, (
+        f"Réinitialisation refusée: base '{database_name}' au lieu de '{TEST_DATABASE_NAME}'."
+    )
+    redis_db = redis_client.connection_pool.connection_kwargs.get("db", 0)
+    assert int(redis_db) == TEST_REDIS_INDEX, (
+        f"Réinitialisation refusée: index Redis {redis_db} au lieu de {TEST_REDIS_INDEX}."
+    )
+
+
 async def _get_test_db() -> AsyncGenerator[AsyncSession, None]:
     async with TestSessionLocal() as session:
         try:
@@ -104,11 +123,14 @@ async def clean_state() -> AsyncGenerator[None, None]:
     rate_limit_module._redis_pool = None
     FakeSmsProvider.clear()
     redis_client = get_redis_client()
+    async with test_engine.connect() as connection:
+        await _assert_test_targets(connection, redis_client)
     await redis_client.flushdb()
 
     yield
 
     async with test_engine.begin() as connection:
+        await _assert_test_targets(connection, redis_client)
         result = await connection.execute(
             text("SELECT tablename FROM pg_tables WHERE schemaname = 'public'")
         )

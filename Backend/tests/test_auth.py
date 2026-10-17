@@ -12,7 +12,9 @@ from app.db.models.identity import OtpCode, User
 from app.providers.sms.fake import FakeSmsProvider
 
 PHONE = "+22790000001"
+OTHER_PHONE = "+22790000002"
 PASSWORD = "MotDePasse123!"
+NEW_PASSWORD = "NouveauMotDePasse456!"
 OTP_PATTERN = re.compile(r"(\d{6})")
 
 
@@ -23,9 +25,11 @@ def _last_otp_code() -> str:
     return match.group(1)
 
 
-async def _register(client: AsyncClient, password: str | None = None):
+async def _register(
+    client: AsyncClient, password: str | None = None, phone: str = PHONE
+):
     payload: dict[str, str] = {
-        "phone": PHONE,
+        "phone": phone,
         "full_name": "Amina",
         "language": "fr",
     }
@@ -34,10 +38,12 @@ async def _register(client: AsyncClient, password: str | None = None):
     return await client.post("/api/v1/auth/register", json=payload)
 
 
-async def _login_password(client: AsyncClient, password: str = PASSWORD):
+async def _login_password(
+    client: AsyncClient, password: str = PASSWORD, phone: str = PHONE
+):
     return await client.post(
         "/api/v1/auth/login",
-        json={"phone": PHONE, "password": password},
+        json={"phone": phone, "password": password},
     )
 
 
@@ -336,3 +342,82 @@ async def test_logout_revokes_refresh_token(client: AsyncClient) -> None:
         json={"refresh_token": refresh_token},
     )
     assert refresh.status_code == 401
+
+
+async def test_otp_cannot_be_reused_after_success(client: AsyncClient) -> None:
+    await _register(client)
+    code = _last_otp_code()
+
+    first = await _verify_otp(client, code)
+    assert first.status_code == 200
+
+    second = await _verify_otp(client, code)
+    assert second.status_code == 401
+
+
+async def test_password_reset_then_login_with_new_password(
+    client: AsyncClient,
+) -> None:
+    await _register(client, password=PASSWORD)
+    login_body = (await _login_password(client)).json()
+    old_refresh = login_body["refresh_token"]
+
+    await client.post(
+        "/api/v1/auth/otp/request",
+        json={"phone": PHONE, "purpose": "reset_password"},
+    )
+    code = _last_otp_code()
+
+    reset = await client.post(
+        "/api/v1/auth/password/reset",
+        json={"phone": PHONE, "code": code, "new_password": NEW_PASSWORD},
+    )
+    assert reset.status_code == 200
+
+    old_password_login = await _login_password(client, password=PASSWORD)
+    assert old_password_login.status_code == 401
+
+    new_password_login = await _login_password(client, password=NEW_PASSWORD)
+    assert new_password_login.status_code == 200
+
+    old_refresh_reuse = await client.post(
+        "/api/v1/auth/refresh",
+        json={"refresh_token": old_refresh},
+    )
+    assert old_refresh_reuse.status_code == 401
+
+
+async def test_refresh_with_invalid_token_returns_401(client: AsyncClient) -> None:
+    response = await client.post(
+        "/api/v1/auth/refresh",
+        json={"refresh_token": "jeton-invalide"},
+    )
+    assert response.status_code == 401
+    assert response.json()["error"]["code"] == "UNAUTHORIZED"
+
+
+async def test_logout_without_access_token_returns_401(client: AsyncClient) -> None:
+    await _register(client, password=PASSWORD)
+    login_body = (await _login_password(client)).json()
+
+    response = await client.post(
+        "/api/v1/auth/logout",
+        json={"refresh_token": login_body["refresh_token"]},
+    )
+    assert response.status_code == 401
+
+
+async def test_logout_rejects_other_users_refresh_token(client: AsyncClient) -> None:
+    await _register(client, password=PASSWORD, phone=PHONE)
+    await _register(client, password=PASSWORD, phone=OTHER_PHONE)
+
+    first_login = (await _login_password(client)).json()
+    second_login = (await _login_password(client, phone=OTHER_PHONE)).json()
+
+    response = await client.post(
+        "/api/v1/auth/logout",
+        json={"refresh_token": second_login["refresh_token"]},
+        headers={"Authorization": f"Bearer {first_login['access_token']}"},
+    )
+    assert response.status_code == 403
+    assert response.json()["error"]["code"] == "FORBIDDEN"

@@ -34,7 +34,7 @@ async def register(
 ) -> RegisterResponse:
     await auth_service.register(session, payload)
     return RegisterResponse(
-        message="Compte cree. Un code de verification a ete envoye.",
+        message="Compte créé. Un code de vérification a été envoyé.",
         phone=normalize_phone(payload.phone),
     )
 
@@ -54,7 +54,7 @@ async def request_otp(
         session, payload.phone, payload.purpose, client_ip
     )
     return OtpRequestResponse(
-        message="Si le numero est valide, un code de verification sera envoye."
+        message="Si le numéro est valide, un code de vérification sera envoyé."
     )
 
 
@@ -88,8 +88,8 @@ async def logout(
     session: AsyncSession = Depends(get_db),
     current_user: User = Depends(get_current_user),
 ) -> MessageResponse:
-    await auth_service.logout(session, payload.refresh_token)
-    return MessageResponse(message="Deconnexion reussie.")
+    await auth_service.logout(session, payload.refresh_token, current_user.id)
+    return MessageResponse(message="Déconnexion réussie.")
 
 
 @router.post("/password/reset", response_model=MessageResponse)
@@ -98,4 +98,4 @@ async def reset_password(
     session: AsyncSession = Depends(get_db),
 ) -> MessageResponse:
     await auth_service.reset_password(session, payload)
-    return MessageResponse(message="Mot de passe reinitialise.")
+    return MessageResponse(message="Mot de passe réinitialisé.")

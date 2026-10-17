@@ -45,7 +45,7 @@ class AuthService:
         existing = (await session.execute(query)).scalar_one_or_none()
         if existing:
             raise ConflictException(
-                message="Ce numero de telephone est deja enregistre."
+                message="Ce numéro de téléphone est déjà enregistré."
             )
 
         pwd_hash = hash_password(data.password) if data.password else None
@@ -143,10 +143,10 @@ class AuthService:
         )
         user = (await session.execute(query)).scalar_one_or_none()
         if not user:
-            raise NotFoundException(message="Utilisateur non trouve.")
+            raise NotFoundException(message="Utilisateur non trouvé.")
 
         if not user.is_active:
-            raise ForbiddenException(message="Compte utilisateur desactive.")
+            raise ForbiddenException(message="Compte utilisateur désactivé.")
 
         now = datetime.now(UTC)
         if data.purpose in ("login", "verify_phone"):
@@ -213,7 +213,7 @@ class AuthService:
             raise UnauthorizedException(message="Identifiants incorrects.")
 
         if not user.is_active:
-            raise ForbiddenException(message="Compte utilisateur desactive.")
+            raise ForbiddenException(message="Compte utilisateur désactivé.")
 
         if not user.password_hash or not verify_password(data.password, user.password_hash):
             raise UnauthorizedException(message="Identifiants incorrects.")
@@ -320,7 +320,7 @@ class AuthService:
 
         if not rec:
             raise UnauthorizedException(
-                message="Jeton de rafraichissement invalide."
+                message="Jeton de rafraîchissement invalide."
             )
 
         now = datetime.now(UTC)
@@ -340,11 +340,11 @@ class AuthService:
                 await session.commit()
                 await self._mark_refresh_replay(rec.user_id)
                 raise UnauthorizedException(
-                    message="Rejeu detecte. Toutes les sessions ont ete revoquees."
+                    message="Rejeu détecté. Toutes les sessions ont été révoquées."
                 )
         elif rec.expires_at < now:
             raise UnauthorizedException(
-                message="Jeton de rafraichissement expire."
+                message="Jeton de rafraîchissement expiré."
             )
 
         if rec.revoked_at is None:
@@ -358,7 +358,7 @@ class AuthService:
         user = (await session.execute(user_query)).scalar_one_or_none()
         if not user:
             raise UnauthorizedException(
-                message="Utilisateur introuvable ou desactive."
+                message="Utilisateur introuvable ou désactivé."
             )
 
         access_token = create_access_token(user.id, user.role)
@@ -383,11 +383,19 @@ class AuthService:
             user=UserResponse.model_validate(user),
         )
 
-    async def logout(self, session: AsyncSession, raw_refresh_token: str) -> None:
+    async def logout(
+        self, session: AsyncSession, raw_refresh_token: str, user_id: uuid.UUID
+    ) -> None:
         token_hash = hash_refresh_token(raw_refresh_token)
         query = select(RefreshToken).where(RefreshToken.token_hash == token_hash)
         rec = (await session.execute(query)).scalar_one_or_none()
-        if rec and rec.revoked_at is None:
+        if rec is None:
+            return
+        if rec.user_id != user_id:
+            raise ForbiddenException(
+                message="Ce jeton de rafraîchissement n'appartient pas à cet utilisateur."
+            )
+        if rec.revoked_at is None:
             rec.revoked_at = datetime.now(UTC)
             await session.commit()
 
