@@ -59,6 +59,7 @@ class OtpService:
                 OtpCode.consumed_at.is_(None),
             )
             .order_by(desc(OtpCode.created_at))
+            .with_for_update()
         )
         result = await session.execute(query)
         record = result.scalars().first()

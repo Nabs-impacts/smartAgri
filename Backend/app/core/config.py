@@ -35,10 +35,12 @@ class Settings(BaseSettings):
     JWT_ALGORITHM: str = "HS256"
     ACCESS_TOKEN_MINUTES: int = 15
     REFRESH_TOKEN_DAYS: int = 30
+    REFRESH_REUSE_GRACE_SECONDS: int = 45
     OTP_HMAC_SECRET: str = "dev-otp-hmac-secret-min-32-chars"
     OTP_TTL_SECONDS: int = 300
     OTP_MAX_ATTEMPTS: int = 5
     OTP_REQUESTS_PER_WINDOW: int = 3
+    OTP_REQUESTS_PER_IP_WINDOW: int = 10
     OTP_WINDOW_SECONDS: int = 600
     API_KEY_PEPPER: str = "dev-api-key-pepper-min-32-chars"
     LICENSE_KEY_PEPPER: str = "dev-license-key-pepper-min-32-chars"

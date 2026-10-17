@@ -1,3 +1,4 @@
+import uuid
 from datetime import UTC, datetime, timedelta
 
 from sqlalchemy import select, update
@@ -8,8 +9,10 @@ from app.core.errors import (
     ConflictException,
     ForbiddenException,
     NotFoundException,
+    RateLimitedException,
     UnauthorizedException,
 )
+from app.core.rate_limit import check_rate_limit, get_redis_client
 from app.core.security import (
     create_access_token,
     generate_refresh_token,
@@ -95,11 +98,31 @@ class AuthService:
         )
 
     async def request_otp(
-        self, session: AsyncSession, phone: str, purpose: str
+        self, session: AsyncSession, phone: str, purpose: str, client_ip: str
     ) -> None:
+        norm_phone = normalize_phone(phone)
+        allowed = await check_rate_limit(
+            f"rl:otp:ip:{client_ip}",
+            settings.OTP_REQUESTS_PER_IP_WINDOW,
+            settings.OTP_WINDOW_SECONDS,
+        )
+        if not allowed:
+            raise RateLimitedException(
+                message="Trop de demandes de code, veuillez patienter.",
+                details={"window_seconds": settings.OTP_WINDOW_SECONDS},
+            )
+
+        query = select(User.id).where(
+            User.phone == norm_phone,
+            User.deleted_at.is_(None),
+        )
+        exists = (await session.execute(query)).scalar_one_or_none()
+        if exists is None:
+            return
+
         await otp_service.send_otp(
             session=session,
-            phone=phone,
+            phone=norm_phone,
             purpose=purpose,
         )
 
@@ -244,12 +267,55 @@ class AuthService:
             user=UserResponse.model_validate(user),
         )
 
+    async def _consume_refresh_grace(
+        self,
+        user_id: uuid.UUID,
+        revoked_at: datetime,
+        token_hash: str,
+        now: datetime,
+    ) -> bool:
+        grace = settings.REFRESH_REUSE_GRACE_SECONDS
+        if grace <= 0:
+            return False
+        if now - revoked_at > timedelta(seconds=grace):
+            return False
+        client = get_redis_client()
+        try:
+            if await client.exists(f"rl:refresh:replay:{user_id}"):
+                return False
+            claimed = await client.set(
+                f"rl:refresh:grace:{token_hash}",
+                "1",
+                nx=True,
+                ex=grace + 1,
+            )
+        except Exception:
+            return False
+        return bool(claimed)
+
+    async def _mark_refresh_replay(self, user_id: uuid.UUID) -> None:
+        grace = settings.REFRESH_REUSE_GRACE_SECONDS
+        if grace <= 0:
+            return
+        try:
+            await get_redis_client().set(
+                f"rl:refresh:replay:{user_id}",
+                "1",
+                ex=grace + 1,
+            )
+        except Exception:
+            return
+
     async def refresh_token(
         self, session: AsyncSession, raw_refresh_token: str
     ) -> TokenResponse:
         token_hash = hash_refresh_token(raw_refresh_token)
 
-        query = select(RefreshToken).where(RefreshToken.token_hash == token_hash)
+        query = (
+            select(RefreshToken)
+            .where(RefreshToken.token_hash == token_hash)
+            .with_for_update()
+        )
         rec = (await session.execute(query)).scalar_one_or_none()
 
         if not rec:
@@ -259,25 +325,30 @@ class AuthService:
 
         now = datetime.now(UTC)
         if rec.revoked_at is not None:
-            await session.execute(
-                update(RefreshToken)
-                .where(
-                    RefreshToken.user_id == rec.user_id,
-                    RefreshToken.revoked_at.is_(None),
+            within_grace = await self._consume_refresh_grace(
+                rec.user_id, rec.revoked_at, token_hash, now
+            )
+            if not within_grace:
+                await session.execute(
+                    update(RefreshToken)
+                    .where(
+                        RefreshToken.user_id == rec.user_id,
+                        RefreshToken.revoked_at.is_(None),
+                    )
+                    .values(revoked_at=now)
                 )
-                .values(revoked_at=now)
-            )
-            await session.commit()
-            raise UnauthorizedException(
-                message="Rejeu detecte. Toutes les sessions ont ete revoquees."
-            )
-
-        if rec.expires_at < now:
+                await session.commit()
+                await self._mark_refresh_replay(rec.user_id)
+                raise UnauthorizedException(
+                    message="Rejeu detecte. Toutes les sessions ont ete revoquees."
+                )
+        elif rec.expires_at < now:
             raise UnauthorizedException(
                 message="Jeton de rafraichissement expire."
             )
 
-        rec.revoked_at = now
+        if rec.revoked_at is None:
+            rec.revoked_at = now
 
         user_query = select(User).where(
             User.id == rec.user_id,

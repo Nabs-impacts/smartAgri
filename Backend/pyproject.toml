@@ -64,3 +64,4 @@ addopts = "-q"
 asyncio_mode = "auto"
 pythonpath = ["."]
 testpaths = ["tests"]
+cache_dir = "/tmp/pytest_cache"

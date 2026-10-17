@@ -1,10 +1,13 @@
+import asyncio
 import re
 from datetime import UTC, datetime, timedelta
 
+import pytest
 from httpx import AsyncClient
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.config import settings
 from app.db.models.identity import OtpCode, User
 from app.providers.sms.fake import FakeSmsProvider
 
@@ -177,6 +180,142 @@ async def test_refresh_replay_revokes_all_tokens(client: AsyncClient) -> None:
         json={"refresh_token": second_refresh},
     )
     assert after_replay.status_code == 401
+
+
+async def test_otp_request_unknown_phone_sends_no_sms(client: AsyncClient) -> None:
+    response = await client.post(
+        "/api/v1/auth/otp/request",
+        json={"phone": "+22799999999", "purpose": "login"},
+    )
+
+    assert response.status_code == 202
+    assert FakeSmsProvider.sent_messages == []
+
+
+async def test_otp_request_known_phone_sends_sms(client: AsyncClient) -> None:
+    await _register(client)
+    FakeSmsProvider.clear()
+
+    response = await client.post(
+        "/api/v1/auth/otp/request",
+        json={"phone": PHONE, "purpose": "login"},
+    )
+
+    assert response.status_code == 202
+    assert len(FakeSmsProvider.sent_messages) == 1
+
+
+async def test_otp_request_per_ip_rate_limit(
+    client: AsyncClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(settings, "OTP_REQUESTS_PER_IP_WINDOW", 2)
+    payload = {"phone": "+22799999999", "purpose": "login"}
+
+    first = await client.post("/api/v1/auth/otp/request", json=payload)
+    second = await client.post("/api/v1/auth/otp/request", json=payload)
+    third = await client.post("/api/v1/auth/otp/request", json=payload)
+
+    assert first.status_code == 202
+    assert second.status_code == 202
+    assert third.status_code == 429
+
+
+async def test_otp_attempts_capped_under_concurrency(
+    client: AsyncClient, db_session: AsyncSession
+) -> None:
+    await _register(client)
+    code = _last_otp_code()
+    wrong_code = "000000" if code != "000000" else "000001"
+
+    responses = await asyncio.gather(
+        *[
+            _verify_otp(client, wrong_code)
+            for _ in range(settings.OTP_MAX_ATTEMPTS + 2)
+        ]
+    )
+
+    assert all(response.status_code == 401 for response in responses)
+
+    otp = (
+        await db_session.execute(
+            select(OtpCode).where(OtpCode.phone == PHONE)
+        )
+    ).scalar_one()
+    assert otp.attempts <= settings.OTP_MAX_ATTEMPTS
+
+
+async def test_otp_verify_rejects_reset_password_purpose(
+    client: AsyncClient,
+) -> None:
+    await _register(client)
+    code = _last_otp_code()
+
+    response = await client.post(
+        "/api/v1/auth/otp/verify",
+        json={"phone": PHONE, "code": code, "purpose": "reset_password"},
+    )
+
+    assert response.status_code == 422
+
+
+async def test_refresh_grace_accepts_revoked_token_once(
+    client: AsyncClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(settings, "REFRESH_REUSE_GRACE_SECONDS", 45)
+    await _register(client, password=PASSWORD)
+    login_body = (await _login_password(client)).json()
+    first_refresh = login_body["refresh_token"]
+
+    rotation = await client.post(
+        "/api/v1/auth/refresh",
+        json={"refresh_token": first_refresh},
+    )
+    assert rotation.status_code == 200
+    second_refresh = rotation.json()["refresh_token"]
+
+    grace = await client.post(
+        "/api/v1/auth/refresh",
+        json={"refresh_token": first_refresh},
+    )
+    assert grace.status_code == 200
+    third_refresh = grace.json()["refresh_token"]
+
+    replay = await client.post(
+        "/api/v1/auth/refresh",
+        json={"refresh_token": first_refresh},
+    )
+    assert replay.status_code == 401
+
+    revoked_second = await client.post(
+        "/api/v1/auth/refresh",
+        json={"refresh_token": second_refresh},
+    )
+    assert revoked_second.status_code == 401
+
+    revoked_third = await client.post(
+        "/api/v1/auth/refresh",
+        json={"refresh_token": third_refresh},
+    )
+    assert revoked_third.status_code == 401
+
+
+async def test_refresh_concurrent_only_one_succeeds(client: AsyncClient) -> None:
+    await _register(client, password=PASSWORD)
+    login_body = (await _login_password(client)).json()
+    refresh_token = login_body["refresh_token"]
+
+    responses = await asyncio.gather(
+        client.post(
+            "/api/v1/auth/refresh",
+            json={"refresh_token": refresh_token},
+        ),
+        client.post(
+            "/api/v1/auth/refresh",
+            json={"refresh_token": refresh_token},
+        ),
+    )
+
+    assert sorted(response.status_code for response in responses) == [200, 401]
 
 
 async def test_logout_revokes_refresh_token(client: AsyncClient) -> None:

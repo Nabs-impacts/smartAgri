@@ -35,7 +35,7 @@ class DevicePayload(BaseModel):
 class OtpVerifyRequest(BaseModel):
     phone: str
     code: str
-    purpose: Literal["login", "verify_phone", "reset_password"]
+    purpose: Literal["login", "verify_phone"]
     device: DevicePayload | None = None
 
 

@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_current_user
@@ -46,9 +46,13 @@ async def register(
 )
 async def request_otp(
     payload: OtpRequest,
+    request: Request,
     session: AsyncSession = Depends(get_db),
 ) -> OtpRequestResponse:
-    await auth_service.request_otp(session, payload.phone, payload.purpose)
+    client_ip = request.client.host if request.client else "unknown"
+    await auth_service.request_otp(
+        session, payload.phone, payload.purpose, client_ip
+    )
     return OtpRequestResponse(
         message="Si le numero est valide, un code de verification sera envoye."
     )

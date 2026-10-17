@@ -34,6 +34,7 @@ os.environ["DATABASE_URL"] = _with_database(_base_database_url, TEST_DATABASE_NA
 os.environ["DATABASE_URL_SYNC"] = _with_database(_base_database_url_sync, TEST_DATABASE_NAME)
 os.environ["REDIS_URL"] = _with_redis_index(_base_redis_url, TEST_REDIS_INDEX)
 os.environ["SMS_PROVIDER"] = "fake"
+os.environ["REFRESH_REUSE_GRACE_SECONDS"] = "0"
 
 import asyncpg
 import pytest
