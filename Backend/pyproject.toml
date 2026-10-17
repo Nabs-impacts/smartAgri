@@ -14,6 +14,7 @@ dependencies = [
     "gunicorn>=23.0.0",
     "pydantic>=2.9.0",
     "pydantic-settings>=2.5.0",
+    "email-validator>=2.2.0",
     "sqlalchemy>=2.0.35",
     "asyncpg>=0.29.0",
     "psycopg[binary]>=3.2.0",
@@ -55,9 +56,11 @@ ignore = ["B008"]
 [tool.ruff.lint.per-file-ignores]
 "alembic/env.py" = ["F401"]
 "app/db/models/__init__.py" = ["F401"]
+"tests/conftest.py" = ["E402", "I001"]
 
 [tool.pytest.ini_options]
 minversion = "8.0"
 addopts = "-q"
 asyncio_mode = "auto"
+pythonpath = ["."]
 testpaths = ["tests"]

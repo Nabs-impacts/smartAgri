@@ -25,7 +25,7 @@ superuser:
 	python3 scripts/create_superuser.py
 
 test:
-	pytest tests
+	docker compose run --rm -T --build api pytest tests
 
 lint:
 	ruff check .
