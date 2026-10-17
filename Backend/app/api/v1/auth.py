@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, Request, status
+from fastapi import APIRouter, BackgroundTasks, Depends, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_current_user
@@ -30,9 +30,12 @@ router = APIRouter()
 )
 async def register(
     payload: RegisterRequest,
+    background_tasks: BackgroundTasks,
+    request: Request,
     session: AsyncSession = Depends(get_db),
 ) -> RegisterResponse:
-    await auth_service.register(session, payload)
+    client_ip = request.client.host if request.client else "unknown"
+    await auth_service.register(session, payload, background_tasks, client_ip)
     return RegisterResponse(
         message="Compte créé. Un code de vérification a été envoyé.",
         phone=normalize_phone(payload.phone),
@@ -46,12 +49,13 @@ async def register(
 )
 async def request_otp(
     payload: OtpRequest,
+    background_tasks: BackgroundTasks,
     request: Request,
     session: AsyncSession = Depends(get_db),
 ) -> OtpRequestResponse:
     client_ip = request.client.host if request.client else "unknown"
     await auth_service.request_otp(
-        session, payload.phone, payload.purpose, client_ip
+        session, payload.phone, payload.purpose, client_ip, background_tasks
     )
     return OtpRequestResponse(
         message="Si le numéro est valide, un code de vérification sera envoyé."
@@ -69,9 +73,11 @@ async def verify_otp(
 @router.post("/login", response_model=TokenResponse)
 async def login(
     payload: LoginRequest,
+    request: Request,
     session: AsyncSession = Depends(get_db),
 ) -> TokenResponse:
-    return await auth_service.login_password(session, payload)
+    client_ip = request.client.host if request.client else "unknown"
+    return await auth_service.login_password(session, payload, client_ip)
 
 
 @router.post("/refresh", response_model=TokenResponse)

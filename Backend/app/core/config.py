@@ -41,6 +41,7 @@ class Settings(BaseSettings):
     OTP_MAX_ATTEMPTS: int = 5
     OTP_REQUESTS_PER_WINDOW: int = 3
     OTP_REQUESTS_PER_IP_WINDOW: int = 10
+    REGISTER_REQUESTS_PER_IP_WINDOW: int = 5
     OTP_WINDOW_SECONDS: int = 600
     API_KEY_PEPPER: str = "dev-api-key-pepper-min-32-chars"
     LICENSE_KEY_PEPPER: str = "dev-license-key-pepper-min-32-chars"

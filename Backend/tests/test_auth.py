@@ -7,7 +7,9 @@ from httpx import AsyncClient
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
+import app.services.auth_service as auth_service_module
 from app.core.config import settings
+from app.core.rate_limit import get_redis_client
 from app.db.models.identity import OtpCode, User
 from app.providers.sms.fake import FakeSmsProvider
 
@@ -421,3 +423,126 @@ async def test_logout_rejects_other_users_refresh_token(client: AsyncClient) -> 
     )
     assert response.status_code == 403
     assert response.json()["error"]["code"] == "FORBIDDEN"
+
+
+async def test_otp_request_phone_rate_limit_identical_known_and_unknown(
+    client: AsyncClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    await _register(client)
+    FakeSmsProvider.clear()
+    await get_redis_client().flushdb()
+    monkeypatch.setattr(settings, "OTP_REQUESTS_PER_IP_WINDOW", 100)
+    monkeypatch.setattr(settings, "OTP_REQUESTS_PER_WINDOW", 2)
+
+    unknown_phone = "+22799999999"
+    known_statuses = []
+    unknown_statuses = []
+    for _ in range(3):
+        known = await client.post(
+            "/api/v1/auth/otp/request",
+            json={"phone": PHONE, "purpose": "login"},
+        )
+        unknown = await client.post(
+            "/api/v1/auth/otp/request",
+            json={"phone": unknown_phone, "purpose": "login"},
+        )
+        known_statuses.append(known.status_code)
+        unknown_statuses.append(unknown.status_code)
+
+    assert known_statuses == [202, 202, 429]
+    assert unknown_statuses == [202, 202, 429]
+
+
+async def test_register_per_ip_rate_limit(
+    client: AsyncClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    monkeypatch.setattr(settings, "REGISTER_REQUESTS_PER_IP_WINDOW", 2)
+
+    first = await _register(client, phone="+22790000011")
+    second = await _register(client, phone="+22790000012")
+    third = await _register(client, phone="+22790000013")
+
+    assert first.status_code == 201
+    assert second.status_code == 201
+    assert third.status_code == 429
+    assert third.json()["error"]["code"] == "RATE_LIMITED"
+
+
+async def test_login_rate_limited(
+    client: AsyncClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    await _register(client, password=PASSWORD)
+    monkeypatch.setattr(settings, "RATE_LIMIT_LOGIN_PER_MINUTE", 2)
+
+    first = await _login_password(client, password="MauvaisMotDePasse")
+    second = await _login_password(client, password="MauvaisMotDePasse")
+    third = await _login_password(client, password="MauvaisMotDePasse")
+
+    assert first.status_code == 401
+    assert second.status_code == 401
+    assert third.status_code == 429
+    assert third.json()["error"]["code"] == "RATE_LIMITED"
+
+
+async def test_login_unknown_phone_verifies_dummy_hash(
+    client: AsyncClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    calls: list[str] = []
+
+    def spy(password: str, hash_str: str) -> bool:
+        calls.append(hash_str)
+        return False
+
+    monkeypatch.setattr(auth_service_module, "verify_password", spy)
+
+    response = await _login_password(client, phone="+22799999998")
+
+    assert response.status_code == 401
+    assert calls == [auth_service_module._DUMMY_PASSWORD_HASH]
+
+
+async def test_login_account_without_password_verifies_dummy_hash(
+    client: AsyncClient, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    await _register(client)
+
+    calls: list[str] = []
+
+    def spy(password: str, hash_str: str) -> bool:
+        calls.append(hash_str)
+        return False
+
+    monkeypatch.setattr(auth_service_module, "verify_password", spy)
+
+    response = await _login_password(client)
+
+    assert response.status_code == 401
+    assert calls == [auth_service_module._DUMMY_PASSWORD_HASH]
+
+
+async def test_otp_request_not_blocked_by_sms_delivery_failure(
+    client: AsyncClient, db_session: AsyncSession, monkeypatch: pytest.MonkeyPatch
+) -> None:
+    await _register(client)
+    FakeSmsProvider.clear()
+
+    async def failing_send_sms(self, phone: str, message: str) -> bool:
+        raise RuntimeError("sms provider unavailable")
+
+    monkeypatch.setattr(FakeSmsProvider, "send_sms", failing_send_sms)
+
+    response = await client.post(
+        "/api/v1/auth/otp/request",
+        json={"phone": PHONE, "purpose": "login"},
+    )
+
+    assert response.status_code == 202
+    otp = (
+        await db_session.execute(
+            select(OtpCode).where(
+                OtpCode.phone == PHONE,
+                OtpCode.purpose == "login",
+            )
+        )
+    ).scalar_one_or_none()
+    assert otp is not None

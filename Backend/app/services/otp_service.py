@@ -1,23 +1,34 @@
 from datetime import UTC, datetime, timedelta
 
+from fastapi import BackgroundTasks
 from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.core.errors import RateLimitedException, UnauthorizedException
+from app.core.logging import get_logger
 from app.core.rate_limit import check_rate_limit
 from app.core.security import generate_otp_code, hash_otp, normalize_phone
 from app.core.security import verify_otp as verify_otp_hash
 from app.db.models.identity import OtpCode
 from app.providers.sms import get_sms_provider
+from app.providers.sms.base import SmsProvider
+
+logger = get_logger("otp_service")
+
+
+async def _deliver_sms(provider: SmsProvider, phone: str, message: str) -> None:
+    try:
+        await provider.send_sms(phone=phone, message=message)
+    except Exception as exc:
+        logger.warning("sms_send_failed", error=str(exc))
 
 
 class OtpService:
-    async def send_otp(self, session: AsyncSession, phone: str, purpose: str) -> None:
+    async def enforce_phone_rate_limit(self, phone: str) -> None:
         norm_phone = normalize_phone(phone)
-        rate_key = f"rl:otp:{norm_phone}"
         allowed = await check_rate_limit(
-            rate_key,
+            f"rl:otp:{norm_phone}",
             settings.OTP_REQUESTS_PER_WINDOW,
             settings.OTP_WINDOW_SECONDS,
         )
@@ -27,6 +38,13 @@ class OtpService:
                 details={"window_seconds": settings.OTP_WINDOW_SECONDS},
             )
 
+    async def _store_and_schedule(
+        self,
+        session: AsyncSession,
+        norm_phone: str,
+        purpose: str,
+        background_tasks: BackgroundTasks,
+    ) -> None:
         code = generate_otp_code()
         code_hash = hash_otp(code)
         now = datetime.now(UTC)
@@ -43,7 +61,20 @@ class OtpService:
 
         sms_provider = get_sms_provider()
         message = f"Votre code de vérification SmartAgri est: {code}"
-        await sms_provider.send_sms(phone=norm_phone, message=message)
+        background_tasks.add_task(_deliver_sms, sms_provider, norm_phone, message)
+
+    async def send_otp(
+        self,
+        session: AsyncSession,
+        phone: str,
+        purpose: str,
+        background_tasks: BackgroundTasks,
+        apply_rate_limit: bool = True,
+    ) -> None:
+        norm_phone = normalize_phone(phone)
+        if apply_rate_limit:
+            await self.enforce_phone_rate_limit(norm_phone)
+        await self._store_and_schedule(session, norm_phone, purpose, background_tasks)
 
     async def verify_otp(
         self, session: AsyncSession, phone: str, code: str, purpose: str

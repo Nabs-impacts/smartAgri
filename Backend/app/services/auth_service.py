@@ -1,6 +1,7 @@
 import uuid
 from datetime import UTC, datetime, timedelta
 
+from fastapi import BackgroundTasks
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -24,6 +25,7 @@ from app.core.security import (
 from app.db.models.billing import Plan, Subscription
 from app.db.models.identity import Device, RefreshToken, User
 from app.schemas.auth import (
+    DevicePayload,
     LoginRequest,
     OtpVerifyRequest,
     PasswordResetRequest,
@@ -33,9 +35,28 @@ from app.schemas.auth import (
 from app.schemas.user import UserResponse
 from app.services.otp_service import otp_service
 
+_DUMMY_PASSWORD_HASH = hash_password("smartagri-dummy-password-timing")
+
 
 class AuthService:
-    async def register(self, session: AsyncSession, data: RegisterRequest) -> None:
+    async def register(
+        self,
+        session: AsyncSession,
+        data: RegisterRequest,
+        background_tasks: BackgroundTasks,
+        client_ip: str,
+    ) -> None:
+        allowed = await check_rate_limit(
+            f"rl:register:ip:{client_ip}",
+            settings.REGISTER_REQUESTS_PER_IP_WINDOW,
+            settings.OTP_WINDOW_SECONDS,
+        )
+        if not allowed:
+            raise RateLimitedException(
+                message="Trop de tentatives d'inscription, veuillez patienter.",
+                details={"window_seconds": settings.OTP_WINDOW_SECONDS},
+            )
+
         norm_phone = normalize_phone(data.phone)
 
         query = select(User).where(
@@ -95,10 +116,16 @@ class AuthService:
             session=session,
             phone=norm_phone,
             purpose="verify_phone",
+            background_tasks=background_tasks,
         )
 
     async def request_otp(
-        self, session: AsyncSession, phone: str, purpose: str, client_ip: str
+        self,
+        session: AsyncSession,
+        phone: str,
+        purpose: str,
+        client_ip: str,
+        background_tasks: BackgroundTasks,
     ) -> None:
         norm_phone = normalize_phone(phone)
         allowed = await check_rate_limit(
@@ -112,6 +139,8 @@ class AuthService:
                 details={"window_seconds": settings.OTP_WINDOW_SECONDS},
             )
 
+        await otp_service.enforce_phone_rate_limit(norm_phone)
+
         query = select(User.id).where(
             User.phone == norm_phone,
             User.deleted_at.is_(None),
@@ -124,6 +153,67 @@ class AuthService:
             session=session,
             phone=norm_phone,
             purpose=purpose,
+            background_tasks=background_tasks,
+            apply_rate_limit=False,
+        )
+
+    async def _upsert_device(
+        self,
+        session: AsyncSession,
+        user_id: uuid.UUID,
+        device: DevicePayload | None,
+        now: datetime,
+    ) -> uuid.UUID | None:
+        if device is None:
+            return None
+        query = select(Device).where(
+            Device.user_id == user_id,
+            Device.fcm_token == device.fcm_token,
+        )
+        existing = (await session.execute(query)).scalar_one_or_none()
+        if existing:
+            existing.platform = device.platform
+            existing.app_version = device.app_version
+            existing.last_seen_at = now
+            return existing.id
+        new_device = Device(
+            user_id=user_id,
+            platform=device.platform,
+            fcm_token=device.fcm_token,
+            app_version=device.app_version,
+            last_seen_at=now,
+        )
+        session.add(new_device)
+        await session.flush()
+        return new_device.id
+
+    async def _issue_tokens(
+        self,
+        session: AsyncSession,
+        user: User,
+        device_id: uuid.UUID | None,
+        now: datetime,
+    ) -> TokenResponse:
+        access_token = create_access_token(user.id, user.role)
+        raw_refresh = generate_refresh_token()
+        refresh_hash = hash_refresh_token(raw_refresh)
+
+        refresh_rec = RefreshToken(
+            user_id=user.id,
+            device_id=device_id,
+            token_hash=refresh_hash,
+            expires_at=now + timedelta(days=settings.REFRESH_TOKEN_DAYS),
+        )
+        session.add(refresh_rec)
+        await session.commit()
+        await session.refresh(user)
+
+        return TokenResponse(
+            access_token=access_token,
+            refresh_token=raw_refresh,
+            token_type="bearer",
+            expires_in=settings.ACCESS_TOKEN_MINUTES * 60,
+            user=UserResponse.model_validate(user),
         )
 
     async def verify_otp_and_login(
@@ -153,56 +243,35 @@ class AuthService:
             user.phone_verified_at = user.phone_verified_at or now
             user.last_login_at = now
 
-        device_id = None
-        if data.device:
-            dev_query = select(Device).where(
-                Device.user_id == user.id,
-                Device.fcm_token == data.device.fcm_token,
-            )
-            device = (await session.execute(dev_query)).scalar_one_or_none()
-            if device:
-                device.platform = data.device.platform
-                device.app_version = data.device.app_version
-                device.last_seen_at = now
-                device_id = device.id
-            else:
-                new_device = Device(
-                    user_id=user.id,
-                    platform=data.device.platform,
-                    fcm_token=data.device.fcm_token,
-                    app_version=data.device.app_version,
-                    last_seen_at=now,
-                )
-                session.add(new_device)
-                await session.flush()
-                device_id = new_device.id
-
-        access_token = create_access_token(user.id, user.role)
-        raw_refresh = generate_refresh_token()
-        refresh_hash = hash_refresh_token(raw_refresh)
-
-        refresh_rec = RefreshToken(
-            user_id=user.id,
-            device_id=device_id,
-            token_hash=refresh_hash,
-            expires_at=now + timedelta(days=settings.REFRESH_TOKEN_DAYS),
-        )
-        session.add(refresh_rec)
-        await session.commit()
-        await session.refresh(user)
-
-        return TokenResponse(
-            access_token=access_token,
-            refresh_token=raw_refresh,
-            token_type="bearer",
-            expires_in=settings.ACCESS_TOKEN_MINUTES * 60,
-            user=UserResponse.model_validate(user),
-        )
+        device_id = await self._upsert_device(session, user.id, data.device, now)
+        return await self._issue_tokens(session, user, device_id, now)
 
     async def login_password(
-        self, session: AsyncSession, data: LoginRequest
+        self, session: AsyncSession, data: LoginRequest, client_ip: str
     ) -> TokenResponse:
         norm_phone = normalize_phone(data.phone)
+
+        allowed = await check_rate_limit(
+            f"rl:login:ip:{client_ip}",
+            settings.RATE_LIMIT_LOGIN_PER_MINUTE,
+            60,
+        )
+        if not allowed:
+            raise RateLimitedException(
+                message="Trop de tentatives de connexion, veuillez patienter.",
+                details={"window_seconds": 60},
+            )
+
+        allowed = await check_rate_limit(
+            f"rl:login:phone:{norm_phone}",
+            settings.RATE_LIMIT_LOGIN_PER_MINUTE,
+            60,
+        )
+        if not allowed:
+            raise RateLimitedException(
+                message="Trop de tentatives de connexion, veuillez patienter.",
+                details={"window_seconds": 60},
+            )
 
         query = select(User).where(
             User.phone == norm_phone,
@@ -210,62 +279,24 @@ class AuthService:
         )
         user = (await session.execute(query)).scalar_one_or_none()
         if not user:
+            verify_password(data.password, _DUMMY_PASSWORD_HASH)
             raise UnauthorizedException(message="Identifiants incorrects.")
 
         if not user.is_active:
             raise ForbiddenException(message="Compte utilisateur désactivé.")
 
-        if not user.password_hash or not verify_password(data.password, user.password_hash):
+        if not user.password_hash:
+            verify_password(data.password, _DUMMY_PASSWORD_HASH)
+            raise UnauthorizedException(message="Identifiants incorrects.")
+
+        if not verify_password(data.password, user.password_hash):
             raise UnauthorizedException(message="Identifiants incorrects.")
 
         now = datetime.now(UTC)
         user.last_login_at = now
 
-        device_id = None
-        if data.device:
-            dev_query = select(Device).where(
-                Device.user_id == user.id,
-                Device.fcm_token == data.device.fcm_token,
-            )
-            device = (await session.execute(dev_query)).scalar_one_or_none()
-            if device:
-                device.platform = data.device.platform
-                device.app_version = data.device.app_version
-                device.last_seen_at = now
-                device_id = device.id
-            else:
-                new_device = Device(
-                    user_id=user.id,
-                    platform=data.device.platform,
-                    fcm_token=data.device.fcm_token,
-                    app_version=data.device.app_version,
-                    last_seen_at=now,
-                )
-                session.add(new_device)
-                await session.flush()
-                device_id = new_device.id
-
-        access_token = create_access_token(user.id, user.role)
-        raw_refresh = generate_refresh_token()
-        refresh_hash = hash_refresh_token(raw_refresh)
-
-        refresh_rec = RefreshToken(
-            user_id=user.id,
-            device_id=device_id,
-            token_hash=refresh_hash,
-            expires_at=now + timedelta(days=settings.REFRESH_TOKEN_DAYS),
-        )
-        session.add(refresh_rec)
-        await session.commit()
-        await session.refresh(user)
-
-        return TokenResponse(
-            access_token=access_token,
-            refresh_token=raw_refresh,
-            token_type="bearer",
-            expires_in=settings.ACCESS_TOKEN_MINUTES * 60,
-            user=UserResponse.model_validate(user),
-        )
+        device_id = await self._upsert_device(session, user.id, data.device, now)
+        return await self._issue_tokens(session, user, device_id, now)
 
     async def _consume_refresh_grace(
         self,
@@ -361,27 +392,7 @@ class AuthService:
                 message="Utilisateur introuvable ou désactivé."
             )
 
-        access_token = create_access_token(user.id, user.role)
-        new_raw_refresh = generate_refresh_token()
-        new_hash = hash_refresh_token(new_raw_refresh)
-
-        new_rec = RefreshToken(
-            user_id=user.id,
-            device_id=rec.device_id,
-            token_hash=new_hash,
-            expires_at=now + timedelta(days=settings.REFRESH_TOKEN_DAYS),
-        )
-        session.add(new_rec)
-        await session.commit()
-        await session.refresh(user)
-
-        return TokenResponse(
-            access_token=access_token,
-            refresh_token=new_raw_refresh,
-            token_type="bearer",
-            expires_in=settings.ACCESS_TOKEN_MINUTES * 60,
-            user=UserResponse.model_validate(user),
-        )
+        return await self._issue_tokens(session, user, rec.device_id, now)
 
     async def logout(
         self, session: AsyncSession, raw_refresh_token: str, user_id: uuid.UUID
