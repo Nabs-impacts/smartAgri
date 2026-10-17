@@ -1,14 +1,16 @@
-from typing import Sequence, Union
-from alembic import op
+from collections.abc import Sequence
+
 import geoalchemy2
-from pgvector.sqlalchemy import Vector
 import sqlalchemy as sa
+from pgvector.sqlalchemy import Vector
 from sqlalchemy.dialects import postgresql
 
+from alembic import op
+
 revision: str = "0001_initial"
-down_revision: Union[str, None] = None
-branch_labels: Union[str, Sequence[str], None] = None
-depends_on: Union[str, Sequence[str], None] = None
+down_revision: str | None = None
+branch_labels: str | Sequence[str] | None = None
+depends_on: str | Sequence[str] | None = None
 
 
 def upgrade() -> None:
@@ -106,7 +108,8 @@ def upgrade() -> None:
         ),
         sa.Column("deleted_at", sa.DateTime(timezone=True), nullable=True),
         sa.CheckConstraint(
-            "role IN ('farmer', 'field_agent', 'agronomist', 'org_admin', 'gov_admin', 'super_admin')",
+            "role IN ('farmer', 'field_agent', 'agronomist', 'org_admin', "
+            "'gov_admin', 'super_admin')",
             name="chk_users_role",
         ),
         sa.CheckConstraint(
@@ -264,7 +267,8 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.CheckConstraint(
-            "type IN ('cooperative', 'ngo', 'agri_company', 'bank', 'insurer', 'government', 'other')",
+            "type IN ('cooperative', 'ngo', 'agri_company', 'bank', "
+            "'insurer', 'government', 'other')",
             name="chk_organizations_type",
         ),
         sa.ForeignKeyConstraint(["admin_area_id"], ["admin_areas.id"]),
@@ -499,7 +503,8 @@ def upgrade() -> None:
         ),
         sa.Column("deleted_at", sa.DateTime(timezone=True), nullable=True),
         sa.CheckConstraint(
-            "type IN ('sowing', 'fertilizing', 'irrigation', 'weeding', 'pesticide', 'harvest', 'other')",
+            "type IN ('sowing', 'fertilizing', 'irrigation', 'weeding', "
+            "'pesticide', 'harvest', 'other')",
             name="chk_farm_activities_type",
         ),
         sa.ForeignKeyConstraint(["crop_cycle_id"], ["crop_cycles.id"]),
@@ -645,7 +650,8 @@ def upgrade() -> None:
             nullable=False,
         ),
         sa.CheckConstraint(
-            "task IN ('disease_classification', 'pest_detection', 'deficiency', 'yield_prediction', 'llm_advisor')",
+            "task IN ('disease_classification', 'pest_detection', "
+            "'deficiency', 'yield_prediction', 'llm_advisor')",
             name="chk_ai_models_task",
         ),
         sa.CheckConstraint(
@@ -1154,7 +1160,9 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["crop_id"], ["crops.id"]),
         sa.ForeignKeyConstraint(["market_id"], ["markets.id"]),
         sa.PrimaryKeyConstraint("id"),
-        sa.UniqueConstraint("market_id", "crop_id", "price_date", name="uq_market_prices_market_crop_date"),
+        sa.UniqueConstraint(
+            "market_id", "crop_id", "price_date", name="uq_market_prices_market_crop_date"
+        ),
     )
 
     op.create_table(
@@ -1451,7 +1459,8 @@ def upgrade() -> None:
         ),
         sa.Column("paid_at", sa.DateTime(timezone=True), nullable=True),
         sa.CheckConstraint(
-            "provider IN ('orange_money', 'airtel_money', 'moov_money', 'mynita', 'aggregator', 'manual')",
+            "provider IN ('orange_money', 'airtel_money', 'moov_money', "
+            "'mynita', 'aggregator', 'manual')",
             name="chk_payments_provider",
         ),
         sa.CheckConstraint(

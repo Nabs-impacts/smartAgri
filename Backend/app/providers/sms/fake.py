@@ -1,4 +1,5 @@
 from typing import ClassVar
+
 from app.core.logging import get_logger
 from app.providers.sms.base import SmsProvider
 

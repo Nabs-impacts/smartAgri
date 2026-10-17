@@ -2,11 +2,9 @@ import base64
 import json
 import uuid
 from datetime import datetime
-from typing import Any, Generic, TypeVar
-from fastapi import Query
-from pydantic import BaseModel, Field
 
-T = TypeVar("T")
+from fastapi import Query
+from pydantic import BaseModel
 
 
 def encode_cursor(dt: datetime, item_id: str | uuid.UUID | int) -> str:
@@ -44,6 +42,6 @@ class PaginationParams:
             return None
 
 
-class PaginatedResponse(BaseModel, Generic[T]):
+class PaginatedResponse[T](BaseModel):
     items: list[T]
     next_cursor: str | None = None

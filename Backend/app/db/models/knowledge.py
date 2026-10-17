@@ -1,5 +1,6 @@
 import uuid
 from typing import Any
+
 from pgvector.sqlalchemy import Vector
 from sqlalchemy import (
     BigInteger,
@@ -12,6 +13,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.db.base import Base, CreatedAtMixin, UUIDPrimaryKeyMixin
 from app.db.models.farming import Crop, Plot
 from app.db.models.identity import User

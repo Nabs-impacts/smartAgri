@@ -1,8 +1,15 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
+
 from sqlalchemy import select, update
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.config import settings
-from app.core.errors import ConflictException, ForbiddenException, NotFoundException, UnauthorizedException
+from app.core.errors import (
+    ConflictException,
+    ForbiddenException,
+    NotFoundException,
+    UnauthorizedException,
+)
 from app.core.security import (
     create_access_token,
     generate_refresh_token,
@@ -75,7 +82,7 @@ class AuthService:
             user_id=user.id,
             plan_id=free_plan.id,
             status="active",
-            current_period_start=datetime.now(timezone.utc),
+            current_period_start=datetime.now(UTC),
             auto_renew=False,
         )
         session.add(subscription)
@@ -118,7 +125,7 @@ class AuthService:
         if not user.is_active:
             raise ForbiddenException(message="Compte utilisateur desactive.")
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         if data.purpose in ("login", "verify_phone"):
             user.phone_verified_at = user.phone_verified_at or now
             user.last_login_at = now
@@ -188,7 +195,7 @@ class AuthService:
         if not user.password_hash or not verify_password(data.password, user.password_hash):
             raise UnauthorizedException(message="Identifiants incorrects.")
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         user.last_login_at = now
 
         device_id = None
@@ -250,7 +257,7 @@ class AuthService:
                 message="Jeton de rafraichissement invalide."
             )
 
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         if rec.revoked_at is not None:
             await session.execute(
                 update(RefreshToken)
@@ -310,7 +317,7 @@ class AuthService:
         query = select(RefreshToken).where(RefreshToken.token_hash == token_hash)
         rec = (await session.execute(query)).scalar_one_or_none()
         if rec and rec.revoked_at is None:
-            rec.revoked_at = datetime.now(timezone.utc)
+            rec.revoked_at = datetime.now(UTC)
             await session.commit()
 
     async def reset_password(
@@ -333,7 +340,7 @@ class AuthService:
             raise NotFoundException(message="Utilisateur introuvable.")
 
         user.password_hash = hash_password(data.new_password)
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         await session.execute(
             update(RefreshToken)
             .where(

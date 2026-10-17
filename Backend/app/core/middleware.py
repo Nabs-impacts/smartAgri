@@ -1,8 +1,10 @@
 import uuid
-from typing import Callable
+from collections.abc import Callable
+
 from fastapi import Request, Response, status
 from fastapi.responses import JSONResponse
 from starlette.middleware.base import BaseHTTPMiddleware
+
 from app.core.config import settings
 from app.core.logging import request_id_ctx
 from app.core.rate_limit import check_rate_limit
@@ -39,9 +41,13 @@ class RateLimitMiddleware(BaseHTTPMiddleware):
             limit = settings.RATE_LIMIT_LOGIN_PER_MINUTE
             window = 60
             key = f"rl:login:{client_ip}"
-        elif path.startswith(f"{settings.API_PREFIX}/auth/otp"):
-            return await call_next(request)
-        elif path in ("/health", "/version", "/docs", "/openapi.json", "/redoc"):
+        elif path.startswith(f"{settings.API_PREFIX}/auth/otp") or path in (
+            "/health",
+            "/version",
+            "/docs",
+            "/openapi.json",
+            "/redoc",
+        ):
             return await call_next(request)
         else:
             limit = settings.RATE_LIMIT_DEFAULT_PER_MINUTE

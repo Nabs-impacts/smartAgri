@@ -1,10 +1,13 @@
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
+
 from sqlalchemy import desc, select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.config import settings
 from app.core.errors import RateLimitedException, UnauthorizedException
 from app.core.rate_limit import check_rate_limit
-from app.core.security import generate_otp_code, hash_otp, normalize_phone, verify_otp as verify_otp_hash
+from app.core.security import generate_otp_code, hash_otp, normalize_phone
+from app.core.security import verify_otp as verify_otp_hash
 from app.db.models.identity import OtpCode
 from app.providers.sms import get_sms_provider
 
@@ -26,7 +29,7 @@ class OtpService:
 
         code = generate_otp_code()
         code_hash = hash_otp(code)
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
         expires_at = now + timedelta(seconds=settings.OTP_TTL_SECONDS)
 
         otp_record = OtpCode(
@@ -46,7 +49,7 @@ class OtpService:
         self, session: AsyncSession, phone: str, code: str, purpose: str
     ) -> bool:
         norm_phone = normalize_phone(phone)
-        now = datetime.now(timezone.utc)
+        now = datetime.now(UTC)
 
         query = (
             select(OtpCode)

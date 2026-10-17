@@ -1,5 +1,6 @@
 import uuid
 from datetime import datetime
+
 from sqlalchemy import (
     Boolean,
     CheckConstraint,
@@ -12,6 +13,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
 from app.db.models.identity import AdminArea, User
 
@@ -38,7 +40,8 @@ class Organization(Base, UUIDPrimaryKeyMixin, TimestampMixin):
 
     __table_args__ = (
         CheckConstraint(
-            "type IN ('cooperative', 'ngo', 'agri_company', 'bank', 'insurer', 'government', 'other')",
+            "type IN ('cooperative', 'ngo', 'agri_company', 'bank', "
+            "'insurer', 'government', 'other')",
             name="chk_organizations_type",
         ),
     )

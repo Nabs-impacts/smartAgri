@@ -2,6 +2,7 @@ import uuid
 from datetime import datetime
 from decimal import Decimal
 from typing import Any
+
 from geoalchemy2 import Geography
 from sqlalchemy import (
     BigInteger,
@@ -21,6 +22,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.db.base import Base, CreatedAtMixin, SoftDeleteMixin, TimestampMixin, UUIDPrimaryKeyMixin
 from app.db.models.farming import Crop, CropCycle, Plot
 from app.db.models.identity import User
@@ -98,7 +100,8 @@ class AiModel(Base, CreatedAtMixin):
 
     __table_args__ = (
         CheckConstraint(
-            "task IN ('disease_classification', 'pest_detection', 'deficiency', 'yield_prediction', 'llm_advisor')",
+            "task IN ('disease_classification', 'pest_detection', "
+            "'deficiency', 'yield_prediction', 'llm_advisor')",
             name="chk_ai_models_task",
         ),
         CheckConstraint(

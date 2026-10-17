@@ -8,7 +8,7 @@ services:
       POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-smartagri}
       POSTGRES_DB: ${POSTGRES_DB:-smartagri}
     ports:
-      - "5432:5432"
+      - "127.0.0.1:5432:5432"
     volumes:
       - pgdata:/var/lib/postgresql/data
     healthcheck:
@@ -20,7 +20,7 @@ services:
   redis:
     image: redis:7-alpine
     ports:
-      - "6379:6379"
+      - "127.0.0.1:6379:6379"
     volumes:
       - redisdata:/data
     healthcheck:
@@ -36,7 +36,7 @@ services:
       RUSTFS_SECRET_KEY: ${S3_SECRET_KEY:-rustfsadmin}
       RUSTFS_ADDRESS: ":9000"
     ports:
-      - "9000:9000"
+      - "127.0.0.1:9000:9000"
     volumes:
       - rustfsdata:/data
 

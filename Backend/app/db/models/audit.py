@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime
 from typing import Any
+
 from sqlalchemy import (
     BigInteger,
     DateTime,
@@ -12,6 +13,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import ARRAY, INET, JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.db.base import Base, CreatedAtMixin, UUIDPrimaryKeyMixin
 from app.db.models.identity import User
 from app.db.models.organizations import Organization

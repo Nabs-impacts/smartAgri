@@ -3,7 +3,9 @@ import re
 import sys
 from contextvars import ContextVar
 from typing import Any
+
 import structlog
+
 from app.core.config import settings
 
 request_id_ctx: ContextVar[str] = ContextVar("request_id", default="")

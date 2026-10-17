@@ -3,11 +3,13 @@ import hmac
 import re
 import secrets
 import uuid
-from datetime import datetime, timedelta, timezone
+from datetime import UTC, datetime, timedelta
 from typing import Any
+
 import jwt
 from argon2 import PasswordHasher
 from argon2.exceptions import VerifyMismatchError
+
 from app.core.config import settings
 from app.core.errors import UnauthorizedException
 
@@ -96,7 +98,7 @@ def create_access_token(
     role: str,
     expires_delta: timedelta | None = None,
 ) -> str:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     if expires_delta is not None:
         expire = now + expires_delta
     else:
@@ -124,7 +126,7 @@ def decode_access_token(token: str) -> dict[str, Any]:
         raise UnauthorizedException(
             message="Jeton d'accès invalide ou expiré.",
             details=str(exc),
-        )
+        ) from exc
 
 
 def create_license_token(
@@ -134,7 +136,7 @@ def create_license_token(
     device_fingerprint: str,
     expires_at: datetime | None = None,
 ) -> str:
-    now = datetime.now(timezone.utc)
+    now = datetime.now(UTC)
     payload = {
         "license_id": str(license_id),
         "organization_id": str(organization_id),
@@ -158,4 +160,4 @@ def decode_license_token(token: str) -> dict[str, Any]:
         raise UnauthorizedException(
             message="Jeton de licence invalide ou expiré.",
             details=str(exc),
-        )
+        ) from exc

@@ -1,6 +1,7 @@
 import uuid
 from datetime import date, datetime
 from typing import Any
+
 from sqlalchemy import (
     BigInteger,
     Boolean,
@@ -18,6 +19,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import JSONB, UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.db.base import Base, CreatedAtMixin, TimestampMixin, UUIDPrimaryKeyMixin
 from app.db.models.identity import User
 from app.db.models.organizations import Organization
@@ -147,7 +149,8 @@ class Payment(Base, UUIDPrimaryKeyMixin, CreatedAtMixin):
 
     __table_args__ = (
         CheckConstraint(
-            "provider IN ('orange_money', 'airtel_money', 'moov_money', 'mynita', 'aggregator', 'manual')",
+            "provider IN ('orange_money', 'airtel_money', 'moov_money', "
+            "'mynita', 'aggregator', 'manual')",
             name="chk_payments_provider",
         ),
         CheckConstraint(

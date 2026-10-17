@@ -1,6 +1,7 @@
 import uuid
 from datetime import datetime
 from typing import Any
+
 from geoalchemy2 import Geometry
 from sqlalchemy import (
     Boolean,
@@ -12,11 +13,11 @@ from sqlalchemy import (
     String,
     UniqueConstraint,
     desc,
-    func,
     text,
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.db.base import Base, CreatedAtMixin, SoftDeleteMixin, TimestampMixin, UUIDPrimaryKeyMixin
 
 
@@ -83,7 +84,9 @@ class User(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
     )
 
     admin_area: Mapped[AdminArea | None] = relationship("AdminArea")
-    devices: Mapped[list["Device"]] = relationship("Device", back_populates="user", cascade="all, delete-orphan")
+    devices: Mapped[list["Device"]] = relationship(
+        "Device", back_populates="user", cascade="all, delete-orphan"
+    )
     refresh_tokens: Mapped[list["RefreshToken"]] = relationship(
         "RefreshToken", back_populates="user", cascade="all, delete-orphan"
     )
@@ -93,7 +96,8 @@ class User(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
 
     __table_args__ = (
         CheckConstraint(
-            "role IN ('farmer', 'field_agent', 'agronomist', 'org_admin', 'gov_admin', 'super_admin')",
+            "role IN ('farmer', 'field_agent', 'agronomist', 'org_admin', "
+            "'gov_admin', 'super_admin')",
             name="chk_users_role",
         ),
         CheckConstraint(

@@ -2,6 +2,7 @@ import uuid
 from datetime import date
 from decimal import Decimal
 from typing import Any
+
 from geoalchemy2 import Geography, Geometry
 from sqlalchemy import (
     CheckConstraint,
@@ -16,6 +17,7 @@ from sqlalchemy import (
 )
 from sqlalchemy.dialects.postgresql import UUID
 from sqlalchemy.orm import Mapped, mapped_column, relationship
+
 from app.db.base import Base, SoftDeleteMixin, TimestampMixin, UUIDPrimaryKeyMixin
 from app.db.models.identity import AdminArea, User
 from app.db.models.organizations import Organization
@@ -168,7 +170,8 @@ class FarmActivity(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
 
     __table_args__ = (
         CheckConstraint(
-            "type IN ('sowing', 'fertilizing', 'irrigation', 'weeding', 'pesticide', 'harvest', 'other')",
+            "type IN ('sowing', 'fertilizing', 'irrigation', 'weeding', "
+            "'pesticide', 'harvest', 'other')",
             name="chk_farm_activities_type",
         ),
         Index("ix_farm_activities_cycle_date", "crop_cycle_id", "performed_on"),

@@ -1,9 +1,11 @@
 import uuid
 from collections.abc import Callable
+
 from fastapi import Depends
 from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
+
 from app.core.errors import ForbiddenException, UnauthorizedException
 from app.core.security import decode_access_token
 from app.db.models.identity import User
@@ -27,7 +29,7 @@ async def get_current_user(
     try:
         user_id = uuid.UUID(user_id_str)
     except ValueError:
-        raise UnauthorizedException(message="Identifiant utilisateur invalide.")
+        raise UnauthorizedException(message="Identifiant utilisateur invalide.") from None
 
     result = await session.execute(
         select(User).where(
