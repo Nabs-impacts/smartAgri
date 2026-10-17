@@ -45,8 +45,8 @@ class Settings(BaseSettings):
 
     S3_ENDPOINT_URL: str = "http://localhost:9000"
     S3_REGION: str = "us-east-1"
-    S3_ACCESS_KEY: str = "minioadmin"
-    S3_SECRET_KEY: str = "minioadmin"
+    S3_ACCESS_KEY: str = "rustfsadmin"
+    S3_SECRET_KEY: str = "rustfsadmin"
     S3_BUCKET: str = "smartagri-media"
     S3_PRESIGN_UPLOAD_SECONDS: int = 600
     S3_PRESIGN_READ_SECONDS: int = 600
