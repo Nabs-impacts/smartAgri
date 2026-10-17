@@ -48,10 +48,7 @@ class Farm(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
         "Plot", back_populates="farm", cascade="all, delete-orphan"
     )
 
-    __table_args__ = (
-        Index("ix_farms_owner_id", "owner_id"),
-        Index("ix_farms_location", "location", postgresql_using="gist"),
-    )
+    __table_args__ = (Index("ix_farms_owner_id", "owner_id"),)
 
 
 class Plot(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
@@ -85,7 +82,6 @@ class Plot(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
             name="chk_plots_irrigation",
         ),
         Index("ix_plots_farm_id", "farm_id"),
-        Index("ix_plots_geom", "geom", postgresql_using="gist"),
     )
 
 

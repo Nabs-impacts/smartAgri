@@ -53,13 +53,6 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("code"),
     )
-    op.create_index(
-        "ix_admin_areas_geom",
-        "admin_areas",
-        ["geom"],
-        unique=False,
-        postgresql_using="gist",
-    )
 
     op.create_table(
         "users",
@@ -342,13 +335,6 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index("ix_farms_owner_id", "farms", ["owner_id"], unique=False)
-    op.create_index(
-        "ix_farms_location",
-        "farms",
-        ["location"],
-        unique=False,
-        postgresql_using="gist",
-    )
 
     op.create_table(
         "plots",
@@ -398,13 +384,6 @@ def upgrade() -> None:
         sa.PrimaryKeyConstraint("id"),
     )
     op.create_index("ix_plots_farm_id", "plots", ["farm_id"], unique=False)
-    op.create_index(
-        "ix_plots_geom",
-        "plots",
-        ["geom"],
-        unique=False,
-        postgresql_using="gist",
-    )
 
     op.create_table(
         "crops",
@@ -777,13 +756,6 @@ def upgrade() -> None:
         unique=False,
     )
     op.create_index("ix_diagnostics_status", "diagnostics", ["status"], unique=False)
-    op.create_index(
-        "ix_diagnostics_location",
-        "diagnostics",
-        ["location"],
-        unique=False,
-        postgresql_using="gist",
-    )
 
     op.create_table(
         "diagnostic_media",
@@ -1210,13 +1182,6 @@ def upgrade() -> None:
         sa.ForeignKeyConstraint(["label_id"], ["diagnosis_labels.id"]),
         sa.PrimaryKeyConstraint("id"),
         sa.UniqueConstraint("diagnostic_id"),
-    )
-    op.create_index(
-        "ix_outbreak_reports_location",
-        "outbreak_reports",
-        ["location"],
-        unique=False,
-        postgresql_using="gist",
     )
     op.create_index(
         "ix_outbreak_reports_label_reported",

@@ -179,7 +179,6 @@ class OutbreakReport(Base, UUIDPrimaryKeyMixin):
             "severity IS NULL OR severity IN ('low', 'medium', 'high')",
             name="chk_outbreak_reports_severity",
         ),
-        Index("ix_outbreak_reports_location", "location", postgresql_using="gist"),
         Index("ix_outbreak_reports_label_reported", "label_id", desc("reported_at")),
     )
 

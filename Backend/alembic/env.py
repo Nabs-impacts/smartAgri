@@ -5,6 +5,15 @@ from sqlalchemy import pool
 from sqlalchemy.engine import Connection
 from sqlalchemy.ext.asyncio import async_engine_from_config
 
+import app.db.models
+import app.db.models.audit
+import app.db.models.billing
+import app.db.models.farming
+import app.db.models.field_data
+import app.db.models.identity
+import app.db.models.knowledge
+import app.db.models.media_ai
+import app.db.models.organizations
 from alembic import context
 from app.core.config import settings
 from app.db.base import Base
@@ -16,6 +25,28 @@ if config.config_file_name is not None:
 
 target_metadata = Base.metadata
 
+POSTGIS_OBJECTS = {
+    "spatial_ref_sys",
+    "geography_columns",
+    "geometry_columns",
+    "raster_columns",
+    "raster_overviews",
+    "layer",
+}
+
+
+def include_object(
+    obj: object,
+    name: str | None,
+    type_: str,
+    reflected: bool,
+    compare_to: object,
+) -> bool:
+    postgis_object = type_ == "table" and (
+        name in POSTGIS_OBJECTS or getattr(obj, "schema", None) in {"topology", "tiger"}
+    )
+    return not postgis_object
+
 
 def run_migrations_offline() -> None:
     url = settings.DATABASE_URL_SYNC
@@ -25,6 +56,7 @@ def run_migrations_offline() -> None:
         literal_binds=True,
         dialect_opts={"paramstyle": "named"},
         include_schemas=True,
+        include_object=include_object,
     )
 
     with context.begin_transaction():
@@ -36,6 +68,7 @@ def do_run_migrations(connection: Connection) -> None:
         connection=connection,
         target_metadata=target_metadata,
         include_schemas=True,
+        include_object=include_object,
     )
 
     with context.begin_transaction():

@@ -236,7 +236,6 @@ class Diagnostic(Base, UUIDPrimaryKeyMixin, TimestampMixin, SoftDeleteMixin):
         ),
         Index("ix_diagnostics_user_created_at_desc", "user_id", desc("created_at")),
         Index("ix_diagnostics_status", "status"),
-        Index("ix_diagnostics_location", "location", postgresql_using="gist"),
     )
 
 

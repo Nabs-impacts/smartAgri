@@ -1,4 +1,4 @@
-.PHONY: up down logs migrate revision seed superuser test lint format shell
+.PHONY: up down logs migrate migrate-check revision seed superuser test lint format shell
 
 up:
 	docker compose up -d
@@ -11,6 +11,9 @@ logs:
 
 migrate:
 	alembic upgrade head
+
+migrate-check:
+	docker compose exec api alembic check
 
 revision:
 	alembic revision --autogenerate -m "auto"

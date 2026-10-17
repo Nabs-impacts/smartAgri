@@ -47,7 +47,6 @@ class AdminArea(Base):
             "level IN ('region', 'departement', 'commune')",
             name="chk_admin_areas_level",
         ),
-        Index("ix_admin_areas_geom", "geom", postgresql_using="gist"),
     )
 
 
