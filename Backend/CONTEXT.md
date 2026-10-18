@@ -51,12 +51,12 @@ Plateforme nigérienne d'IA agricole. L'utilisateur photographie sa culture (ou 
 | Doc backend | Document Claude : https://claude.ai/code/artifact/9406325d-bce3-4764-b6aa-1001dae55965 (structure, tables, endpoints) |
 | Dépôt GitHub | https://github.com/Nabs-impacts/SmartAgri — backend dans `Backend/` |
 
-## 5. État d'avancement (≈ 18 % du backend)
+## 5. État d'avancement (≈ 19 % du backend)
 
 | Phase | Contenu | État |
 |---|---|---|
 | 1 | Fondations : config, middlewares, 45 modèles, migration, Docker, `/health` | **~100 % — validée sous Docker** (migration vérifiée par `alembic check`). Reste : pinning des dépendances |
-| 2 | Auth et comptes | **~80 %** : 7 routes d'auth, 16 tests poussés (commit `39be0d4`), 21 après la tâche de durcissement locale. Reste : `user_service` + routes `/users/me` + tests de permissions, et la 2e série de sécurité (étape G) |
+| 2 | Auth et comptes | **~85 %** : 7 routes d'auth, 27 tests (commit `f1397b8`), deux séries de corrections de sécurité faites. Reste : étape G2 (prise de contrôle par pré-inscription, messages d'erreur uniformes), puis `user_service` + routes `/users/me` + tests de permissions |
 | 3 à 8 | Cœur agricole + sync, médias, IA, facturation, données/alertes, admin | 0 % |
 
 **Validé le 17 octobre 2026** : `docker compose up -d --build` démarre les 7 services (`db`, `redis`, `rustfs`, `rustfs-init`, `api`, `worker`, `beat`) ; `alembic upgrade head` applique `0001_initial` ; `GET /health` renvoie `{"status":"healthy","database":"ok","redis":"ok","storage":"ok"}`. Le comptage de 50 relations dans le schéma `public` est normal : 45 tables + `alembic_version` + `spatial_ref_sys` (PostGIS) + la vue `v_cycle_yield` + 2 vues PostGIS.
@@ -65,7 +65,7 @@ Plateforme nigérienne d'IA agricole. L'utilisateur photographie sa culture (ou 
 
 **Corrigé depuis l'audit** : lecture de `CORS_ORIGINS` et des listes MIME (`Annotated[list[str], NoDecode]`, `pydantic-settings>=2.7.0`) ; `app/workers/celery_app.py` créé ; `.dockerignore` ajouté ; bucket plus public ; `--no-deps` retiré du `pip wheel` ; MinIO remplacé par RustFS ; image `db` reconstruite sur pgvector + PostGIS ; `sqlalchemy[asyncio]` (greenlet) ; adresses Docker (`db`, `redis`, `rustfs`) définies dans le compose ; fichier de planification de beat dans `/tmp`.
 
-**Failles de l'auth.** Corrigées (commit `39be0d4`) : limite par IP sur `otp/request`, SMS envoyé seulement si le compte existe, verrou de ligne sur les tentatives OTP, fenêtre de tolérance du refresh (45 s, suivie dans Redis), `purpose` d'OTP restreint. **Restantes (revue du code poussé)** : (1) dans `request_otp`, la limite par numéro n'est appliquée que si le compte existe : un 429 trahit un numéro inscrit ; (2) `register` envoie un SMS à n'importe quel numéro sans limite par IP (SMS pumping résiduel) ; (3) pas de limite dédiée sur `login` (à vérifier dans le middleware) ni de hash factice pour les comptes inconnus ; (4) l'envoi du SMS bloque la réponse pour les comptes existants (différence de temps de réponse) ; (5) code dupliqué (appareil + émission de tokens) ; (6) vérifier comment l'IP cliente est obtenue derrière un proxy (ne pas faire confiance à X-Forwarded-For sans proxy de confiance) ; (7) `register()` non atomique.
+**Failles de l'auth.** Corrigées : limite par IP sur `otp/request` et `register`, limite par numéro appliquée avant la vérification d'existence (plus de fuite 202/429), SMS envoyé seulement si le compte existe et en tâche de fond, verrou de ligne sur les tentatives OTP, fenêtre de tolérance du refresh (45 s, Redis), `purpose` restreint, limites et hash factice sur `login`, `logout` qui vérifie le propriétaire du refresh token (commit `f1397b8`). **Restantes (revue du 17 octobre)** : (1) **prise de contrôle par pré-inscription** : `register` crée un compte pour n'importe quel numéro avec le mot de passe choisi par l'appelant, et `login_password` n'exige pas `phone_verified_at` ; un attaquant peut donc inscrire le numéro d'une victime avec son propre mot de passe, la victime se connecte ensuite par OTP, et l'attaquant garde un accès par mot de passe (étape G2) ; (2) les messages d'erreur de `verify_otp` diffèrent (« introuvable » / « incorrect » / « expiré »), ce qui permet de savoir si un numéro est inscrit (étape G2) ; (3) compromis accepté pour le MVP : les limites par numéro (OTP et login) permettent à un tiers de bloquer temporairement un utilisateur légitime ; à atténuer plus tard (clé numéro + IP, vérification anti-bot) ; (4) `register()` non atomique ; (5) l'IP cliente vient de `request.client.host` : derrière un reverse proxy en production, configurer les en-têtes de confiance ; (6) les SMS partent en `BackgroundTasks` (perdus si le processus redémarre) : passer à Celery quand les tâches existeront ; (7) `PUT /users/me/password` à ajouter (étape H) puisque G2 efface le mot de passe saisi avant vérification.
 
 **Ports** : db (5432), redis (6379) et rustfs (9000) sont publiés sur `127.0.0.1` uniquement (fait) ; l'api reste sur `0.0.0.0:8000` pour les tests depuis le téléphone.
 
@@ -152,9 +152,9 @@ Corrige uniquement ces 4 points, chacun avec un test dans tests/test_auth.py :
 Ajoute les nouvelles variables à config.py et .env.example. Mets à jour PROGRESS.md, puis arrête-toi.
 ```
 
-**Étape F — durcissement des tests et petits correctifs : fait en local par l'agent, à vérifier puis commiter.** Garde-fou dans `conftest.py` (assert sur la base `smartagri_test` et l'index Redis 3 avant tout `TRUNCATE` ou `flushdb`), accents dans les messages, `logout` qui vérifie que le refresh token appartient à l'utilisateur (403 sinon), 5 tests ajoutés. Attendu : 21 tests verts, `grep` anti-commentaires vide, puis `git add -A && git commit && git push`.
+**Étape F — durcissement des tests et petits correctifs : FAITE.** Garde-fou dans `conftest.py` (assert sur la base `smartagri_test` et l'index Redis 3 avant tout `TRUNCATE` ou `flushdb`), accents dans les messages, `logout` qui vérifie que le refresh token appartient à l'utilisateur (403 sinon), 5 tests ajoutés.
 
-**Étape G — 2e série de sécurité de l'auth :**
+**Étape G — 2e série de sécurité de l'auth : FAITE (commit `f1397b8`, 27 tests).** Message utilisé :
 
 ```
 Lis PROGRESS.md et smartagri-prompt-backend.md. Applique les règles permanentes de AGENTS.md.
@@ -171,7 +171,27 @@ Tâche : seconde série de corrections de sécurité de l'auth, chacune avec un 
 Ajoute les variables à config.py et .env.example. make test et ruff doivent passer. Mets à jour PROGRESS.md, puis arrête-toi.
 ```
 
-**Étape H — ensuite** : `user_service` et routes `/users/me` (profil, appareils, consentements, export, suppression) avec tests de permissions (`tests/test_users.py`, `tests/test_permissions.py`) ; puis **phase 3** (organisations, fermes, parcelles, cycles, sync, seed : 8 régions du Niger, 10 cultures, plans) — c'est le début de la **démo pour le gouverneur** (phases 1 à 3 + médias + diagnostic simulé + écran de stats de rendement, environ 2 à 3 semaines avec les contraintes de quota).
+**Étape G2 — prise de contrôle par pré-inscription et messages uniformes :**
+
+```
+Lis PROGRESS.md et smartagri-prompt-backend.md. Applique les règles permanentes de AGENTS.md.
+Tâche : deux corrections de sécurité dans l'auth, chacune avec un test. Les tests existants doivent continuer à passer
+(adapte ceux que le changement impose).
+1. Prise de contrôle par pré-inscription : un attaquant peut inscrire le numéro d'une victime avec SON mot de passe,
+   puis se connecter par mot de passe après que la victime a vérifié son numéro.
+   - login_password refuse (même 401 « Identifiants incorrects. » et hash factice) tout compte dont phone_verified_at
+     est NULL.
+   - Quand une vérification OTP réussit pour un compte dont phone_verified_at était NULL, mets password_hash à NULL.
+   - register : si le compte existe mais n'est PAS vérifié, ne renvoie pas 409 : remplace full_name, language et
+     password_hash par les nouvelles valeurs, supprime les OTP non consommés de ce numéro, et renvoie un nouvel OTP.
+     La réponse est identique à une inscription normale. Si le compte est vérifié, 409 comme aujourd'hui.
+2. otp_service.verify_otp : toutes les causes d'échec (aucun code, code incorrect, code expiré, tentatives dépassées)
+   renvoient le même code d'erreur et le même message « Code invalide ou expiré. », pour ne pas révéler si un numéro
+   est inscrit. Conserve le comptage des tentatives et le verrou de ligne.
+Mets à jour PROGRESS.md, puis arrête-toi.
+```
+
+**Étape H — ensuite** : `user_service` et routes `/users/me` (profil, appareils, consentements, export, suppression, et `PUT /users/me/password` pour définir un mot de passe après vérification du téléphone) avec tests de permissions (`tests/test_users.py`, `tests/test_permissions.py`) ; puis **phase 3** (organisations, fermes, parcelles, cycles, sync, seed : 8 régions du Niger, 10 cultures, plans) — c'est le début de la **démo pour le gouverneur** (phases 1 à 3 + médias + diagnostic simulé + écran de stats de rendement, environ 2 à 3 semaines avec les contraintes de quota).
 
 ## 10. Points ouverts à ne pas oublier
 

@@ -2,7 +2,7 @@ import uuid
 from datetime import UTC, datetime, timedelta
 
 from fastapi import BackgroundTasks
-from sqlalchemy import select, update
+from sqlalchemy import delete, select, update
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
@@ -23,7 +23,7 @@ from app.core.security import (
     verify_password,
 )
 from app.db.models.billing import Plan, Subscription
-from app.db.models.identity import Device, RefreshToken, User
+from app.db.models.identity import Device, OtpCode, RefreshToken, User
 from app.schemas.auth import (
     DevicePayload,
     LoginRequest,
@@ -65,9 +65,30 @@ class AuthService:
         )
         existing = (await session.execute(query)).scalar_one_or_none()
         if existing:
-            raise ConflictException(
-                message="Ce numéro de téléphone est déjà enregistré."
+            if existing.phone_verified_at is not None:
+                raise ConflictException(
+                    message="Ce numéro de téléphone est déjà enregistré."
+                )
+            existing.full_name = data.full_name
+            existing.language = data.language
+            existing.password_hash = (
+                hash_password(data.password) if data.password else None
             )
+            await session.execute(
+                delete(OtpCode).where(
+                    OtpCode.phone == norm_phone,
+                    OtpCode.consumed_at.is_(None),
+                )
+            )
+            await session.commit()
+
+            await otp_service.send_otp(
+                session=session,
+                phone=norm_phone,
+                purpose="verify_phone",
+                background_tasks=background_tasks,
+            )
+            return
 
         pwd_hash = hash_password(data.password) if data.password else None
         user = User(
@@ -240,7 +261,9 @@ class AuthService:
 
         now = datetime.now(UTC)
         if data.purpose in ("login", "verify_phone"):
-            user.phone_verified_at = user.phone_verified_at or now
+            if user.phone_verified_at is None:
+                user.password_hash = None
+                user.phone_verified_at = now
             user.last_login_at = now
 
         device_id = await self._upsert_device(session, user.id, data.device, now)
@@ -284,6 +307,10 @@ class AuthService:
 
         if not user.is_active:
             raise ForbiddenException(message="Compte utilisateur désactivé.")
+
+        if user.phone_verified_at is None:
+            verify_password(data.password, _DUMMY_PASSWORD_HASH)
+            raise UnauthorizedException(message="Identifiants incorrects.")
 
         if not user.password_hash:
             verify_password(data.password, _DUMMY_PASSWORD_HASH)

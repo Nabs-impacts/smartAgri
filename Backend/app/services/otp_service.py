@@ -16,6 +16,8 @@ from app.providers.sms.base import SmsProvider
 
 logger = get_logger("otp_service")
 
+_INVALID_OTP_MESSAGE = "Code invalide ou expiré."
+
 
 async def _deliver_sms(provider: SmsProvider, phone: str, message: str) -> None:
     try:
@@ -96,27 +98,19 @@ class OtpService:
         record = result.scalars().first()
 
         if not record:
-            raise UnauthorizedException(
-                message="Code de vérification introuvable ou invalide."
-            )
+            raise UnauthorizedException(message=_INVALID_OTP_MESSAGE)
 
         if record.expires_at < now:
-            raise UnauthorizedException(
-                message="Code de vérification expiré."
-            )
+            raise UnauthorizedException(message=_INVALID_OTP_MESSAGE)
 
         if record.attempts >= settings.OTP_MAX_ATTEMPTS:
-            raise UnauthorizedException(
-                message="Nombre maximal de tentatives dépassé."
-            )
+            raise UnauthorizedException(message=_INVALID_OTP_MESSAGE)
 
         record.attempts += 1
 
         if not verify_otp_hash(code, record.code_hash):
             await session.commit()
-            raise UnauthorizedException(
-                message="Code de vérification incorrect."
-            )
+            raise UnauthorizedException(message=_INVALID_OTP_MESSAGE)
 
         record.consumed_at = now
         await session.commit()
