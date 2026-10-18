@@ -1,6 +1,6 @@
 import uuid
 
-from fastapi import APIRouter, Depends, status
+from fastapi import APIRouter, Depends, Request, status
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.deps import get_current_user
@@ -13,6 +13,7 @@ from app.schemas.user import (
     DeviceCreateRequest,
     DeviceResponse,
     PasswordUpdateRequest,
+    UserDataExportResponse,
     UserMeResponse,
     UserResponse,
     UserUpdateRequest,
@@ -28,6 +29,25 @@ async def get_me(
     session: AsyncSession = Depends(get_db),
 ) -> UserMeResponse:
     return await user_service.get_profile(session, current_user)
+
+
+@router.get("/me/export", response_model=UserDataExportResponse)
+async def export_me(
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db),
+) -> UserDataExportResponse:
+    return await user_service.export_data(session, current_user)
+
+
+@router.delete("/me", response_model=MessageResponse)
+async def delete_me(
+    request: Request,
+    current_user: User = Depends(get_current_user),
+    session: AsyncSession = Depends(get_db),
+) -> MessageResponse:
+    client_ip = request.client.host if request.client else None
+    await user_service.delete_account(session, current_user, client_ip)
+    return MessageResponse(message="Compte supprimé.")
 
 
 @router.patch("/me", response_model=UserResponse)

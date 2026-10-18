@@ -666,3 +666,44 @@ async def test_otp_verify_failures_share_same_message(
     )
     assert absent.status_code == 401
     assert absent.json()["error"]["message"] == expected_message
+
+
+async def test_register_password_length_bounds(client: AsyncClient) -> None:
+    too_short = await _register(client, password="court")
+    assert too_short.status_code == 422
+    assert too_short.json()["error"]["code"] == "VALIDATION_ERROR"
+
+    too_long = await _register(client, password="a" * 129)
+    assert too_long.status_code == 422
+    assert too_long.json()["error"]["code"] == "VALIDATION_ERROR"
+
+
+async def test_password_reset_password_length_bounds(client: AsyncClient) -> None:
+    await _register(client)
+
+    too_short = await client.post(
+        "/api/v1/auth/password/reset",
+        json={"phone": PHONE, "code": "123456", "new_password": "court"},
+    )
+    assert too_short.status_code == 422
+    assert too_short.json()["error"]["code"] == "VALIDATION_ERROR"
+
+    too_long = await client.post(
+        "/api/v1/auth/password/reset",
+        json={"phone": PHONE, "code": "123456", "new_password": "a" * 129},
+    )
+    assert too_long.status_code == 422
+    assert too_long.json()["error"]["code"] == "VALIDATION_ERROR"
+
+
+async def test_login_password_length_bound(client: AsyncClient) -> None:
+    too_long = await _login_password(client, password="a" * 129)
+    assert too_long.status_code == 422
+    assert too_long.json()["error"]["code"] == "VALIDATION_ERROR"
+
+
+async def test_validation_error_returns_422(client: AsyncClient) -> None:
+    response = await client.post("/api/v1/auth/login", json={"phone": PHONE})
+
+    assert response.status_code == 422
+    assert response.json()["error"]["code"] == "VALIDATION_ERROR"

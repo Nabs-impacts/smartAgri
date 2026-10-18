@@ -1,6 +1,6 @@
 from typing import Literal
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 from app.schemas.user import UserResponse
 
@@ -9,7 +9,7 @@ class RegisterRequest(BaseModel):
     phone: str
     full_name: str
     language: Literal["fr", "ha", "dje", "en"] = "fr"
-    password: str | None = None
+    password: str | None = Field(default=None, min_length=8, max_length=128)
 
 
 class RegisterResponse(BaseModel):
@@ -41,7 +41,7 @@ class OtpVerifyRequest(BaseModel):
 
 class LoginRequest(BaseModel):
     phone: str
-    password: str
+    password: str = Field(max_length=128)
     device: DevicePayload | None = None
 
 
@@ -64,7 +64,7 @@ class LogoutRequest(BaseModel):
 class PasswordResetRequest(BaseModel):
     phone: str
     code: str
-    new_password: str
+    new_password: str = Field(min_length=8, max_length=128)
 
 
 class MessageResponse(BaseModel):

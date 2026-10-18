@@ -1,7 +1,10 @@
 import uuid
 from datetime import UTC, date, datetime
+from decimal import Decimal
+from typing import Any
 
-from sqlalchemy import func, or_, select, update
+from sqlalchemy import delete, func, or_, select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import (
@@ -13,8 +16,10 @@ from app.core.errors import (
     ValidationException,
 )
 from app.core.security import hash_password, verify_password
-from app.db.models.billing import Plan, Subscription, UsageRecord
+from app.db.models.billing import Payment, Plan, Subscription, UsageRecord
+from app.db.models.farming import CropCycle, Farm, FarmActivity, Harvest, Plot
 from app.db.models.identity import AdminArea, Consent, Device, RefreshToken, User
+from app.db.models.media_ai import Diagnostic, Recommendation
 from app.db.models.organizations import OrganizationMember
 from app.schemas.user import (
     ConsentCreateRequest,
@@ -24,10 +29,12 @@ from app.schemas.user import (
     PasswordUpdateRequest,
     PlanSummary,
     QuotaStatus,
+    UserDataExportResponse,
     UserMeResponse,
     UserResponse,
     UserUpdateRequest,
 )
+from app.services.audit_service import audit_service
 
 _QUOTA_METRIC_MAP = {
     "diagnostics_per_month": "diagnostic",
@@ -35,6 +42,149 @@ _QUOTA_METRIC_MAP = {
     "video_analyses_per_month": "video_analysis",
     "storage_mb": "storage_mb",
 }
+
+_USER_FIELDS = (
+    "id",
+    "phone",
+    "email",
+    "full_name",
+    "role",
+    "language",
+    "admin_area_id",
+    "is_active",
+    "phone_verified_at",
+    "created_at",
+    "updated_at",
+    "last_login_at",
+)
+_DEVICE_FIELDS = (
+    "id",
+    "platform",
+    "fcm_token",
+    "app_version",
+    "last_seen_at",
+    "created_at",
+)
+_CONSENT_FIELDS = ("id", "type", "version", "accepted", "created_at")
+_FARM_FIELDS = (
+    "id",
+    "name",
+    "village",
+    "admin_area_id",
+    "organization_id",
+    "created_at",
+    "updated_at",
+)
+_PLOT_FIELDS = (
+    "id",
+    "farm_id",
+    "name",
+    "area_ha",
+    "soil_type",
+    "irrigation",
+    "created_at",
+    "updated_at",
+)
+_CROP_CYCLE_FIELDS = (
+    "id",
+    "plot_id",
+    "crop_id",
+    "variety",
+    "season",
+    "sowing_date",
+    "expected_harvest_date",
+    "harvest_date",
+    "status",
+    "notes",
+    "created_at",
+    "updated_at",
+)
+_ACTIVITY_FIELDS = (
+    "id",
+    "crop_cycle_id",
+    "type",
+    "performed_on",
+    "product_name",
+    "quantity",
+    "unit",
+    "cost_xof",
+    "notes",
+    "created_at",
+    "updated_at",
+)
+_HARVEST_FIELDS = (
+    "id",
+    "crop_cycle_id",
+    "harvested_on",
+    "quantity_kg",
+    "quality",
+    "sold_kg",
+    "avg_price_xof_per_kg",
+    "created_at",
+    "updated_at",
+)
+_DIAGNOSTIC_FIELDS = (
+    "id",
+    "plot_id",
+    "crop_cycle_id",
+    "crop_id",
+    "model_id",
+    "source",
+    "status",
+    "top_label_id",
+    "confidence",
+    "severity",
+    "user_note",
+    "error",
+    "completed_at",
+    "created_at",
+    "updated_at",
+)
+_RECOMMENDATION_FIELDS = (
+    "id",
+    "diagnostic_id",
+    "plot_id",
+    "crop_cycle_id",
+    "source",
+    "language",
+    "title",
+    "body",
+    "steps",
+    "citations",
+    "model_id",
+    "status",
+    "validated_by",
+    "created_at",
+)
+_PAYMENT_FIELDS = (
+    "id",
+    "subscription_id",
+    "plan_id",
+    "provider",
+    "provider_ref",
+    "idempotency_key",
+    "purpose",
+    "amount_xof",
+    "currency",
+    "payer_phone",
+    "status",
+    "paid_at",
+    "created_at",
+)
+
+
+def _dump_record(obj: Any, fields: tuple[str, ...]) -> dict[str, Any]:
+    record: dict[str, Any] = {}
+    for field in fields:
+        value = getattr(obj, field)
+        if isinstance(value, uuid.UUID):
+            value = str(value)
+        elif isinstance(value, date):
+            value = value.isoformat()
+        elif isinstance(value, Decimal):
+            value = float(value)
+        record[field] = value
+    return record
 
 
 class UserService:
@@ -92,6 +242,7 @@ class UserService:
     async def _quota_statuses(
         self,
         session: AsyncSession,
+        user_id: uuid.UUID,
         subscription: Subscription | None,
         plan: Plan,
     ) -> list[QuotaStatus]:
@@ -115,12 +266,28 @@ class UserService:
                 for metric, total in (await session.execute(usage_query)).all()
             }
 
+        plots_used = 0
+        if "plots" in quotas:
+            plots_query = (
+                select(func.count(Plot.id))
+                .join(Farm, Plot.farm_id == Farm.id)
+                .where(
+                    Farm.owner_id == user_id,
+                    Farm.deleted_at.is_(None),
+                    Plot.deleted_at.is_(None),
+                )
+            )
+            plots_used = int((await session.execute(plots_query)).scalar_one())
+
         statuses: list[QuotaStatus] = []
         for key, limit in quotas.items():
             if not isinstance(limit, int):
                 continue
-            metric = _QUOTA_METRIC_MAP.get(key)
-            used = usage_by_metric.get(metric, 0) if metric else 0
+            if key == "plots":
+                used = plots_used
+            else:
+                metric = _QUOTA_METRIC_MAP.get(key)
+                used = usage_by_metric.get(metric, 0) if metric else 0
             statuses.append(
                 QuotaStatus(
                     metric=key,
@@ -135,7 +302,7 @@ class UserService:
         self, session: AsyncSession, user: User
     ) -> UserMeResponse:
         subscription, plan = await self._effective_subscription(session, user.id)
-        quotas = await self._quota_statuses(session, subscription, plan)
+        quotas = await self._quota_statuses(session, user.id, subscription, plan)
         return UserMeResponse(
             user=UserResponse.model_validate(user),
             effective_plan=PlanSummary.model_validate(plan),
@@ -158,6 +325,8 @@ class UserService:
 
         email = changes.get("email")
         if email is not None:
+            email = email.lower()
+            changes["email"] = email
             email_query = select(User.id).where(
                 User.email == email,
                 User.id != user.id,
@@ -172,7 +341,13 @@ class UserService:
         for field, value in changes.items():
             setattr(user, field, value)
 
-        await session.commit()
+        try:
+            await session.commit()
+        except IntegrityError:
+            await session.rollback()
+            raise ConflictException(
+                message="Cette adresse e-mail est déjà utilisée."
+            ) from None
         await session.refresh(user)
         return UserResponse.model_validate(user)
 
@@ -287,6 +462,160 @@ class UserService:
             ConsentResponse.model_validate(latest[consent_type])
             for consent_type in sorted(latest)
         ]
+
+    async def export_data(
+        self, session: AsyncSession, user: User
+    ) -> UserDataExportResponse:
+        devices = (
+            await session.execute(
+                select(Device)
+                .where(Device.user_id == user.id)
+                .order_by(Device.created_at, Device.id)
+            )
+        ).scalars().all()
+        consents = (
+            await session.execute(
+                select(Consent)
+                .where(Consent.user_id == user.id)
+                .order_by(Consent.created_at, Consent.id)
+            )
+        ).scalars().all()
+        farms = (
+            await session.execute(
+                select(Farm)
+                .where(Farm.owner_id == user.id, Farm.deleted_at.is_(None))
+                .order_by(Farm.created_at, Farm.id)
+            )
+        ).scalars().all()
+        plots = (
+            await session.execute(
+                select(Plot)
+                .join(Farm, Plot.farm_id == Farm.id)
+                .where(
+                    Farm.owner_id == user.id,
+                    Farm.deleted_at.is_(None),
+                    Plot.deleted_at.is_(None),
+                )
+                .order_by(Plot.created_at, Plot.id)
+            )
+        ).scalars().all()
+        crop_cycles = (
+            await session.execute(
+                select(CropCycle)
+                .join(Plot, CropCycle.plot_id == Plot.id)
+                .join(Farm, Plot.farm_id == Farm.id)
+                .where(
+                    Farm.owner_id == user.id,
+                    Farm.deleted_at.is_(None),
+                    Plot.deleted_at.is_(None),
+                    CropCycle.deleted_at.is_(None),
+                )
+                .order_by(CropCycle.created_at, CropCycle.id)
+            )
+        ).scalars().all()
+        activities = (
+            await session.execute(
+                select(FarmActivity)
+                .join(CropCycle, FarmActivity.crop_cycle_id == CropCycle.id)
+                .join(Plot, CropCycle.plot_id == Plot.id)
+                .join(Farm, Plot.farm_id == Farm.id)
+                .where(
+                    Farm.owner_id == user.id,
+                    Farm.deleted_at.is_(None),
+                    Plot.deleted_at.is_(None),
+                    CropCycle.deleted_at.is_(None),
+                    FarmActivity.deleted_at.is_(None),
+                )
+                .order_by(FarmActivity.created_at, FarmActivity.id)
+            )
+        ).scalars().all()
+        harvests = (
+            await session.execute(
+                select(Harvest)
+                .join(CropCycle, Harvest.crop_cycle_id == CropCycle.id)
+                .join(Plot, CropCycle.plot_id == Plot.id)
+                .join(Farm, Plot.farm_id == Farm.id)
+                .where(
+                    Farm.owner_id == user.id,
+                    Farm.deleted_at.is_(None),
+                    Plot.deleted_at.is_(None),
+                    CropCycle.deleted_at.is_(None),
+                    Harvest.deleted_at.is_(None),
+                )
+                .order_by(Harvest.created_at, Harvest.id)
+            )
+        ).scalars().all()
+        diagnostics = (
+            await session.execute(
+                select(Diagnostic)
+                .where(Diagnostic.user_id == user.id, Diagnostic.deleted_at.is_(None))
+                .order_by(Diagnostic.created_at, Diagnostic.id)
+            )
+        ).scalars().all()
+        recommendations = (
+            await session.execute(
+                select(Recommendation)
+                .where(Recommendation.user_id == user.id)
+                .order_by(Recommendation.created_at, Recommendation.id)
+            )
+        ).scalars().all()
+        payments = (
+            await session.execute(
+                select(Payment)
+                .where(Payment.user_id == user.id)
+                .order_by(Payment.created_at, Payment.id)
+            )
+        ).scalars().all()
+
+        return UserDataExportResponse(
+            user=_dump_record(user, _USER_FIELDS),
+            devices=[_dump_record(item, _DEVICE_FIELDS) for item in devices],
+            consents=[_dump_record(item, _CONSENT_FIELDS) for item in consents],
+            farms=[_dump_record(item, _FARM_FIELDS) for item in farms],
+            plots=[_dump_record(item, _PLOT_FIELDS) for item in plots],
+            crop_cycles=[
+                _dump_record(item, _CROP_CYCLE_FIELDS) for item in crop_cycles
+            ],
+            activities=[_dump_record(item, _ACTIVITY_FIELDS) for item in activities],
+            harvests=[_dump_record(item, _HARVEST_FIELDS) for item in harvests],
+            diagnostics=[
+                _dump_record(item, _DIAGNOSTIC_FIELDS) for item in diagnostics
+            ],
+            recommendations=[
+                _dump_record(item, _RECOMMENDATION_FIELDS)
+                for item in recommendations
+            ],
+            payments=[_dump_record(item, _PAYMENT_FIELDS) for item in payments],
+        )
+
+    async def delete_account(
+        self,
+        session: AsyncSession,
+        user: User,
+        client_ip: str | None = None,
+    ) -> None:
+        now = datetime.now(UTC)
+        anonymized_phone = f"deleted-{uuid.uuid4().hex}"
+        user.phone = anonymized_phone
+        user.email = None
+        user.full_name = ""
+        user.password_hash = None
+        user.is_active = False
+        user.deleted_at = now
+        await session.execute(delete(Device).where(Device.user_id == user.id))
+        await session.execute(
+            delete(RefreshToken).where(RefreshToken.user_id == user.id)
+        )
+        audit_service.record(
+            session,
+            action="account_deleted",
+            user_id=user.id,
+            entity="users",
+            entity_id=str(user.id),
+            ip=client_ip,
+            meta={"phone": anonymized_phone},
+        )
+        await session.commit()
 
 
 user_service = UserService()

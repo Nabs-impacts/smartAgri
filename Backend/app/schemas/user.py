@@ -2,7 +2,7 @@ import uuid
 from datetime import datetime
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict, EmailStr
+from pydantic import BaseModel, ConfigDict, EmailStr, Field
 
 
 class UserResponse(BaseModel):
@@ -52,8 +52,8 @@ class UserUpdateRequest(BaseModel):
 
 
 class PasswordUpdateRequest(BaseModel):
-    current_password: str | None = None
-    new_password: str
+    current_password: str | None = Field(default=None, max_length=128)
+    new_password: str = Field(min_length=8, max_length=128)
 
 
 class DeviceCreateRequest(BaseModel):

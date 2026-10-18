@@ -44,7 +44,7 @@ class ValidationException(AppException):
         super().__init__(
             code="VALIDATION_ERROR",
             message=message,
-            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
             details=details,
         )
 
@@ -207,7 +207,7 @@ async def validation_exception_handler(
 ) -> JSONResponse:
     details = exc.errors()
     return JSONResponse(
-        status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+        status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
         content={
             "error": {
                 "code": "VALIDATION_ERROR",

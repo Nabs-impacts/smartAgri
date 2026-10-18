@@ -56,7 +56,7 @@ Plateforme nigérienne d'IA agricole. L'utilisateur photographie sa culture (ou 
 | Phase | Contenu | État |
 |---|---|---|
 | 1 | Fondations : config, middlewares, 45 modèles, migration, Docker, `/health` | **~100 % — validée sous Docker** (migration vérifiée par `alembic check`). Reste : pinning des dépendances |
-| 2 | Auth et comptes | **~90 %** : 7 routes d'auth, 31 tests (commit `3c5f9dc`), trois séries de corrections de sécurité faites. Reste : `user_service`, routes `/users/me` (dont `PUT /users/me/password`) et tests de permissions (étapes H1 et H2) |
+| 2 | Auth et comptes | **~95 %** : 7 routes d'auth + `/users/me` (profil, mot de passe, appareils, consentements), 43 tests (commit `3d579e9`). Reste : étape H2 (petits correctifs de H1, export, suppression de compte, tests de permissions) |
 | 3 à 8 | Cœur agricole + sync, médias, IA, facturation, données/alertes, admin | 0 % |
 
 **Validé le 17 octobre 2026** : `docker compose up -d --build` démarre les 7 services (`db`, `redis`, `rustfs`, `rustfs-init`, `api`, `worker`, `beat`) ; `alembic upgrade head` applique `0001_initial` ; `GET /health` renvoie `{"status":"healthy","database":"ok","redis":"ok","storage":"ok"}`. Le comptage de 50 relations dans le schéma `public` est normal : 45 tables + `alembic_version` + `spatial_ref_sys` (PostGIS) + la vue `v_cycle_yield` + 2 vues PostGIS.
@@ -191,7 +191,7 @@ Tâche : deux corrections de sécurité dans l'auth, chacune avec un test. Les t
 Mets à jour PROGRESS.md, puis arrête-toi.
 ```
 
-**Étape H1 — routes du compte utilisateur, première partie :**
+**Étape H1 — routes du compte utilisateur, première partie : FAITE (commit `3d579e9`, 43 tests).** Message utilisé :
 
 ```
 Lis smartagri-prompt-backend.md (sections 5, 7.2 et 12) et PROGRESS.md. Applique les règles permanentes de AGENTS.md.
@@ -213,11 +213,19 @@ Tâche : première partie des routes du compte utilisateur, avec tests.
 Messages d'erreur en français avec accents. make test et ruff doivent passer. Mets à jour PROGRESS.md, puis arrête-toi.
 ```
 
-**Étape H2 — routes du compte utilisateur, deuxième partie :**
+**Étape H2 — petits correctifs de H1, puis export, suppression de compte et tests de permissions.** Revue de H1 : ownership des appareils, vérification du téléphone avant mot de passe et révocation des refresh tokens corrects ; à corriger : aucun contrôle de longueur sur `new_password` (ni `max_length`, donc risque de surcharge CPU avec argon2), le quota `plots` affiche toujours `used = 0`, l'unicité de l'email est vérifiée sans normalisation ni gestion d'`IntegrityError`, avertissement de dépréciation du code 422. Compromis noté : `PUT /users/me/password` révoque **tous** les refresh tokens (y compris celui de l'appareil courant), l'app devra donc se reconnecter dans les 15 minutes.
 
 ```
 Lis smartagri-prompt-backend.md (sections 5, 7.2 et 12) et PROGRESS.md. Applique les règles permanentes de AGENTS.md.
-Tâche : deuxième partie des routes du compte utilisateur, avec tests.
+Fais d'abord ces 4 petits correctifs sur les routes d'auth et /users/me, chacun avec un test, puis la suite.
+A. Mots de passe : min_length=8 et max_length=128 sur new_password (PasswordUpdateRequest et PasswordResetRequest) et sur le
+   mot de passe de RegisterRequest ; max_length=128 aussi sur le mot de passe de LoginRequest et sur current_password.
+B. Quota « plots » dans GET /users/me : used = nombre de parcelles non supprimées des fermes de l'utilisateur (au lieu de 0).
+C. PATCH /users/me : mets l'email en minuscules avant comparaison et enregistrement, et transforme une IntegrityError sur
+   l'email en 409 (course entre deux requêtes).
+D. Remplace la constante dépréciée HTTP_422_UNPROCESSABLE_ENTITY par HTTP_422_UNPROCESSABLE_CONTENT pour supprimer
+   l'avertissement de pytest.
+Puis la deuxième partie des routes du compte utilisateur :
 1. GET /users/me/export : JSON de toutes les données de l'utilisateur présentes en base (profil, appareils, consentements,
    fermes, parcelles, cycles, activités, récoltes, diagnostics, recommandations, paiements), sans jamais inclure de
    données d'un autre utilisateur ni de secrets (hashes de mot de passe ou de tokens).
@@ -226,7 +234,8 @@ Tâche : deuxième partie des routes du compte utilisateur, avec tests.
    ligne dans audit_logs via un audit_service minimal (app/services/audit_service.py).
 3. Tests : export (ne contient que les données de l'utilisateur) et suppression de compte (login impossible ensuite,
    données anonymisées) dans tests/test_users.py ; tests/test_permissions.py : chaque route /users/me* sans token renvoie
-   401, et test unitaire de require_roles avec une mini-application FastAPI (bon rôle 200, mauvais rôle 403).
+   401, et test unitaire de require_roles avec une mini-application FastAPI (bon rôle 200, mauvais rôle 403) ; aucune clé
+   contenant « hash » ou « password » dans les réponses de GET /users/me et de l'export.
 Messages d'erreur en français avec accents. make test et ruff doivent passer. Mets à jour PROGRESS.md, puis arrête-toi.
 ```
 
