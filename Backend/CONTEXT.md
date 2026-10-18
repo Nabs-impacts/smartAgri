@@ -56,7 +56,7 @@ Plateforme nigérienne d'IA agricole. L'utilisateur photographie sa culture (ou 
 | Phase | Contenu | État |
 |---|---|---|
 | 1 | Fondations : config, middlewares, 45 modèles, migration, Docker, `/health` | **~100 % — validée sous Docker** (migration vérifiée par `alembic check`). Reste : pinning des dépendances |
-| 2 | Auth et comptes | **~85 %** : 7 routes d'auth, 27 tests (commit `f1397b8`), deux séries de corrections de sécurité faites. Reste : étape G2 (prise de contrôle par pré-inscription, messages d'erreur uniformes), puis `user_service` + routes `/users/me` + tests de permissions |
+| 2 | Auth et comptes | **~90 %** : 7 routes d'auth, 31 tests (commit `3c5f9dc`), trois séries de corrections de sécurité faites. Reste : `user_service`, routes `/users/me` (dont `PUT /users/me/password`) et tests de permissions (étapes H1 et H2) |
 | 3 à 8 | Cœur agricole + sync, médias, IA, facturation, données/alertes, admin | 0 % |
 
 **Validé le 17 octobre 2026** : `docker compose up -d --build` démarre les 7 services (`db`, `redis`, `rustfs`, `rustfs-init`, `api`, `worker`, `beat`) ; `alembic upgrade head` applique `0001_initial` ; `GET /health` renvoie `{"status":"healthy","database":"ok","redis":"ok","storage":"ok"}`. Le comptage de 50 relations dans le schéma `public` est normal : 45 tables + `alembic_version` + `spatial_ref_sys` (PostGIS) + la vue `v_cycle_yield` + 2 vues PostGIS.
@@ -65,7 +65,7 @@ Plateforme nigérienne d'IA agricole. L'utilisateur photographie sa culture (ou 
 
 **Corrigé depuis l'audit** : lecture de `CORS_ORIGINS` et des listes MIME (`Annotated[list[str], NoDecode]`, `pydantic-settings>=2.7.0`) ; `app/workers/celery_app.py` créé ; `.dockerignore` ajouté ; bucket plus public ; `--no-deps` retiré du `pip wheel` ; MinIO remplacé par RustFS ; image `db` reconstruite sur pgvector + PostGIS ; `sqlalchemy[asyncio]` (greenlet) ; adresses Docker (`db`, `redis`, `rustfs`) définies dans le compose ; fichier de planification de beat dans `/tmp`.
 
-**Failles de l'auth.** Corrigées : limite par IP sur `otp/request` et `register`, limite par numéro appliquée avant la vérification d'existence (plus de fuite 202/429), SMS envoyé seulement si le compte existe et en tâche de fond, verrou de ligne sur les tentatives OTP, fenêtre de tolérance du refresh (45 s, Redis), `purpose` restreint, limites et hash factice sur `login`, `logout` qui vérifie le propriétaire du refresh token (commit `f1397b8`). **Restantes (revue du 17 octobre)** : (1) **prise de contrôle par pré-inscription** : `register` crée un compte pour n'importe quel numéro avec le mot de passe choisi par l'appelant, et `login_password` n'exige pas `phone_verified_at` ; un attaquant peut donc inscrire le numéro d'une victime avec son propre mot de passe, la victime se connecte ensuite par OTP, et l'attaquant garde un accès par mot de passe (étape G2) ; (2) les messages d'erreur de `verify_otp` diffèrent (« introuvable » / « incorrect » / « expiré »), ce qui permet de savoir si un numéro est inscrit (étape G2) ; (3) compromis accepté pour le MVP : les limites par numéro (OTP et login) permettent à un tiers de bloquer temporairement un utilisateur légitime ; à atténuer plus tard (clé numéro + IP, vérification anti-bot) ; (4) `register()` non atomique ; (5) l'IP cliente vient de `request.client.host` : derrière un reverse proxy en production, configurer les en-têtes de confiance ; (6) les SMS partent en `BackgroundTasks` (perdus si le processus redémarre) : passer à Celery quand les tâches existeront ; (7) `PUT /users/me/password` à ajouter (étape H) puisque G2 efface le mot de passe saisi avant vérification.
+**Failles de l'auth.** Corrigées (commits `39be0d4`, `f1397b8`, `3c5f9dc`) : limites par IP sur `otp/request`, `register` et `login` ; limite par numéro appliquée avant la vérification d'existence (plus de fuite 202/429) ; SMS envoyé en tâche de fond et seulement si le compte existe ; verrou de ligne sur les tentatives OTP ; fenêtre de tolérance du refresh (45 s, Redis) ; `purpose` restreint ; hash factice sur `login` ; `logout` vérifie le propriétaire ; **prise de contrôle par pré-inscription fermée** (login refusé tant que le téléphone n'est pas vérifié, mot de passe effacé à la première vérification, `register` remplace un compte non vérifié) ; messages d'erreur de `verify_otp` uniformes. **Restantes / compromis acceptés** : (1) `register` répond 409 pour un numéro vérifié, ce qui permet de tester l'existence d'un compte (voulu par la spec, limité par IP) ; (2) les limites par numéro (OTP et login) permettent à un tiers de bloquer temporairement un utilisateur légitime ; à atténuer plus tard (clé numéro + IP, anti-bot) ; (3) `register()` non atomique ; (4) l'IP cliente vient de `request.client.host` : derrière un reverse proxy en production, configurer les en-têtes de confiance ; (5) SMS en `BackgroundTasks` (perdus si le processus redémarre) : passer à Celery quand les tâches existeront ; (6) prévoir un nettoyage périodique des comptes jamais vérifiés ; (7) en phase 3, les comptes « invités par téléphone » dans une organisation doivent se distinguer des comptes désactivés (aujourd'hui, un compte inactif ne peut pas se connecter).
 
 **Ports** : db (5432), redis (6379) et rustfs (9000) sont publiés sur `127.0.0.1` uniquement (fait) ; l'api reste sur `0.0.0.0:8000` pour les tests depuis le téléphone.
 
@@ -171,7 +171,7 @@ Tâche : seconde série de corrections de sécurité de l'auth, chacune avec un 
 Ajoute les variables à config.py et .env.example. make test et ruff doivent passer. Mets à jour PROGRESS.md, puis arrête-toi.
 ```
 
-**Étape G2 — prise de contrôle par pré-inscription et messages uniformes :**
+**Étape G2 — prise de contrôle par pré-inscription et messages uniformes : FAITE (commit `3c5f9dc`, 31 tests).** Message utilisé :
 
 ```
 Lis PROGRESS.md et smartagri-prompt-backend.md. Applique les règles permanentes de AGENTS.md.
@@ -191,7 +191,46 @@ Tâche : deux corrections de sécurité dans l'auth, chacune avec un test. Les t
 Mets à jour PROGRESS.md, puis arrête-toi.
 ```
 
-**Étape H — ensuite** : `user_service` et routes `/users/me` (profil, appareils, consentements, export, suppression, et `PUT /users/me/password` pour définir un mot de passe après vérification du téléphone) avec tests de permissions (`tests/test_users.py`, `tests/test_permissions.py`) ; puis **phase 3** (organisations, fermes, parcelles, cycles, sync, seed : 8 régions du Niger, 10 cultures, plans) — c'est le début de la **démo pour le gouverneur** (phases 1 à 3 + médias + diagnostic simulé + écran de stats de rendement, environ 2 à 3 semaines avec les contraintes de quota).
+**Étape H1 — routes du compte utilisateur, première partie :**
+
+```
+Lis smartagri-prompt-backend.md (sections 5, 7.2 et 12) et PROGRESS.md. Applique les règles permanentes de AGENTS.md.
+Ne modifie pas auth_service ni otp_service sauf nécessité.
+Tâche : première partie des routes du compte utilisateur, avec tests.
+1. Crée app/services/user_service.py et app/api/v1/users.py (router préfixé /users, enregistré dans app/api/router.py),
+   et complète app/schemas/user.py. Toutes les routes sont authentifiées.
+2. GET /users/me : profil + abonnement effectif (abonnement actif de l'utilisateur, sinon celui d'une organisation dont
+   il est membre, sinon le plan free) + quotas restants (plans.quotas moins usage_records du mois courant).
+3. PATCH /users/me : full_name, language, admin_area_id (404 si la zone n'existe pas), email (409 s'il est déjà pris,
+   null l'efface).
+4. PUT /users/me/password : new_password, et current_password obligatoire si un mot de passe existe déjà ; refuse si
+   phone_verified_at est NULL ; révoque tous les autres refresh tokens de l'utilisateur.
+5. POST /users/me/devices : upsert sur (user_id, fcm_token) avec platform et app_version ; DELETE /users/me/devices/{id} :
+   404 si l'appareil n'appartient pas à l'utilisateur.
+6. POST /users/me/consents (type, version, accepted) et GET /users/me/consents (dernier état par type).
+7. Tests dans tests/test_users.py : profil, PATCH, conflit d'email, mot de passe (avec et sans ancien mot de passe),
+   appareils (dont le DELETE d'un appareil d'un autre utilisateur en 404), consentements.
+Messages d'erreur en français avec accents. make test et ruff doivent passer. Mets à jour PROGRESS.md, puis arrête-toi.
+```
+
+**Étape H2 — routes du compte utilisateur, deuxième partie :**
+
+```
+Lis smartagri-prompt-backend.md (sections 5, 7.2 et 12) et PROGRESS.md. Applique les règles permanentes de AGENTS.md.
+Tâche : deuxième partie des routes du compte utilisateur, avec tests.
+1. GET /users/me/export : JSON de toutes les données de l'utilisateur présentes en base (profil, appareils, consentements,
+   fermes, parcelles, cycles, activités, récoltes, diagnostics, recommandations, paiements), sans jamais inclure de
+   données d'un autre utilisateur ni de secrets (hashes de mot de passe ou de tokens).
+2. DELETE /users/me : anonymise en une transaction (téléphone remplacé par une valeur unique non réversible, nom et email
+   effacés, mot de passe effacé, is_active=false, deleted_at posé, appareils et refresh tokens supprimés) et écrit une
+   ligne dans audit_logs via un audit_service minimal (app/services/audit_service.py).
+3. Tests : export (ne contient que les données de l'utilisateur) et suppression de compte (login impossible ensuite,
+   données anonymisées) dans tests/test_users.py ; tests/test_permissions.py : chaque route /users/me* sans token renvoie
+   401, et test unitaire de require_roles avec une mini-application FastAPI (bon rôle 200, mauvais rôle 403).
+Messages d'erreur en français avec accents. make test et ruff doivent passer. Mets à jour PROGRESS.md, puis arrête-toi.
+```
+
+**Étape I — phase 3** : organisations, fermes, parcelles, cycles, activités, récoltes, sync, seed (8 régions du Niger, 10 cultures, plans) — c'est le début de la **démo pour le gouverneur** (phases 1 à 3 + médias + diagnostic simulé + écran de stats de rendement, environ 2 à 3 semaines avec les contraintes de quota).
 
 ## 10. Points ouverts à ne pas oublier
 

@@ -51,6 +51,11 @@ class UserUpdateRequest(BaseModel):
     email: EmailStr | None = None
 
 
+class PasswordUpdateRequest(BaseModel):
+    current_password: str | None = None
+    new_password: str
+
+
 class DeviceCreateRequest(BaseModel):
     platform: Literal["android", "ios"]
     fcm_token: str
