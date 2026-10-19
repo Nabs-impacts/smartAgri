@@ -146,10 +146,14 @@ class FarmService:
                 ).scalar_one_or_none()
                 if existing is not None:
                     if existing.deleted_at is not None:
-                        raise ConflictException("Cette ressource a été supprimée.")
+                        raise ConflictException(
+                            "Cette ressource a été supprimée."
+                        ) from None
                     if existing.owner_id == user_id:
                         return farm_to_response(existing), False
-                    raise ConflictException("Une ressource avec cet identifiant existe déjà.")
+                    raise ConflictException(
+                        "Une ressource avec cet identifiant existe déjà."
+                    ) from None
             raise
         await session.refresh(farm)
         return farm_to_response(farm), True
@@ -402,10 +406,14 @@ class FarmService:
                 if row is not None:
                     existing_plot, farm_owner_id = row
                     if existing_plot.deleted_at is not None:
-                        raise ConflictException("Cette ressource a été supprimée.")
+                        raise ConflictException(
+                            "Cette ressource a été supprimée."
+                        ) from None
                     if farm_owner_id == user_id:
                         return plot_to_response(existing_plot), False
-                    raise ConflictException("Une ressource avec cet identifiant existe déjà.")
+                    raise ConflictException(
+                        "Une ressource avec cet identifiant existe déjà."
+                    ) from None
             raise
         await session.refresh(plot)
         return plot_to_response(plot), True

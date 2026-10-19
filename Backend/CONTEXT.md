@@ -57,7 +57,7 @@ Plateforme nigérienne d'IA agricole. L'utilisateur photographie sa culture (ou 
 |---|---|---|
 | 1 | Fondations : config, middlewares, 45 modèles, migration, Docker, `/health` | **~100 % — validée sous Docker** (migration vérifiée par `alembic check`). Reste : pinning des dépendances |
 | 2 | Auth et comptes | **100 %** : 7 routes d'auth + `/users/me` complet (profil, mot de passe, appareils, consentements, export, suppression), 56 tests (commit `848c30f`). À compléter après la phase 3 : anonymisation (voir plus bas) |
-| 3 | Cœur agricole + sync | **tâche A faite** (seed, catalogues, fermes, parcelles, quota des parcelles : 70 tests, commit `a02604f`). Restent B (cycles, bilan, organisations) et C (sync, anonymisation complète) |
+| 3 | Cœur agricole + sync | **tâche A faite** (seed, catalogues, fermes, parcelles, quota : 70 tests, commit `a02604f`) ; **tâche B partie 0 faite** (corrections : doublons simultanés, id supprimé en 409, bornes de `area_ha`, curseur invalide en 422 ; 74 tests, commit `3582a93`, branche `tache-b`). Reste : B parties 1 (cycles, bilan, timeline) et 2 (organisations), puis C (sync, anonymisation complète) |
 | 4 à 8 | Médias, IA, facturation, données/alertes, admin | 0 % |
 
 **Validé le 17 octobre 2026** : `docker compose up -d --build` démarre les 7 services (`db`, `redis`, `rustfs`, `rustfs-init`, `api`, `worker`, `beat`) ; `alembic upgrade head` applique `0001_initial` ; `GET /health` renvoie `{"status":"healthy","database":"ok","redis":"ok","storage":"ok"}`. Le comptage de 50 relations dans le schéma `public` est normal : 45 tables + `alembic_version` + `spatial_ref_sys` (PostGIS) + la vue `v_cycle_yield` + 2 vues PostGIS.
@@ -92,7 +92,7 @@ sudo docker compose down -v
 
 - **Machine** : Ubuntu, VS Code. Python local **3.14** (visible dans les `.pyc`) alors que Docker utilise **3.12** → se fier aux résultats dans Docker.
 - **Docker** : installé, mais je lance encore `sudo docker compose` (groupe `docker` pas encore actif : `sudo usermod -aG docker $USER` puis déconnexion/reconnexion).
-- **Agents de code** : la limite d'**Antigravity CLI (`agy`)** a été étendue : on continue avec `agy` pour les grosses tâches (messages plus longs, 2 à 3 parties par session). OpenCode + DeepSeek V4.1 reste le plan B. OpenRouter gratuit est très limité (50 requêtes/jour sans 10 crédits achetés). GitHub Copilot gratuit pour étudiants : à vérifier. `agy` ne lit pas forcément `AGENTS.md` : coller le préambule de l'étape I en tête de chaque message.
+- **Agents de code** : le quota d'**Antigravity CLI (`agy`)** est de nouveau épuisé (19 octobre 2026, réinitialisation dans environ 164 heures) : retour sur **OpenCode + DeepSeek V4.1**. Avec OpenCode, découper les grosses tâches : ajouter en tête du message « Fais UNIQUEMENT la partie N, ne commence pas les autres ». OpenRouter gratuit est très limité (50 requêtes/jour sans 10 crédits achetés). GitHub Copilot gratuit pour étudiants : à vérifier. Coller le préambule de l'étape I en tête de chaque message. En cas d'interruption : commit de l'état sur une branche `tache-x`, puis message de reprise (état des lieux sans modification, puis terminer la partie en cours).
 - **Réseau** : connexion lente, les builds Docker sont longs (5 à 12 minutes sans cache).
 
 ## 8. Méthode de travail avec les agents (à garder)
@@ -308,7 +308,7 @@ Partie 2 : fermes et parcelles
 Messages d'erreur en français avec accents. Mets à jour PROGRESS.md, puis arrête-toi.
 ```
 
-**Tâche B — cycles, activités, récoltes, bilan, organisations :**
+**Tâche B — cycles, activités, récoltes, bilan, organisations : partie 0 FAITE (commit `3582a93`, branche `tache-b`, 74 tests, relue : conforme) ; partie 1 en cours avec OpenCode ; partie 2 à faire.** Pour OpenCode, ajouter en première ligne « Fais UNIQUEMENT la partie N ». Remarque mineure de la revue : dans `create_farm` et `create_plot`, le test « ressource supprimée » passe avant le test de propriétaire, ce qui révèle (très peu exploitable, UUID aléatoire) qu'un id appartenant à un autre utilisateur a été supprimé ; idéalement tester le propriétaire d'abord. Vérifier que `ruff check .` passe (l'agent a pu être coupé avant). Message d'origine :
 
 ```
 Lis smartagri-prompt-backend.md (sections 5, 7.3 et 7.4) et PROGRESS.md.
@@ -411,3 +411,23 @@ Messages d'erreur en français avec accents. Mets à jour PROGRESS.md, puis arr�
 - Tester les **URL présignées** avec RustFS en phase 4.
 - Figer les versions des dépendances (`requirements.txt` utilise des `>=`).
 - Le brief UI/UX est prêt : à envoyer au designer, qui doit commencer par les écrans « P0 ».
+
+## 11. Estimation de durée et reprise dans une nouvelle conversation
+
+**Avancement par phase (poids estimés)** : 1 Fondations 10 % (fait) ; 2 Auth et comptes 10 % (fait) ; 3 Cœur agricole + sync 15 % (environ 40 % fait) ; 4 Médias 8 % ; 5 IA, RAG, chat 20 % ; 6 Facturation 15 % ; 7 Données et alertes 12 % ; 8 Administration et finition 10 %. **Total fait : environ 26 %** (au 19 octobre 2026).
+
+**Durée estimée** (rythme observé : environ 5 % de progression par jour actif sur les phases 1 à 3, mais ces phases étaient les plus mécaniques ; je prévois 2,5 à 3,5 % par jour actif ensuite, avec 3 à 4 heures par jour, 5 jours par semaine) :
+- **Démo pour le gouverneur** (fin de la phase 3 + médias + diagnostic simulé + écran de statistiques de rendement) : environ **2 à 3 semaines**.
+- **Backend complet comme spécifié, tests qui passent** : environ **6 à 9 semaines** de calendrier, en comptant les pannes de quota et les examens.
+- **Prêt pour la production** (déploiement, sauvegardes, monitoring, pilote) : environ 3 à 4 semaines de plus.
+- Hors de ces durées : l'entraînement du vrai modèle de vision, la validation par des agronomes et le contrat avec un agrégateur de paiement, qui ne dépendent pas du code.
+
+**Reprendre avec une autre instance de Claude.** Ce fichier suffit à reprendre le travail presque à l'identique, mais pas la mémoire de la conversation. Ouvrir une **nouvelle conversation** (les longues conversations coûtent de plus en plus de tokens, car tout l'historique est relu à chaque message), joindre ce fichier `CONTEXT.md`, donner l'adresse du dépôt (public, donc clonable) et envoyer :
+
+```
+Je continue le projet SmartAgri. Lis le fichier CONTEXT.md joint et regarde le dépôt https://github.com/Nabs-impacts/SmartAgri
+(branche tache-b si une tâche est en cours). Tiens le rôle décrit au début du fichier. Résume-moi en 5 lignes où on en est,
+puis dis-moi la prochaine action et donne-moi le message à envoyer à l'agent. Réponds en français informel.
+```
+
+À chaque jalon (une ou deux tâches terminées), demander à Claude de mettre à jour `CONTEXT.md` et repartir d'une conversation neuve.

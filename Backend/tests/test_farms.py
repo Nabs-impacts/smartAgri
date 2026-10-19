@@ -564,7 +564,10 @@ async def test_geo_point_non_numeric_and_invalid_cursor_422(
     assert cur_res1.status_code == 422
     assert cur_res1.json()["error"]["code"] == "VALIDATION_ERROR"
 
-    cur_res2 = await client.get("/api/v1/farms?cursor=eyJ0IjoiYmFkIiwiaWQiOiJub3QtdXVpZCJ9", headers=headers)
+    cur_res2 = await client.get(
+        "/api/v1/farms?cursor=eyJ0IjoiYmFkIiwiaWQiOiJub3QtdXVpZCJ9",
+        headers=headers,
+    )
     assert cur_res2.status_code == 422
 
     cur_res3 = await client.get(

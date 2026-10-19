@@ -6,7 +6,6 @@ from datetime import datetime
 from fastapi import Query
 from pydantic import BaseModel
 
-
 from app.core.errors import ValidationException
 
 
