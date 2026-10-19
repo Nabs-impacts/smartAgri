@@ -1,7 +1,7 @@
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import and_, or_, select, update
+from sqlalchemy import and_, exists, or_, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
@@ -16,6 +16,7 @@ from app.core.geo import (
 from app.core.pagination import decode_cursor, encode_cursor
 from app.db.models.farming import CropCycle, Farm, FarmActivity, Harvest, Plot
 from app.db.models.identity import AdminArea, User
+from app.db.models.organizations import OrganizationMember
 from app.schemas.farm import (
     FarmCreateRequest,
     FarmResponse,
@@ -24,6 +25,7 @@ from app.schemas.farm import (
     PlotResponse,
     PlotUpdateRequest,
 )
+from app.services.access_service import can_read_farm
 from app.services.quota_service import ensure_quota
 
 
@@ -64,8 +66,23 @@ class FarmService:
         cursor: str | None = None,
     ) -> tuple[list[FarmResponse], str | None]:
         stmt = select(Farm).where(
-            Farm.owner_id == user_id,
             Farm.deleted_at.is_(None),
+            or_(
+                Farm.owner_id == user_id,
+                exists(
+                    select(OrganizationMember.user_id).where(
+                        OrganizationMember.user_id == Farm.owner_id,
+                        OrganizationMember.organization_id.in_(
+                            select(OrganizationMember.organization_id).where(
+                                OrganizationMember.user_id == user_id,
+                                OrganizationMember.member_role.in_(
+                                    ("owner", "admin", "agent")
+                                ),
+                            )
+                        ),
+                    )
+                ),
+            ),
         )
 
         if cursor:
@@ -109,11 +126,13 @@ class FarmService:
                 await session.execute(select(Farm).where(Farm.id == data.id))
             ).scalar_one_or_none()
             if existing is not None:
+                if existing.owner_id != user_id:
+                    raise ConflictException(
+                        "Une ressource avec cet identifiant existe déjà."
+                    )
                 if existing.deleted_at is not None:
                     raise ConflictException("Cette ressource a été supprimée.")
-                if existing.owner_id == user_id:
-                    return farm_to_response(existing), False
-                raise ConflictException("Une ressource avec cet identifiant existe déjà.")
+                return farm_to_response(existing), False
 
         if data.admin_area_id is not None:
             area_exists = (
@@ -145,15 +164,15 @@ class FarmService:
                     await session.execute(select(Farm).where(Farm.id == data.id))
                 ).scalar_one_or_none()
                 if existing is not None:
+                    if existing.owner_id != user_id:
+                        raise ConflictException(
+                            "Une ressource avec cet identifiant existe déjà."
+                        ) from None
                     if existing.deleted_at is not None:
                         raise ConflictException(
                             "Cette ressource a été supprimée."
                         ) from None
-                    if existing.owner_id == user_id:
-                        return farm_to_response(existing), False
-                    raise ConflictException(
-                        "Une ressource avec cet identifiant existe déjà."
-                    ) from None
+                    return farm_to_response(existing), False
             raise
         await session.refresh(farm)
         return farm_to_response(farm), True
@@ -173,7 +192,7 @@ class FarmService:
             )
         ).scalar_one_or_none()
 
-        if farm is None or farm.owner_id != user_id:
+        if farm is None or not await can_read_farm(session, user_id, farm):
             raise NotFoundException("Ferme introuvable.")
 
         return farm_to_response(farm)
@@ -301,7 +320,7 @@ class FarmService:
             )
         ).scalar_one_or_none()
 
-        if farm is None or farm.owner_id != user_id:
+        if farm is None or not await can_read_farm(session, user_id, farm):
             raise NotFoundException("Ferme introuvable.")
 
         stmt = select(Plot).where(
@@ -367,11 +386,13 @@ class FarmService:
             row = (await session.execute(stmt)).first()
             if row is not None:
                 existing_plot, farm_owner_id = row
+                if farm_owner_id != user_id:
+                    raise ConflictException(
+                        "Une ressource avec cet identifiant existe déjà."
+                    )
                 if existing_plot.deleted_at is not None:
                     raise ConflictException("Cette ressource a été supprimée.")
-                if farm_owner_id == user_id:
-                    return plot_to_response(existing_plot), False
-                raise ConflictException("Une ressource avec cet identifiant existe déjà.")
+                return plot_to_response(existing_plot), False
 
         await ensure_quota(session, user, "plots")
 
@@ -405,15 +426,15 @@ class FarmService:
                 row = (await session.execute(stmt)).first()
                 if row is not None:
                     existing_plot, farm_owner_id = row
+                    if farm_owner_id != user_id:
+                        raise ConflictException(
+                            "Une ressource avec cet identifiant existe déjà."
+                        ) from None
                     if existing_plot.deleted_at is not None:
                         raise ConflictException(
                             "Cette ressource a été supprimée."
                         ) from None
-                    if farm_owner_id == user_id:
-                        return plot_to_response(existing_plot), False
-                    raise ConflictException(
-                        "Une ressource avec cet identifiant existe déjà."
-                    ) from None
+                    return plot_to_response(existing_plot), False
             raise
         await session.refresh(plot)
         return plot_to_response(plot), True
@@ -436,7 +457,7 @@ class FarmService:
         )
         plot = (await session.execute(stmt)).scalar_one_or_none()
 
-        if plot is None or plot.farm.owner_id != user_id:
+        if plot is None or not await can_read_farm(session, user_id, plot.farm):
             raise NotFoundException("Parcelle introuvable.")
 
         return plot_to_response(plot)

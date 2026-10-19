@@ -8,7 +8,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.db.models.farming import Crop, CropCycle
+from app.db.models.farming import Crop, CropCycle, Harvest
 from app.db.models.identity import AdminArea
 from app.providers.sms.fake import FakeSmsProvider
 
@@ -596,3 +596,317 @@ async def test_inter_user_resources_return_404(
             f"/api/v1/plots/{plot['id']}/timeline", headers=headers2
         )
     ).status_code == 404
+
+
+async def test_harvest_close_cycle_status_rules(
+    client: AsyncClient, db_session: AsyncSession
+) -> None:
+    headers = await _register_verified(client, PHONE_USER1)
+    plot = await _create_plot(client, headers)
+    crop_id = await _crop_id(db_session)
+
+    planned = (
+        await client.post(
+            f"/api/v1/plots/{plot['id']}/cycles",
+            json={"crop_id": crop_id},
+            headers=headers,
+        )
+    ).json()
+    planned_harvest = await client.post(
+        f"/api/v1/cycles/{planned['id']}/harvests",
+        json={
+            "harvested_on": "2026-07-10",
+            "quantity_kg": 50,
+            "close_cycle": True,
+        },
+        headers=headers,
+    )
+    assert planned_harvest.status_code == 201
+    planned_after = await client.get(
+        f"/api/v1/cycles/{planned['id']}", headers=headers
+    )
+    assert planned_after.json()["status"] == "harvested"
+    assert planned_after.json()["harvest_date"] == "2026-07-10"
+
+    growing = (
+        await client.post(
+            f"/api/v1/plots/{plot['id']}/cycles",
+            json={"crop_id": crop_id},
+            headers=headers,
+        )
+    ).json()
+    assert (
+        await client.patch(
+            f"/api/v1/cycles/{growing['id']}",
+            json={"status": "growing"},
+            headers=headers,
+        )
+    ).status_code == 200
+    growing_harvest = await client.post(
+        f"/api/v1/cycles/{growing['id']}/harvests",
+        json={
+            "harvested_on": "2026-07-11",
+            "quantity_kg": 60,
+            "close_cycle": True,
+        },
+        headers=headers,
+    )
+    assert growing_harvest.status_code == 201
+    growing_after = await client.get(
+        f"/api/v1/cycles/{growing['id']}", headers=headers
+    )
+    assert growing_after.json()["status"] == "harvested"
+    assert growing_after.json()["harvest_date"] == "2026-07-11"
+
+    failed = (
+        await client.post(
+            f"/api/v1/plots/{plot['id']}/cycles",
+            json={"crop_id": crop_id},
+            headers=headers,
+        )
+    ).json()
+    await client.patch(
+        f"/api/v1/cycles/{failed['id']}",
+        json={"status": "growing"},
+        headers=headers,
+    )
+    await client.patch(
+        f"/api/v1/cycles/{failed['id']}",
+        json={"status": "failed"},
+        headers=headers,
+    )
+    failed_harvest = await client.post(
+        f"/api/v1/cycles/{failed['id']}/harvests",
+        json={
+            "harvested_on": "2026-07-12",
+            "quantity_kg": 70,
+            "close_cycle": True,
+        },
+        headers=headers,
+    )
+    assert failed_harvest.status_code == 409
+    assert (
+        failed_harvest.json()["error"]["message"]
+        == "Transition de statut non autorisée."
+    )
+    failed_harvests = (
+        await db_session.execute(
+            select(Harvest).where(
+                Harvest.crop_cycle_id == uuid.UUID(failed["id"])
+            )
+        )
+    ).scalars().all()
+    assert failed_harvests == []
+
+    harvested = (
+        await client.post(
+            f"/api/v1/plots/{plot['id']}/cycles",
+            json={"crop_id": crop_id},
+            headers=headers,
+        )
+    ).json()
+    await client.patch(
+        f"/api/v1/cycles/{harvested['id']}",
+        json={"status": "growing"},
+        headers=headers,
+    )
+    await client.patch(
+        f"/api/v1/cycles/{harvested['id']}",
+        json={"status": "harvested", "harvest_date": "2026-06-01"},
+        headers=headers,
+    )
+    second_harvest = await client.post(
+        f"/api/v1/cycles/{harvested['id']}/harvests",
+        json={
+            "harvested_on": "2026-07-13",
+            "quantity_kg": 80,
+            "close_cycle": True,
+        },
+        headers=headers,
+    )
+    assert second_harvest.status_code == 201
+    harvested_after = await client.get(
+        f"/api/v1/cycles/{harvested['id']}", headers=headers
+    )
+    assert harvested_after.json()["status"] == "harvested"
+    assert harvested_after.json()["harvest_date"] == "2026-06-01"
+
+
+async def test_deleted_id_of_other_user_conflicts_before_deleted_check(
+    client: AsyncClient, db_session: AsyncSession
+) -> None:
+    headers1 = await _register_verified(client, PHONE_USER1)
+    headers2 = await _register_verified(client, PHONE_USER2)
+    crop_id = await _crop_id(db_session)
+
+    deleted_farm_id = str(uuid.uuid4())
+    farm2 = await client.post(
+        "/api/v1/farms",
+        json={"id": deleted_farm_id, "name": "Ferme Autre"},
+        headers=headers2,
+    )
+    assert farm2.status_code == 201
+    assert (
+        await client.delete(f"/api/v1/farms/{deleted_farm_id}", headers=headers2)
+    ).status_code == 204
+    farm_conflict = await client.post(
+        "/api/v1/farms",
+        json={"id": deleted_farm_id, "name": "Ferme Autre"},
+        headers=headers1,
+    )
+    assert farm_conflict.status_code == 409
+    assert (
+        farm_conflict.json()["error"]["message"]
+        == "Une ressource avec cet identifiant existe déjà."
+    )
+
+    farm1 = (
+        await client.post(
+            "/api/v1/farms", json={"name": "Ferme Un"}, headers=headers1
+        )
+    ).json()
+    farm2_active = (
+        await client.post(
+            "/api/v1/farms", json={"name": "Ferme Deux"}, headers=headers2
+        )
+    ).json()
+
+    deleted_plot_id = str(uuid.uuid4())
+    plot2 = await client.post(
+        f"/api/v1/farms/{farm2_active['id']}/plots",
+        json={"id": deleted_plot_id, "name": "Parcelle Autre", "area_ha": 1.0},
+        headers=headers2,
+    )
+    assert plot2.status_code == 201
+    assert (
+        await client.delete(f"/api/v1/plots/{deleted_plot_id}", headers=headers2)
+    ).status_code == 204
+    plot_conflict = await client.post(
+        f"/api/v1/farms/{farm1['id']}/plots",
+        json={"id": deleted_plot_id, "name": "Parcelle Autre", "area_ha": 1.0},
+        headers=headers1,
+    )
+    assert plot_conflict.status_code == 409
+    assert (
+        plot_conflict.json()["error"]["message"]
+        == "Une ressource avec cet identifiant existe déjà."
+    )
+
+    plot1 = (
+        await client.post(
+            f"/api/v1/farms/{farm1['id']}/plots",
+            json={"name": "Parcelle Un", "area_ha": 1.0},
+            headers=headers1,
+        )
+    ).json()
+    plot2b = (
+        await client.post(
+            f"/api/v1/farms/{farm2_active['id']}/plots",
+            json={"name": "Parcelle Deux", "area_ha": 1.0},
+            headers=headers2,
+        )
+    ).json()
+
+    deleted_cycle_id = str(uuid.uuid4())
+    cycle2 = await client.post(
+        f"/api/v1/plots/{plot2b['id']}/cycles",
+        json={"id": deleted_cycle_id, "crop_id": crop_id},
+        headers=headers2,
+    )
+    assert cycle2.status_code == 201
+    stored_cycle = (
+        await db_session.execute(
+            select(CropCycle).where(CropCycle.id == uuid.UUID(deleted_cycle_id))
+        )
+    ).scalar_one()
+    stored_cycle.deleted_at = datetime.now(UTC)
+    await db_session.commit()
+    cycle_conflict = await client.post(
+        f"/api/v1/plots/{plot1['id']}/cycles",
+        json={"id": deleted_cycle_id, "crop_id": crop_id},
+        headers=headers1,
+    )
+    assert cycle_conflict.status_code == 409
+    assert (
+        cycle_conflict.json()["error"]["message"]
+        == "Une ressource avec cet identifiant existe déjà."
+    )
+
+    cycle1 = (
+        await client.post(
+            f"/api/v1/plots/{plot1['id']}/cycles",
+            json={"crop_id": crop_id},
+            headers=headers1,
+        )
+    ).json()
+    cycle2b = (
+        await client.post(
+            f"/api/v1/plots/{plot2b['id']}/cycles",
+            json={"crop_id": crop_id},
+            headers=headers2,
+        )
+    ).json()
+
+    deleted_activity_id = str(uuid.uuid4())
+    activity2 = await client.post(
+        f"/api/v1/cycles/{cycle2b['id']}/activities",
+        json={
+            "id": deleted_activity_id,
+            "type": "sowing",
+            "performed_on": "2026-05-01",
+        },
+        headers=headers2,
+    )
+    assert activity2.status_code == 201
+    assert (
+        await client.delete(
+            f"/api/v1/activities/{deleted_activity_id}", headers=headers2
+        )
+    ).status_code == 204
+    activity_conflict = await client.post(
+        f"/api/v1/cycles/{cycle1['id']}/activities",
+        json={
+            "id": deleted_activity_id,
+            "type": "sowing",
+            "performed_on": "2026-05-01",
+        },
+        headers=headers1,
+    )
+    assert activity_conflict.status_code == 409
+    assert (
+        activity_conflict.json()["error"]["message"]
+        == "Une ressource avec cet identifiant existe déjà."
+    )
+
+    deleted_harvest_id = str(uuid.uuid4())
+    harvest2 = await client.post(
+        f"/api/v1/cycles/{cycle2b['id']}/harvests",
+        json={
+            "id": deleted_harvest_id,
+            "harvested_on": "2026-08-01",
+            "quantity_kg": 10,
+        },
+        headers=headers2,
+    )
+    assert harvest2.status_code == 201
+    stored_harvest = (
+        await db_session.execute(
+            select(Harvest).where(Harvest.id == uuid.UUID(deleted_harvest_id))
+        )
+    ).scalar_one()
+    stored_harvest.deleted_at = datetime.now(UTC)
+    await db_session.commit()
+    harvest_conflict = await client.post(
+        f"/api/v1/cycles/{cycle1['id']}/harvests",
+        json={
+            "id": deleted_harvest_id,
+            "harvested_on": "2026-08-01",
+            "quantity_kg": 10,
+        },
+        headers=headers1,
+    )
+    assert harvest_conflict.status_code == 409
+    assert (
+        harvest_conflict.json()["error"]["message"]
+        == "Une ressource avec cet identifiant existe déjà."
+    )

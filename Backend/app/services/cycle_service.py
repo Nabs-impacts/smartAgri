@@ -23,6 +23,7 @@ from app.schemas.cycle import (
     HarvestResponse,
     TimelineItem,
 )
+from app.services.access_service import can_read_farm
 
 ALLOWED_TRANSITIONS: dict[str, set[str]] = {
     "planned": {"growing"},
@@ -79,6 +80,17 @@ def harvest_to_response(harvest: Harvest) -> HarvestResponse:
     )
 
 
+def _raise_existing_resource_conflict(
+    owner_id: uuid.UUID,
+    user_id: uuid.UUID,
+    deleted: bool,
+) -> None:
+    if owner_id != user_id:
+        raise ConflictException("Une ressource avec cet identifiant existe déjà.")
+    if deleted:
+        raise ConflictException("Cette ressource a été supprimée.")
+
+
 def _date_cursor(value: date) -> datetime:
     return datetime.combine(value, time.min, tzinfo=UTC)
 
@@ -132,6 +144,48 @@ class CycleService:
         )
         row = (await session.execute(stmt)).first()
         if row is None or row[1] != user_id:
+            raise NotFoundException("Parcelle introuvable.")
+        return row[0]
+
+    async def _load_readable_cycle(
+        self,
+        session: AsyncSession,
+        user_id: uuid.UUID,
+        cycle_id: uuid.UUID,
+    ) -> tuple[CropCycle, Farm]:
+        stmt = (
+            select(CropCycle, Farm)
+            .join(Plot, CropCycle.plot_id == Plot.id)
+            .join(Farm, Plot.farm_id == Farm.id)
+            .where(
+                CropCycle.id == cycle_id,
+                CropCycle.deleted_at.is_(None),
+                Plot.deleted_at.is_(None),
+                Farm.deleted_at.is_(None),
+            )
+        )
+        row = (await session.execute(stmt)).first()
+        if row is None or not await can_read_farm(session, user_id, row[1]):
+            raise NotFoundException("Cycle cultural introuvable.")
+        return row[0], row[1]
+
+    async def _load_readable_plot(
+        self,
+        session: AsyncSession,
+        user_id: uuid.UUID,
+        plot_id: uuid.UUID,
+    ) -> Plot:
+        stmt = (
+            select(Plot, Farm)
+            .join(Farm, Plot.farm_id == Farm.id)
+            .where(
+                Plot.id == plot_id,
+                Plot.deleted_at.is_(None),
+                Farm.deleted_at.is_(None),
+            )
+        )
+        row = (await session.execute(stmt)).first()
+        if row is None or not await can_read_farm(session, user_id, row[1]):
             raise NotFoundException("Parcelle introuvable.")
         return row[0]
 
@@ -254,7 +308,7 @@ class CycleService:
         limit: int = 20,
         cursor: str | None = None,
     ) -> tuple[list[CycleResponse], str | None]:
-        await self._load_owned_plot(session, user_id, plot_id)
+        await self._load_readable_plot(session, user_id, plot_id)
 
         stmt = select(CropCycle).where(
             CropCycle.plot_id == plot_id,
@@ -301,13 +355,8 @@ class CycleService:
             existing = await self._find_cycle_for_id(session, data.id)
             if existing is not None:
                 cycle, owner_id, deleted = existing
-                if deleted:
-                    raise ConflictException("Cette ressource a été supprimée.")
-                if owner_id == user_id:
-                    return cycle_to_response(cycle), False
-                raise ConflictException(
-                    "Une ressource avec cet identifiant existe déjà."
-                )
+                _raise_existing_resource_conflict(owner_id, user_id, deleted)
+                return cycle_to_response(cycle), False
 
         crop = await session.get(Crop, data.crop_id)
         if crop is None:
@@ -342,15 +391,8 @@ class CycleService:
                 existing = await self._find_cycle_for_id(session, data.id)
                 if existing is not None:
                     cycle, owner_id, deleted = existing
-                    if deleted:
-                        raise ConflictException(
-                            "Cette ressource a été supprimée."
-                        ) from None
-                    if owner_id == user_id:
-                        return cycle_to_response(cycle), False
-                    raise ConflictException(
-                        "Une ressource avec cet identifiant existe déjà."
-                    ) from None
+                    _raise_existing_resource_conflict(owner_id, user_id, deleted)
+                    return cycle_to_response(cycle), False
             raise
 
         await session.refresh(cycle)
@@ -362,7 +404,7 @@ class CycleService:
         user_id: uuid.UUID,
         cycle_id: uuid.UUID,
     ) -> CycleResponse:
-        cycle, _ = await self._load_owned_cycle(session, user_id, cycle_id)
+        cycle, _ = await self._load_readable_cycle(session, user_id, cycle_id)
         return cycle_to_response(cycle)
 
     async def update_cycle(
@@ -404,7 +446,7 @@ class CycleService:
         limit: int = 20,
         cursor: str | None = None,
     ) -> tuple[list[ActivityResponse], str | None]:
-        await self._load_owned_cycle(session, user_id, cycle_id)
+        await self._load_readable_cycle(session, user_id, cycle_id)
 
         stmt = select(FarmActivity).where(
             FarmActivity.crop_cycle_id == cycle_id,
@@ -454,13 +496,8 @@ class CycleService:
             existing = await self._find_activity_for_id(session, data.id)
             if existing is not None:
                 activity, owner_id, deleted = existing
-                if deleted:
-                    raise ConflictException("Cette ressource a été supprimée.")
-                if owner_id == user_id:
-                    return activity_to_response(activity), False
-                raise ConflictException(
-                    "Une ressource avec cet identifiant existe déjà."
-                )
+                _raise_existing_resource_conflict(owner_id, user_id, deleted)
+                return activity_to_response(activity), False
 
         activity = FarmActivity(
             id=data.id or uuid.uuid4(),
@@ -482,15 +519,8 @@ class CycleService:
                 existing = await self._find_activity_for_id(session, data.id)
                 if existing is not None:
                     activity, owner_id, deleted = existing
-                    if deleted:
-                        raise ConflictException(
-                            "Cette ressource a été supprimée."
-                        ) from None
-                    if owner_id == user_id:
-                        return activity_to_response(activity), False
-                    raise ConflictException(
-                        "Une ressource avec cet identifiant existe déjà."
-                    ) from None
+                    _raise_existing_resource_conflict(owner_id, user_id, deleted)
+                    return activity_to_response(activity), False
             raise
 
         await session.refresh(activity)
@@ -548,13 +578,8 @@ class CycleService:
             existing = await self._find_harvest_for_id(session, data.id)
             if existing is not None:
                 harvest, owner_id, deleted = existing
-                if deleted:
-                    raise ConflictException("Cette ressource a été supprimée.")
-                if owner_id == user_id:
-                    return harvest_to_response(harvest), False
-                raise ConflictException(
-                    "Une ressource avec cet identifiant existe déjà."
-                )
+                _raise_existing_resource_conflict(owner_id, user_id, deleted)
+                return harvest_to_response(harvest), False
 
         harvest = Harvest(
             id=data.id or uuid.uuid4(),
@@ -568,8 +593,11 @@ class CycleService:
         session.add(harvest)
 
         if data.close_cycle:
-            cycle.status = "harvested"
-            cycle.harvest_date = data.harvested_on
+            if cycle.status == "failed":
+                raise ConflictException("Transition de statut non autorisée.")
+            if cycle.status in ("planned", "growing"):
+                cycle.status = "harvested"
+                cycle.harvest_date = data.harvested_on
 
         try:
             await session.commit()
@@ -579,15 +607,8 @@ class CycleService:
                 existing = await self._find_harvest_for_id(session, data.id)
                 if existing is not None:
                     harvest, owner_id, deleted = existing
-                    if deleted:
-                        raise ConflictException(
-                            "Cette ressource a été supprimée."
-                        ) from None
-                    if owner_id == user_id:
-                        return harvest_to_response(harvest), False
-                    raise ConflictException(
-                        "Une ressource avec cet identifiant existe déjà."
-                    ) from None
+                    _raise_existing_resource_conflict(owner_id, user_id, deleted)
+                    return harvest_to_response(harvest), False
             raise
 
         await session.refresh(harvest)
@@ -599,7 +620,7 @@ class CycleService:
         user_id: uuid.UUID,
         cycle_id: uuid.UUID,
     ) -> CycleSummaryResponse:
-        cycle, farm = await self._load_owned_cycle(session, user_id, cycle_id)
+        cycle, farm = await self._load_readable_cycle(session, user_id, cycle_id)
 
         view_row = (
             await session.execute(
@@ -699,7 +720,7 @@ class CycleService:
         limit: int = 20,
         cursor: str | None = None,
     ) -> tuple[list[TimelineItem], str | None]:
-        await self._load_owned_plot(session, user_id, plot_id)
+        await self._load_readable_plot(session, user_id, plot_id)
 
         cursor_date = None
         cursor_uuid = None
