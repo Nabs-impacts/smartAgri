@@ -54,6 +54,7 @@ from app.core.rate_limit import get_redis_client
 from app.db.session import get_db
 from app.main import app
 from app.providers.sms.fake import FakeSmsProvider
+from scripts.seed import seed_database
 
 PROJECT_ROOT = Path(__file__).resolve().parents[1]
 
@@ -126,6 +127,9 @@ async def clean_state() -> AsyncGenerator[None, None]:
     async with test_engine.connect() as connection:
         await _assert_test_targets(connection, redis_client)
     await redis_client.flushdb()
+
+    async with TestSessionLocal() as session:
+        await seed_database(session)
 
     yield
 

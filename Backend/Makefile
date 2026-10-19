@@ -22,7 +22,7 @@ seed:
 	python3 scripts/seed.py
 
 superuser:
-	python3 scripts/create_superuser.py
+	python3 scripts/create_superuser.py $(ARGS)
 
 test:
 	docker compose run --rm -T --build api pytest tests

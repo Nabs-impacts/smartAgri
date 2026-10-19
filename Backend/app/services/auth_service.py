@@ -9,6 +9,7 @@ from app.core.config import settings
 from app.core.errors import (
     ConflictException,
     ForbiddenException,
+    InternalErrorException,
     NotFoundException,
     RateLimitedException,
     UnauthorizedException,
@@ -103,25 +104,8 @@ class AuthService:
 
         plan_query = select(Plan).where(Plan.code == "free")
         free_plan = (await session.execute(plan_query)).scalar_one_or_none()
-        if not free_plan:
-            free_plan = Plan(
-                code="free",
-                name="Forfait Gratuit",
-                audience="farmer",
-                billing_model="free",
-                price_xof=0,
-                quotas={
-                    "diagnostics_per_month": 10,
-                    "llm_messages_per_month": 20,
-                    "video_analyses_per_month": 0,
-                    "plots": 3,
-                    "storage_mb": 100,
-                },
-                features={"offline_sync": True, "weather": True},
-                is_active=True,
-            )
-            session.add(free_plan)
-            await session.flush()
+        if free_plan is None:
+            raise InternalErrorException(message="Forfait gratuit introuvable.")
 
         subscription = Subscription(
             user_id=user.id,

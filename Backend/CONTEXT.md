@@ -51,12 +51,12 @@ Plateforme nigérienne d'IA agricole. L'utilisateur photographie sa culture (ou 
 | Doc backend | Document Claude : https://claude.ai/code/artifact/9406325d-bce3-4764-b6aa-1001dae55965 (structure, tables, endpoints) |
 | Dépôt GitHub | https://github.com/Nabs-impacts/SmartAgri — backend dans `Backend/` |
 
-## 5. État d'avancement (≈ 19 % du backend)
+## 5. État d'avancement (≈ 20 % du backend)
 
 | Phase | Contenu | État |
 |---|---|---|
 | 1 | Fondations : config, middlewares, 45 modèles, migration, Docker, `/health` | **~100 % — validée sous Docker** (migration vérifiée par `alembic check`). Reste : pinning des dépendances |
-| 2 | Auth et comptes | **~95 %** : 7 routes d'auth + `/users/me` (profil, mot de passe, appareils, consentements), 43 tests (commit `3d579e9`). Reste : étape H2 (petits correctifs de H1, export, suppression de compte, tests de permissions) |
+| 2 | Auth et comptes | **100 %** : 7 routes d'auth + `/users/me` complet (profil, mot de passe, appareils, consentements, export, suppression), 56 tests (commit `848c30f`). À compléter après la phase 3 : anonymisation (voir plus bas) |
 | 3 à 8 | Cœur agricole + sync, médias, IA, facturation, données/alertes, admin | 0 % |
 
 **Validé le 17 octobre 2026** : `docker compose up -d --build` démarre les 7 services (`db`, `redis`, `rustfs`, `rustfs-init`, `api`, `worker`, `beat`) ; `alembic upgrade head` applique `0001_initial` ; `GET /health` renvoie `{"status":"healthy","database":"ok","redis":"ok","storage":"ok"}`. Le comptage de 50 relations dans le schéma `public` est normal : 45 tables + `alembic_version` + `spatial_ref_sys` (PostGIS) + la vue `v_cycle_yield` + 2 vues PostGIS.
@@ -66,6 +66,8 @@ Plateforme nigérienne d'IA agricole. L'utilisateur photographie sa culture (ou 
 **Corrigé depuis l'audit** : lecture de `CORS_ORIGINS` et des listes MIME (`Annotated[list[str], NoDecode]`, `pydantic-settings>=2.7.0`) ; `app/workers/celery_app.py` créé ; `.dockerignore` ajouté ; bucket plus public ; `--no-deps` retiré du `pip wheel` ; MinIO remplacé par RustFS ; image `db` reconstruite sur pgvector + PostGIS ; `sqlalchemy[asyncio]` (greenlet) ; adresses Docker (`db`, `redis`, `rustfs`) définies dans le compose ; fichier de planification de beat dans `/tmp`.
 
 **Failles de l'auth.** Corrigées (commits `39be0d4`, `f1397b8`, `3c5f9dc`) : limites par IP sur `otp/request`, `register` et `login` ; limite par numéro appliquée avant la vérification d'existence (plus de fuite 202/429) ; SMS envoyé en tâche de fond et seulement si le compte existe ; verrou de ligne sur les tentatives OTP ; fenêtre de tolérance du refresh (45 s, Redis) ; `purpose` restreint ; hash factice sur `login` ; `logout` vérifie le propriétaire ; **prise de contrôle par pré-inscription fermée** (login refusé tant que le téléphone n'est pas vérifié, mot de passe effacé à la première vérification, `register` remplace un compte non vérifié) ; messages d'erreur de `verify_otp` uniformes. **Restantes / compromis acceptés** : (1) `register` répond 409 pour un numéro vérifié, ce qui permet de tester l'existence d'un compte (voulu par la spec, limité par IP) ; (2) les limites par numéro (OTP et login) permettent à un tiers de bloquer temporairement un utilisateur légitime ; à atténuer plus tard (clé numéro + IP, anti-bot) ; (3) `register()` non atomique ; (4) l'IP cliente vient de `request.client.host` : derrière un reverse proxy en production, configurer les en-têtes de confiance ; (5) SMS en `BackgroundTasks` (perdus si le processus redémarre) : passer à Celery quand les tâches existeront ; (6) prévoir un nettoyage périodique des comptes jamais vérifiés ; (7) en phase 3, les comptes « invités par téléphone » dans une organisation doivent se distinguer des comptes désactivés (aujourd'hui, un compte inactif ne peut pas se connecter).
+
+**Anonymisation (`DELETE /users/me`) : correcte pour la spec écrite, à compléter après la phase 3.** Aujourd'hui seule la ligne `users` est anonymisée (téléphone remplacé par `deleted-<uuid>`, nom et email effacés, mot de passe effacé, appareils et refresh tokens supprimés, ligne d'audit). Restent des données personnelles : (1) `otp_codes.phone` conserve l'ancien numéro (supprimer les lignes de ce numéro) ; (2) `payments.payer_phone` (masquer en conservant la trace comptable) ; (3) fermes et diagnostics gardent `location`, `village`, nom de ferme et `user_note` texte libre (les mettre à NULL, garder la zone administrative) ; (4) médias (photos avec GPS) : décider de les supprimer ou de les garder selon le consentement « recherche » ; (5) historique du chat, notifications et appartenances à des organisations ; (6) un propriétaire d'organisation qui supprime son compte laisse une organisation sans `owner` ; (7) recommandé : exiger une confirmation (mot de passe ou OTP récent) avant la suppression ; (8) ajouter un test « un access token déjà émis est refusé après suppression ». L'export ne couvre pas encore les métadonnées de médias, le chat, les abonnements, les notifications ni les appartenances : à ajouter quand ces routes existent.
 
 **Ports** : db (5432), redis (6379) et rustfs (9000) sont publiés sur `127.0.0.1` uniquement (fait) ; l'api reste sur `0.0.0.0:8000` pour les tests depuis le téléphone.
 
@@ -89,7 +91,7 @@ sudo docker compose down -v
 
 - **Machine** : Ubuntu, VS Code. Python local **3.14** (visible dans les `.pyc`) alors que Docker utilise **3.12** → se fier aux résultats dans Docker.
 - **Docker** : installé, mais je lance encore `sudo docker compose` (groupe `docker` pas encore actif : `sudo usermod -aG docker $USER` puis déconnexion/reconnexion).
-- **Agents de code** : le quota gratuit d'**Antigravity CLI (`agy`)** est épuisé. J'utilise **OpenCode** avec **DeepSeek V4.1 (High)**. OpenRouter gratuit est très limité (50 requêtes/jour sans 10 crédits achetés), donc seulement en secours. GitHub Copilot gratuit pour étudiants : à vérifier.
+- **Agents de code** : la limite d'**Antigravity CLI (`agy`)** a été étendue : on continue avec `agy` pour les grosses tâches (messages plus longs, 2 à 3 parties par session). OpenCode + DeepSeek V4.1 reste le plan B. OpenRouter gratuit est très limité (50 requêtes/jour sans 10 crédits achetés). GitHub Copilot gratuit pour étudiants : à vérifier. `agy` ne lit pas forcément `AGENTS.md` : coller le préambule de l'étape I en tête de chaque message.
 - **Réseau** : connexion lente, les builds Docker sont longs (5 à 12 minutes sans cache).
 
 ## 8. Méthode de travail avec les agents (à garder)
@@ -213,7 +215,7 @@ Tâche : première partie des routes du compte utilisateur, avec tests.
 Messages d'erreur en français avec accents. make test et ruff doivent passer. Mets à jour PROGRESS.md, puis arrête-toi.
 ```
 
-**Étape H2 — petits correctifs de H1, puis export, suppression de compte et tests de permissions.** Revue de H1 : ownership des appareils, vérification du téléphone avant mot de passe et révocation des refresh tokens corrects ; à corriger : aucun contrôle de longueur sur `new_password` (ni `max_length`, donc risque de surcharge CPU avec argon2), le quota `plots` affiche toujours `used = 0`, l'unicité de l'email est vérifiée sans normalisation ni gestion d'`IntegrityError`, avertissement de dépréciation du code 422. Compromis noté : `PUT /users/me/password` révoque **tous** les refresh tokens (y compris celui de l'appareil courant), l'app devra donc se reconnecter dans les 15 minutes.
+**Étape H2 — FAITE (commit `848c30f`, 56 tests). Petits correctifs de H1, export, suppression de compte et tests de permissions.** Revue de H1 : ownership des appareils, vérification du téléphone avant mot de passe et révocation des refresh tokens corrects ; à corriger : aucun contrôle de longueur sur `new_password` (ni `max_length`, donc risque de surcharge CPU avec argon2), le quota `plots` affiche toujours `used = 0`, l'unicité de l'email est vérifiée sans normalisation ni gestion d'`IntegrityError`, avertissement de dépréciation du code 422. Compromis noté : `PUT /users/me/password` révoque **tous** les refresh tokens (y compris celui de l'appareil courant), l'app devra donc se reconnecter dans les 15 minutes.
 
 ```
 Lis smartagri-prompt-backend.md (sections 5, 7.2 et 12) et PROGRESS.md. Applique les règles permanentes de AGENTS.md.
@@ -239,10 +241,157 @@ Puis la deuxième partie des routes du compte utilisateur :
 Messages d'erreur en français avec accents. make test et ruff doivent passer. Mets à jour PROGRESS.md, puis arrête-toi.
 ```
 
-**Étape I — phase 3** : organisations, fermes, parcelles, cycles, activités, récoltes, sync, seed (8 régions du Niger, 10 cultures, plans) — c'est le début de la **démo pour le gouverneur** (phases 1 à 3 + médias + diagnostic simulé + écran de stats de rendement, environ 2 à 3 semaines avec les contraintes de quota).
+**Étape I — phase 3 : cœur agricole, en 3 grosses tâches pour `agy`** (une session chacune, vérification entre les deux) : **A** seed + catalogues + fermes + parcelles ; **B** cycles, activités, récoltes, bilan + organisations et accès des agents ; **C** synchronisation hors-ligne + complétude de l'anonymisation. C'est le début de la **démo pour le gouverneur** (phases 1 à 3 + médias + diagnostic simulé + écran de stats de rendement). Règle d'or : après chaque partie d'une tâche, l'agent lance `make test` ; s'il échoue plus de 3 fois sur le même problème, il s'arrête et l'explique.
+
+**Préambule à coller en tête de CHAQUE message à `agy` :**
+
+```
+Règles permanentes :
+- Aucun commentaire ni docstring dans le code, y compris YAML, Dockerfile, Makefile et SQL.
+- N'exécute aucune commande git : je fais les commits moi-même.
+- Fais uniquement la tâche demandée, puis arrête-toi. Ne commence pas la tâche suivante.
+- Si tu n'as pas pu vérifier quelque chose (Docker, tests), dis-le clairement au lieu d'annoncer que c'est terminé.
+- Avant de finir : make test et ruff passent, et PROGRESS.md est à jour.
+```
+
+**Tâche A — seed, catalogues, fermes, parcelles :**
+
+```
+Lis smartagri-prompt-backend.md (sections 5, 7.4, 7.5 et 11) et PROGRESS.md.
+Tâche A : données de référence, catalogues, fermes et parcelles, avec tests. Fais les parties dans l'ordre et lance
+make test après chacune.
+
+Partie 1 : seed et catalogues
+1. scripts/seed.py (idempotent : upsert par code, relancer ne crée aucun doublon) qui insère :
+   - admin_areas : les 8 régions du Niger (Agadez, Diffa, Dosso, Maradi, Niamey, Tahoua, Tillabéri, Zinder), level=region,
+     codes stables, sans géométrie ;
+   - crops : millet, sorghum, cowpea, maize, rice, groundnut, onion, tomato, cabbage, pepper (noms français ; haoussa :
+     gero, dawa, wake, masara, shinkafa, gyada, albasa, tumatir, kabeji, barkono ; name_dje NULL), avec category et
+     cycle_days plausibles ;
+   - diagnosis_labels : healthy, fall_armyworm, desert_locust, millet_downy_mildew, striga, cowpea_aphid,
+     tomato_leaf_curl, nitrogen_deficiency, avec guideline = {"validated": false, "urgency": null, "cultural": [],
+     "biological": [], "chemical": [], "prevention": []} et les liens label_crops cohérents ;
+   - plans : free (0 XOF ; quotas diagnostics_per_month 10, llm_messages_per_month 20, video_analyses_per_month 0,
+     plots 3), farmer_pro (1500 XOF par mois ; 60, 100, 10, 20), coop_standard (25000 XOF par mois, audience
+     organization, quotas élevés), gov_license (prix 0, billing_model license, audience government, quotas -1).
+   Ajoute les cibles make seed et make superuser (scripts/create_superuser.py : téléphone, nom et mot de passe en
+   arguments, rôle super_admin, téléphone marqué vérifié).
+2. app/services/catalog_service.py et app/api/v1/catalog.py : GET /crops, GET /diagnosis-labels (filtre crop_id),
+   GET /admin-areas (filtres parent_id et level ; geom exclue sauf ?include_geom=true), tous authentifiés ;
+   GET /crops et GET /diagnosis-labels renvoient un ETag et répondent 304 si If-None-Match correspond ;
+   GET /plans (public, filtre audience).
+3. register : retire la création à la volée du plan free avec des quotas codés en dur (échec clair si le plan
+   manque) et adapte tests/conftest.py pour insérer le seed avant les tests.
+4. tests/test_catalog.py : seed idempotent, contenu et filtres, ETag/304, authentification requise, /plans public.
+
+Partie 2 : fermes et parcelles
+5. app/core/geo.py : conversion GeoJSON <-> géométrie PostGIS, validation (Polygon, SRID 4326, géométrie valide, 500
+   sommets maximum, surface maximale 10 000 ha) et calcul de surface en hectares (ST_Area sur geography).
+6. Extrais la résolution de l'abonnement effectif de user_service vers app/services/subscription_service.py (même
+   comportement) et crée app/services/quota_service.py avec ensure_quota(session, user, metric) ; pour l'instant seule la
+   métrique « plots » est gérée (parcelles non supprimées de l'utilisateur ; limite -1 = illimité) ; dépassement : 403
+   QUOTA_EXCEEDED avec details {metric, limit, used}.
+7. app/services/farm_service.py et app/api/v1/farms.py (spec 7.4, parties fermes et parcelles seulement) :
+   - GET /farms (pagination par curseur, convention de la section 5), POST /farms (id fourni par le client ; idempotent :
+     même id et même propriétaire = renvoie l'existant avec 200 ; id d'un autre utilisateur = 409),
+     GET|PATCH|DELETE /farms/{id} ;
+   - GET /farms/{id}/plots (paginé), POST /farms/{id}/plots (même règle d'idempotence ; si geom GeoJSON fourni, area_ha
+     est recalculé côté serveur ; ensure_quota « plots »), GET|PATCH|DELETE /plots/{id} ;
+   - suppression douce en cascade : supprimer une ferme met deleted_at sur ses parcelles, leurs cycles, activités et
+     récoltes dans la même transaction ; idem pour une parcelle ;
+   - ressource d'un autre utilisateur : 404 (jamais 403) pour ne pas révéler son existence ;
+   - réponses avec geom en GeoJSON.
+8. tests/test_farms.py : CRUD, idempotence, id d'un autre utilisateur, 404 inter-utilisateurs, surface recalculée (carré
+   d'environ 1 ha près de Niamey, tolérance 2 %), polygone invalide en 422, 4e parcelle refusée sur le plan free
+   (QUOTA_EXCEEDED), suppression douce en cascade, pagination par curseur.
+Messages d'erreur en français avec accents. Mets à jour PROGRESS.md, puis arrête-toi.
+```
+
+**Tâche B — cycles, activités, récoltes, bilan, organisations :**
+
+```
+Lis smartagri-prompt-backend.md (sections 5, 7.3 et 7.4) et PROGRESS.md.
+Tâche B : cycles de culture, carnet, récoltes, bilan, organisations et accès des agents, avec tests. Fais les parties
+dans l'ordre et lance make test après chacune.
+
+Partie 1 : cycles, activités, récoltes
+1. app/services/cycle_service.py et app/api/v1/cycles.py : GET /plots/{id}/cycles ; POST /plots/{id}/cycles (id client
+   idempotent ; expected_harvest_date = sowing_date + crops.cycle_days si absente) ; GET|PATCH /cycles/{id} (transitions
+   de statut autorisées : planned vers growing, growing vers harvested ou failed ; sinon 409) ; GET /cycles/{id}/activities
+   et POST /cycles/{id}/activities ; PATCH|DELETE /activities/{id} ; POST /cycles/{id}/harvests (close_cycle=true passe le
+   cycle à harvested et pose harvest_date). Toutes les écritures sont réservées au propriétaire ; ressource d'un autre
+   utilisateur : 404.
+2. GET /cycles/{id}/summary : rendement kg/ha via la vue v_cycle_yield, coûts totaux (somme de cost_xof), revenu
+   (somme de sold_kg multiplié par avg_price_xof_per_kg), marge, et comparaison à la moyenne des cycles de même culture
+   dans la même zone administrative chez les AUTRES utilisateurs : renvoyée seulement si au moins 5 cycles, sinon null.
+3. GET /plots/{id}/timeline : fil chronologique paginé (curseur) fusionnant activités et récoltes (les diagnostics et le
+   NDVI viendront plus tard), avec un champ type.
+4. tests/test_cycles.py : cycle de vie, transitions interdites, idempotence, date de récolte calculée, récolte avec
+   close_cycle, bilan avec des chiffres calculés à la main, comparaison null en dessous de 5 cycles et renseignée au-dessus,
+   timeline paginée, 404 inter-utilisateurs.
+
+Partie 2 : organisations
+5. app/services/organization_service.py et app/api/v1/organizations.py : POST /organizations (le créateur devient owner) ;
+   GET /organizations (celles dont l'utilisateur est membre) ; GET|PATCH /organizations/{id} (PATCH : owner et admin) ;
+   GET /organizations/{id}/members (rôle, nombre de parcelles, surface) ; POST /organizations/{id}/members (owner et admin ;
+   body phone et member_role ; si le téléphone est inconnu, crée un compte actif NON vérifié, sans mot de passe, et ajoute
+   l'appartenance : la personne s'inscrira ensuite avec register et vérifiera son téléphone) ; DELETE
+   /organizations/{id}/members/{user_id} (owner et admin ; le dernier owner ne peut pas être retiré, 409) ;
+   GET /organizations/{id}/farms (owner, admin, agent : fermes des membres) ; GET /organizations/{id}/dashboard (owner et
+   admin : nombre de membres, de parcelles, surface totale, rendement moyen par culture, et compteurs diagnostics et
+   alertes à 0 pour l'instant).
+6. Accès en lecture des agents : crée app/services/access_service.py avec une fonction qui dit si un utilisateur peut lire
+   une ferme (propriétaire, ou owner/admin/agent d'une organisation dont le propriétaire de la ferme est membre). Utilise-la
+   en lecture pour fermes, parcelles, cycles, activités, récoltes, bilan et timeline. Les écritures restent
+   réservées au propriétaire.
+7. tests/test_organizations.py : création, liste, droits par rôle, ajout d'un membre existant et inconnu (puis register et
+   vérification OTP de cette personne), dernier owner protégé, accès en lecture d'un agent et refus pour un non-membre
+   (404), dashboard avec chiffres vérifiés.
+Messages d'erreur en français avec accents. Mets à jour PROGRESS.md, puis arrête-toi.
+```
+
+**Tâche C — synchronisation hors-ligne et anonymisation complète :**
+
+```
+Lis smartagri-prompt-backend.md (sections 5 et 7.11) et PROGRESS.md.
+Tâche C : synchronisation hors-ligne et complétude de l'anonymisation, avec tests. Fais les parties dans l'ordre et lance
+make test après chacune.
+
+Partie 1 : synchronisation
+1. app/services/sync_service.py et app/api/v1/sync.py.
+   - POST /sync/push : body {"changes": [{"entity": "farm|plot|crop_cycle|farm_activity|harvest", "op": "upsert|delete",
+     "id": uuid, "data": {...}, "updated_at": iso}]}, 200 changements maximum (sinon 422). Les changements sont traités
+     dans l'ordre reçu, chacun dans un savepoint, de façon idempotente (renvoyer deux fois le même changement ne crée pas
+     de doublon). Règle de conflit : l'updated_at client plus récent que celui du serveur gagne, sinon le serveur gagne.
+     Les règles de propriété et de quota « plots » s'appliquent. Réponse : {"results": [{"id", "entity", "status":
+     "applied|conflict|rejected", "server_updated_at", "error"}]} ; une ressource d'un autre utilisateur ou une donnée
+     invalide donne « rejected » pour cet élément, jamais une erreur globale.
+   - GET /sync/pull?since=<curseur>&limit=200 : renvoie toutes les entités synchronisables de l'utilisateur modifiées
+     depuis le curseur, y compris les suppressions (deleted_at non nul). Curseur opaque : base64url de (updated_at, id) ;
+     ordre total par (updated_at, id) sur l'ensemble des cinq tables, fusionnées ; réponse {"changes": [...],
+     "next_cursor", "has_more"}. Sans since, renvoie tout depuis le début.
+2. tests/test_sync.py : création des cinq types dans un seul lot (ordre ferme, parcelle, cycle, activité, récolte),
+   idempotence (même lot deux fois), conflit (updated_at plus ancien : « conflict » et valeur serveur conservée),
+   suppression, élément rejeté pour une ressource d'un autre utilisateur sans faire échouer le lot, plus de 200
+   éléments en 422, pull complet puis pull incrémental, suppressions présentes, pagination avec has_more, isolation entre
+   deux utilisateurs, quota « plots » appliqué.
+
+Partie 2 : anonymisation complète (DELETE /users/me)
+3. Dans la même transaction que l'anonymisation actuelle : supprimer les otp_codes de l'ancien numéro ; masquer
+   payments.payer_phone (garder les 2 derniers chiffres) ; mettre à NULL location et village des fermes, remplacer le nom
+   des fermes par « Exploitation supprimée » ; mettre à NULL location et user_note des diagnostics ; supprimer chat
+   sessions et messages et notifications de l'utilisateur ; retirer ses appartenances à des organisations ; refuser la
+   suppression (409, message en français) si l'utilisateur est le seul owner d'une organisation qui a d'autres membres.
+4. DELETE /users/me exige un body {"confirmation": "SUPPRIMER MON COMPTE"} ; sinon 422.
+5. Étends GET /users/me/export aux abonnements, appartenances aux organisations, notifications, sessions et messages de chat
+   et métadonnées de médias (sans clés de stockage).
+6. Tests : chaque point ci-dessus, plus « un access token déjà émis est refusé après la suppression du compte ».
+Messages d'erreur en français avec accents. Mets à jour PROGRESS.md, puis arrête-toi.
+```
 
 ## 10. Points ouverts à ne pas oublier
 
+- **Rendre le dépôt GitHub privé.** Il était public (donc lisible par n'importe qui) et contient `CONTEXT.md` (stratégie, modèle économique), `PROGRESS.md` (historique des failles) et tout le code, alors que le projet vise un financement ou un rachat par l'État. Ne jamais commiter de clés.
 - Valider avec des **agronomes** (INRAN, université) les protocoles de traitement avant toute recommandation chimique.
 - Collecter des **photos locales** pour entraîner le modèle de vision (les jeux publics type PlantVillage généralisent mal au champ).
 - Faire valider les **traductions haoussa et zarma** par des locuteurs.
