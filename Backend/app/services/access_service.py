@@ -4,7 +4,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models.farming import Farm
-from app.db.models.organizations import OrganizationMember
+from app.db.models.organizations import Organization, OrganizationMember
 
 READ_ROLES = ("owner", "admin", "agent")
 
@@ -16,8 +16,16 @@ async def can_read_farm(
 ) -> bool:
     if farm.owner_id == user_id:
         return True
-    owner_orgs = select(OrganizationMember.organization_id).where(
-        OrganizationMember.user_id == farm.owner_id
+    owner_orgs = (
+        select(OrganizationMember.organization_id)
+        .join(
+            Organization,
+            Organization.id == OrganizationMember.organization_id,
+        )
+        .where(
+            OrganizationMember.user_id == farm.owner_id,
+            Organization.is_active.is_(True),
+        )
     )
     membership = (
         await session.execute(

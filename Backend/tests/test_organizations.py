@@ -1,3 +1,4 @@
+import asyncio
 import re
 
 from httpx import AsyncClient
@@ -5,6 +6,7 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models.farming import Crop
+from app.db.models.organizations import Organization
 from app.providers.sms.fake import FakeSmsProvider
 
 PHONE_OWNER = "+22796000001"
@@ -12,6 +14,7 @@ PHONE_ADMIN = "+22796000002"
 PHONE_AGENT = "+22796000003"
 PHONE_MEMBER = "+22796000004"
 PHONE_OUTSIDER = "+22796000005"
+PHONE_EXTRA = "+22796000006"
 OTP_PATTERN = re.compile(r"(\d{6})")
 
 
@@ -550,3 +553,271 @@ async def test_organization_dashboard_numbers(
     assert yield_row["crop_id"] == crop_id
     assert yield_row["sample_size"] == 3
     assert float(yield_row["average_yield_kg_per_ha"]) == 466.7
+
+
+async def test_add_member_role_rules(client: AsyncClient) -> None:
+    owner_headers, _ = await _register_verified(client, PHONE_OWNER)
+    admin_headers, _ = await _register_verified(client, PHONE_ADMIN)
+    await _register_verified(client, PHONE_EXTRA)
+    organization = await _create_organization(client, owner_headers)
+    organization_id = organization["id"]
+    await _add_member(
+        client, owner_headers, organization_id, PHONE_ADMIN, "admin"
+    )
+
+    admin_adds_owner = await client.post(
+        f"/api/v1/organizations/{organization_id}/members",
+        json={"phone": PHONE_EXTRA, "member_role": "owner"},
+        headers=admin_headers,
+    )
+    assert admin_adds_owner.status_code == 403
+    assert (
+        admin_adds_owner.json()["error"]["message"]
+        == "Accès refusé pour ce rôle."
+    )
+
+    admin_adds_admin = await client.post(
+        f"/api/v1/organizations/{organization_id}/members",
+        json={"phone": PHONE_EXTRA, "member_role": "admin"},
+        headers=admin_headers,
+    )
+    assert admin_adds_admin.status_code == 403
+
+    admin_adds_agent = await client.post(
+        f"/api/v1/organizations/{organization_id}/members",
+        json={"phone": PHONE_EXTRA, "member_role": "agent"},
+        headers=admin_headers,
+    )
+    assert admin_adds_agent.status_code == 201
+    assert admin_adds_agent.json()["member_role"] == "agent"
+
+    owner_adds_owner = await client.post(
+        f"/api/v1/organizations/{organization_id}/members",
+        json={"phone": PHONE_MEMBER, "member_role": "owner"},
+        headers=owner_headers,
+    )
+    assert owner_adds_owner.status_code == 201
+    assert owner_adds_owner.json()["member_role"] == "owner"
+
+
+async def test_remove_member_role_rules(client: AsyncClient) -> None:
+    owner_headers, owner_id = await _register_verified(client, PHONE_OWNER)
+    admin_headers, admin_id = await _register_verified(client, PHONE_ADMIN)
+    await _register_verified(client, PHONE_AGENT)
+    await _register_verified(client, PHONE_MEMBER)
+    organization = await _create_organization(client, owner_headers)
+    organization_id = organization["id"]
+    await _add_member(
+        client, owner_headers, organization_id, PHONE_ADMIN, "admin"
+    )
+    await _add_member(
+        client, owner_headers, organization_id, PHONE_AGENT, "agent"
+    )
+    await _add_member(
+        client, owner_headers, organization_id, PHONE_MEMBER, "member"
+    )
+
+    admin_removes_owner = await client.delete(
+        f"/api/v1/organizations/{organization_id}/members/{owner_id}",
+        headers=admin_headers,
+    )
+    assert admin_removes_owner.status_code == 403
+    assert (
+        admin_removes_owner.json()["error"]["message"]
+        == "Accès refusé pour ce rôle."
+    )
+
+    await _add_member(
+        client, owner_headers, organization_id, PHONE_EXTRA, "admin"
+    )
+    extra_id = None
+    members = await client.get(
+        f"/api/v1/organizations/{organization_id}/members",
+        headers=owner_headers,
+    )
+    for row in members.json():
+        if row["phone"] == PHONE_EXTRA:
+            extra_id = row["user_id"]
+    admin_removes_admin = await client.delete(
+        f"/api/v1/organizations/{organization_id}/members/{extra_id}",
+        headers=admin_headers,
+    )
+    assert admin_removes_admin.status_code == 403
+
+    agent_id = None
+    for row in members.json():
+        if row["phone"] == PHONE_AGENT:
+            agent_id = row["user_id"]
+    admin_removes_agent = await client.delete(
+        f"/api/v1/organizations/{organization_id}/members/{agent_id}",
+        headers=admin_headers,
+    )
+    assert admin_removes_agent.status_code == 204
+
+    owner_removes_admin = await client.delete(
+        f"/api/v1/organizations/{organization_id}/members/{admin_id}",
+        headers=owner_headers,
+    )
+    assert owner_removes_admin.status_code == 204
+
+
+async def test_member_can_leave_organization(client: AsyncClient) -> None:
+    owner_headers, owner_id = await _register_verified(client, PHONE_OWNER)
+    member_headers, member_id = await _register_verified(client, PHONE_MEMBER)
+    agent_headers, agent_id = await _register_verified(client, PHONE_AGENT)
+    outsider_headers, outsider_id = await _register_verified(
+        client, PHONE_OUTSIDER
+    )
+    await _register_verified(client, PHONE_EXTRA)
+    organization = await _create_organization(client, owner_headers)
+    organization_id = organization["id"]
+    await _add_member(
+        client, owner_headers, organization_id, PHONE_MEMBER, "member"
+    )
+    await _add_member(
+        client, owner_headers, organization_id, PHONE_AGENT, "agent"
+    )
+
+    non_member = await client.delete(
+        f"/api/v1/organizations/{organization_id}/members/{outsider_id}",
+        headers=outsider_headers,
+    )
+    assert non_member.status_code == 404
+
+    member_leaves = await client.delete(
+        f"/api/v1/organizations/{organization_id}/members/{member_id}",
+        headers=member_headers,
+    )
+    assert member_leaves.status_code == 204
+
+    agent_leaves = await client.delete(
+        f"/api/v1/organizations/{organization_id}/members/{agent_id}",
+        headers=agent_headers,
+    )
+    assert agent_leaves.status_code == 204
+
+    last_owner_leaves = await client.delete(
+        f"/api/v1/organizations/{organization_id}/members/{owner_id}",
+        headers=owner_headers,
+    )
+    assert last_owner_leaves.status_code == 409
+
+
+async def test_inactive_organization_blocks_agent_reads(
+    client: AsyncClient, db_session: AsyncSession
+) -> None:
+    owner_headers, _ = await _register_verified(client, PHONE_OWNER)
+    agent_headers, _ = await _register_verified(client, PHONE_AGENT)
+    organization = await _create_organization(client, owner_headers)
+    organization_id = organization["id"]
+    await _add_member(
+        client, owner_headers, organization_id, PHONE_AGENT, "agent"
+    )
+    farm, _ = await _create_farm_with_plot(client, owner_headers, 2.0, "Inactive")
+
+    await db_session.execute(
+        Organization.__table__.update()
+        .where(Organization.id == organization["id"])
+        .values(is_active=False)
+    )
+    await db_session.commit()
+
+    agent_farms = await client.get("/api/v1/farms", headers=agent_headers)
+    assert agent_farms.status_code == 200
+    assert agent_farms.json()["items"] == []
+
+    assert (
+        await client.get(
+            f"/api/v1/organizations/{organization_id}/members",
+            headers=agent_headers,
+        )
+    ).status_code == 404
+    assert (
+        await client.get(
+            f"/api/v1/organizations/{organization_id}/farms",
+            headers=agent_headers,
+        )
+    ).status_code == 404
+    assert (
+        await client.get(
+            f"/api/v1/organizations/{organization_id}/dashboard",
+            headers=agent_headers,
+        )
+    ).status_code == 404
+    assert (
+        await client.get(f"/api/v1/farms/{farm['id']}", headers=agent_headers)
+    ).status_code == 404
+
+    owner_farms = await client.get("/api/v1/farms", headers=owner_headers)
+    assert owner_farms.status_code == 200
+    assert [item["id"] for item in owner_farms.json()["items"]] == [farm["id"]]
+    assert (
+        await client.get(
+            f"/api/v1/organizations/{organization_id}/members",
+            headers=owner_headers,
+        )
+    ).status_code == 200
+
+
+async def test_organization_name_validation(client: AsyncClient) -> None:
+    owner_headers, _ = await _register_verified(client, PHONE_OWNER)
+
+    blank = await client.post(
+        "/api/v1/organizations",
+        json={"name": "   ", "type": "cooperative"},
+        headers=owner_headers,
+    )
+    assert blank.status_code == 422
+
+    too_long = await client.post(
+        "/api/v1/organizations",
+        json={"name": "a" * 201, "type": "cooperative"},
+        headers=owner_headers,
+    )
+    assert too_long.status_code == 422
+
+    trimmed = await client.post(
+        "/api/v1/organizations",
+        json={"name": "  Ferme Propre  ", "type": "cooperative"},
+        headers=owner_headers,
+    )
+    assert trimmed.status_code == 201
+    assert trimmed.json()["name"] == "Ferme Propre"
+
+    blank_update = await client.patch(
+        f"/api/v1/organizations/{trimmed.json()['id']}",
+        json={"name": "   "},
+        headers=owner_headers,
+    )
+    assert blank_update.status_code == 422
+
+
+async def test_parallel_add_member_is_conflict_not_error(
+    client: AsyncClient,
+) -> None:
+    owner_headers, _ = await _register_verified(client, PHONE_OWNER)
+    organization = await _create_organization(client, owner_headers)
+    organization_id = organization["id"]
+    unknown_phone = "+22796000777"
+
+    responses = await asyncio.gather(
+        client.post(
+            f"/api/v1/organizations/{organization_id}/members",
+            json={"phone": unknown_phone, "member_role": "member"},
+            headers=owner_headers,
+        ),
+        client.post(
+            f"/api/v1/organizations/{organization_id}/members",
+            json={"phone": unknown_phone, "member_role": "member"},
+            headers=owner_headers,
+        ),
+    )
+    statuses = sorted(response.status_code for response in responses)
+    assert statuses == [201, 409]
+    conflict = next(
+        response for response in responses if response.status_code == 409
+    )
+    assert (
+        conflict.json()["error"]["message"]
+        == "Cet utilisateur est déjà membre de l'organisation."
+    )

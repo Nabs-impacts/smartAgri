@@ -3,6 +3,7 @@ from datetime import UTC, datetime
 from decimal import Decimal
 
 from sqlalchemy import and_, func, or_, select, text
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import (
@@ -75,6 +76,11 @@ class OrganizationService:
         organization, membership = await self._require_member(
             session, organization_id, user_id
         )
+        if (
+            not organization.is_active
+            and membership.member_role not in WRITE_ROLES
+        ):
+            raise NotFoundException("Organisation introuvable.")
         if membership.member_role not in roles:
             raise ForbiddenException("Accès refusé pour ce rôle.")
         return organization, membership
@@ -276,64 +282,91 @@ class OrganizationService:
         phone: str,
         member_role: str,
     ) -> OrganizationMemberResponse:
-        await self._require_roles(
+        _, actor = await self._require_roles(
             session, organization_id, user_id, WRITE_ROLES
         )
+        if member_role in ("owner", "admin") and actor.member_role != "owner":
+            raise ForbiddenException("Accès refusé pour ce rôle.")
         norm_phone = normalize_phone(phone)
-        member = (
-            await session.execute(select(User).where(User.phone == norm_phone))
-        ).scalar_one_or_none()
-
-        if member is None:
-            member = User(
-                phone=norm_phone,
-                full_name=norm_phone,
-                role="farmer",
-                is_active=True,
-                password_hash=None,
-            )
-            session.add(member)
-            await session.flush()
-            free_plan = (
+        try:
+            member = (
                 await session.execute(
-                    select(Plan).where(Plan.code == "free")
+                    select(User).where(User.phone == norm_phone)
                 )
             ).scalar_one_or_none()
-            if free_plan is not None:
-                session.add(
-                    Subscription(
-                        user_id=member.id,
-                        plan_id=free_plan.id,
-                        status="active",
-                        current_period_start=datetime.now(UTC),
-                        auto_renew=False,
+
+            if member is None:
+                member = User(
+                    phone=norm_phone,
+                    full_name=norm_phone,
+                    role="farmer",
+                    is_active=True,
+                    password_hash=None,
+                )
+                session.add(member)
+                await session.flush()
+                free_plan = (
+                    await session.execute(
+                        select(Plan).where(Plan.code == "free")
+                    )
+                ).scalar_one_or_none()
+                if free_plan is not None:
+                    session.add(
+                        Subscription(
+                            user_id=member.id,
+                            plan_id=free_plan.id,
+                            status="active",
+                            current_period_start=datetime.now(UTC),
+                            auto_renew=False,
+                        )
+                    )
+            elif member.deleted_at is not None:
+                raise ConflictException(
+                    "Ce numéro de téléphone appartient à un compte supprimé."
+                )
+
+            existing = (
+                await session.execute(
+                    select(OrganizationMember).where(
+                        OrganizationMember.organization_id == organization_id,
+                        OrganizationMember.user_id == member.id,
                     )
                 )
-        elif member.deleted_at is not None:
-            raise ConflictException(
-                "Ce numéro de téléphone appartient à un compte supprimé."
-            )
-
-        existing = (
-            await session.execute(
-                select(OrganizationMember).where(
-                    OrganizationMember.organization_id == organization_id,
-                    OrganizationMember.user_id == member.id,
+            ).scalar_one_or_none()
+            if existing is not None:
+                raise ConflictException(
+                    "Cet utilisateur est déjà membre de l'organisation."
                 )
-            )
-        ).scalar_one_or_none()
-        if existing is not None:
-            raise ConflictException(
-                "Cet utilisateur est déjà membre de l'organisation."
-            )
 
-        membership = OrganizationMember(
-            organization_id=organization_id,
-            user_id=member.id,
-            member_role=member_role,
-        )
-        session.add(membership)
-        await session.commit()
+            membership = OrganizationMember(
+                organization_id=organization_id,
+                user_id=member.id,
+                member_role=member_role,
+            )
+            session.add(membership)
+            await session.commit()
+        except IntegrityError:
+            await session.rollback()
+            raced_user = (
+                await session.execute(
+                    select(User).where(User.phone == norm_phone)
+                )
+            ).scalar_one_or_none()
+            if raced_user is not None:
+                raced_membership = (
+                    await session.execute(
+                        select(OrganizationMember).where(
+                            OrganizationMember.organization_id
+                            == organization_id,
+                            OrganizationMember.user_id == raced_user.id,
+                        )
+                    )
+                ).scalar_one_or_none()
+                if raced_membership is not None:
+                    raise ConflictException(
+                        "Cet utilisateur est déjà membre de l'organisation."
+                    ) from None
+            raise
         await session.refresh(membership)
         await session.refresh(member)
         return await self._member_response(session, membership, member)
@@ -345,9 +378,11 @@ class OrganizationService:
         organization_id: uuid.UUID,
         member_user_id: uuid.UUID,
     ) -> None:
-        await self._require_roles(
-            session, organization_id, user_id, WRITE_ROLES
-        )
+        _, actor = await self._require_member(session, organization_id, user_id)
+        is_self = member_user_id == user_id
+        if not is_self and actor.member_role not in WRITE_ROLES:
+            raise ForbiddenException("Accès refusé pour ce rôle.")
+
         membership = (
             await session.execute(
                 select(OrganizationMember).where(
@@ -359,16 +394,26 @@ class OrganizationService:
         if membership is None:
             raise NotFoundException("Membre introuvable.")
 
+        if not is_self and actor.member_role == "admin" and (
+            membership.member_role in ("owner", "admin")
+        ):
+            raise ForbiddenException("Accès refusé pour ce rôle.")
+
         if membership.member_role == "owner":
-            owner_count = (
-                await session.execute(
-                    select(func.count(OrganizationMember.user_id)).where(
-                        OrganizationMember.organization_id == organization_id,
-                        OrganizationMember.member_role == "owner",
+            owners = list(
+                (
+                    await session.scalars(
+                        select(OrganizationMember)
+                        .where(
+                            OrganizationMember.organization_id
+                            == organization_id,
+                            OrganizationMember.member_role == "owner",
+                        )
+                        .with_for_update()
                     )
-                )
-            ).scalar_one()
-            if owner_count <= 1:
+                ).all()
+            )
+            if len(owners) <= 1:
                 raise ConflictException(
                     "Le dernier propriétaire ne peut pas être retiré."
                 )

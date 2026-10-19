@@ -6,6 +6,7 @@ from app.api.v1 import (
     cycles,
     farms,
     organizations,
+    sync,
     system,
     users,
 )
@@ -20,5 +21,6 @@ api_router.include_router(organizations.router, tags=["organizations"])
 api_router.include_router(
     cycles.router, tags=["cycles", "activities", "harvests", "timeline"]
 )
+api_router.include_router(sync.router, prefix="/sync", tags=["sync"])
 
 

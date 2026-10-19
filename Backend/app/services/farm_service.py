@@ -16,7 +16,7 @@ from app.core.geo import (
 from app.core.pagination import decode_cursor, encode_cursor
 from app.db.models.farming import CropCycle, Farm, FarmActivity, Harvest, Plot
 from app.db.models.identity import AdminArea, User
-from app.db.models.organizations import OrganizationMember
+from app.db.models.organizations import Organization, OrganizationMember
 from app.schemas.farm import (
     FarmCreateRequest,
     FarmResponse,
@@ -70,8 +70,15 @@ class FarmService:
             or_(
                 Farm.owner_id == user_id,
                 exists(
-                    select(OrganizationMember.user_id).where(
+                    select(OrganizationMember.user_id)
+                    .join(
+                        Organization,
+                        Organization.id
+                        == OrganizationMember.organization_id,
+                    )
+                    .where(
                         OrganizationMember.user_id == Farm.owner_id,
+                        Organization.is_active.is_(True),
                         OrganizationMember.organization_id.in_(
                             select(OrganizationMember.organization_id).where(
                                 OrganizationMember.user_id == user_id,

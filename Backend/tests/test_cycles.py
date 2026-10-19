@@ -910,3 +910,72 @@ async def test_deleted_id_of_other_user_conflicts_before_deleted_check(
         harvest_conflict.json()["error"]["message"]
         == "Une ressource avec cet identifiant existe déjà."
     )
+
+
+async def test_summary_comparison_excludes_farm_owner(
+    client: AsyncClient, db_session: AsyncSession, monkeypatch
+) -> None:
+    monkeypatch.setattr(settings, "REGISTER_REQUESTS_PER_IP_WINDOW", 50)
+    owner_headers = await _register_verified(client, PHONE_USER1)
+    agent_headers = await _register_verified(client, PHONE_USER2)
+    admin_area_id = await _niamey_area_id(db_session)
+    crop_id = await _crop_id(db_session)
+
+    organization = await client.post(
+        "/api/v1/organizations",
+        json={"name": "Coop Bilan", "type": "cooperative"},
+        headers=owner_headers,
+    )
+    assert organization.status_code == 201
+    organization_id = organization.json()["id"]
+    added = await client.post(
+        f"/api/v1/organizations/{organization_id}/members",
+        json={"phone": PHONE_USER2, "member_role": "agent"},
+        headers=owner_headers,
+    )
+    assert added.status_code == 201
+
+    plot = await _create_plot(
+        client, owner_headers, area_ha=2.0, admin_area_id=admin_area_id
+    )
+    cycle = await client.post(
+        f"/api/v1/plots/{plot['id']}/cycles",
+        json={"crop_id": crop_id},
+        headers=owner_headers,
+    )
+    assert cycle.status_code == 201
+    harvest = await client.post(
+        f"/api/v1/cycles/{cycle.json()['id']}/harvests",
+        json={"harvested_on": "2026-08-01", "quantity_kg": 1000},
+        headers=owner_headers,
+    )
+    assert harvest.status_code == 201
+
+    for index in range(4):
+        await _other_cycle_with_yield(
+            client,
+            f"+2279500000{index}",
+            crop_id,
+            admin_area_id,
+            400.0,
+        )
+
+    below = await client.get(
+        f"/api/v1/cycles/{cycle.json()['id']}/summary",
+        headers=agent_headers,
+    )
+    assert below.status_code == 200
+    assert below.json()["comparison"] is None
+
+    await _other_cycle_with_yield(
+        client, "+22795000009", crop_id, admin_area_id, 400.0
+    )
+
+    above = await client.get(
+        f"/api/v1/cycles/{cycle.json()['id']}/summary",
+        headers=agent_headers,
+    )
+    comparison = above.json()["comparison"]
+    assert comparison is not None
+    assert comparison["sample_size"] == 5
+    assert float(comparison["average_yield_kg_per_ha"]) == 400.0

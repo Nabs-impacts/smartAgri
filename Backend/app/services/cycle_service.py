@@ -683,7 +683,7 @@ class CycleService:
                         "JOIN farms f ON f.id = p.farm_id "
                         "WHERE cc.crop_id = :crop_id "
                         "AND f.admin_area_id = :admin_area_id "
-                        "AND f.owner_id <> :user_id "
+                        "AND f.owner_id <> :owner_id "
                         "AND cc.deleted_at IS NULL "
                         "AND p.deleted_at IS NULL "
                         "AND f.deleted_at IS NULL"
@@ -691,7 +691,7 @@ class CycleService:
                     {
                         "crop_id": cycle.crop_id,
                         "admin_area_id": farm.admin_area_id,
-                        "user_id": user_id,
+                        "owner_id": farm.owner_id,
                     },
                 )
             ).mappings().one()
