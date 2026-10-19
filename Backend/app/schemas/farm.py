@@ -3,7 +3,7 @@ from datetime import datetime
 from decimal import Decimal
 from typing import Any, Literal
 
-from pydantic import BaseModel, ConfigDict
+from pydantic import BaseModel, ConfigDict, Field
 
 
 class FarmCreateRequest(BaseModel):
@@ -38,7 +38,7 @@ class FarmResponse(BaseModel):
 class PlotCreateRequest(BaseModel):
     id: uuid.UUID | None = None
     name: str
-    area_ha: Decimal | None = None
+    area_ha: Decimal | None = Field(default=None, gt=Decimal("0"), le=Decimal("10000"))
     geom: dict[str, Any] | None = None
     soil_type: Literal["sandy", "loam", "clay", "laterite", "other"] | None = None
     irrigation: Literal["rainfed", "drip", "gravity", "well", "other"] | None = None
@@ -46,7 +46,7 @@ class PlotCreateRequest(BaseModel):
 
 class PlotUpdateRequest(BaseModel):
     name: str | None = None
-    area_ha: Decimal | None = None
+    area_ha: Decimal | None = Field(default=None, gt=Decimal("0"), le=Decimal("10000"))
     geom: dict[str, Any] | None = None
     soil_type: Literal["sandy", "loam", "clay", "laterite", "other"] | None = None
     irrigation: Literal["rainfed", "drip", "gravity", "well", "other"] | None = None

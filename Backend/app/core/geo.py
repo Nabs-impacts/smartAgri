@@ -111,7 +111,11 @@ def validate_point_geojson(geojson_data: dict[str, Any] | str) -> Point:
     if not coords or not isinstance(coords, (list, tuple)) or len(coords) < 2:
         raise ValidationException("Coordonnées de point invalides.")
 
-    lng, lat = float(coords[0]), float(coords[1])
+    try:
+        lng, lat = float(coords[0]), float(coords[1])
+    except (ValueError, TypeError) as err:
+        raise ValidationException("Les coordonnées doivent être numériques.") from err
+
     if not (-180.0 <= lng <= 180.0 and -90.0 <= lat <= 90.0):
         raise ValidationException(
             "Les coordonnées doivent être en WGS84 (SRID 4326)."

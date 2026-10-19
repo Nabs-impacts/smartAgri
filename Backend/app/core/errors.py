@@ -1,6 +1,7 @@
 from typing import Any
 
 from fastapi import FastAPI, HTTPException, Request, status
+from fastapi.encoders import jsonable_encoder
 from fastapi.exceptions import RequestValidationError
 from fastapi.responses import JSONResponse
 from pydantic import BaseModel
@@ -196,7 +197,7 @@ async def app_exception_handler(request: Request, exc: AppException) -> JSONResp
             "error": {
                 "code": exc.code,
                 "message": exc.message,
-                "details": exc.details,
+                "details": jsonable_encoder(exc.details) if exc.details is not None else None,
             }
         },
     )
@@ -205,7 +206,7 @@ async def app_exception_handler(request: Request, exc: AppException) -> JSONResp
 async def validation_exception_handler(
     request: Request, exc: RequestValidationError
 ) -> JSONResponse:
-    details = exc.errors()
+    details = jsonable_encoder(exc.errors())
     return JSONResponse(
         status_code=status.HTTP_422_UNPROCESSABLE_CONTENT,
         content={

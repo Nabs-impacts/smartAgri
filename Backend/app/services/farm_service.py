@@ -2,10 +2,11 @@ import uuid
 from datetime import UTC, datetime
 
 from sqlalchemy import and_, or_, select, update
+from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy.orm import selectinload
 
-from app.core.errors import ConflictException, NotFoundException
+from app.core.errors import ConflictException, NotFoundException, ValidationException
 from app.core.geo import (
     compute_area_ha,
     geojson_to_postgis_point,
@@ -69,12 +70,16 @@ class FarmService:
 
         if cursor:
             cursor_dt, cursor_id = decode_cursor(cursor)
+            try:
+                cursor_uuid = uuid.UUID(cursor_id)
+            except (ValueError, TypeError) as err:
+                raise ValidationException("Curseur de pagination invalide.") from err
             stmt = stmt.where(
                 or_(
                     Farm.created_at < cursor_dt,
                     and_(
                         Farm.created_at == cursor_dt,
-                        Farm.id < uuid.UUID(cursor_id),
+                        Farm.id < cursor_uuid,
                     ),
                 )
             )
@@ -98,12 +103,15 @@ class FarmService:
         user: User,
         data: FarmCreateRequest,
     ) -> tuple[FarmResponse, bool]:
+        user_id = user.id
         if data.id is not None:
             existing = (
                 await session.execute(select(Farm).where(Farm.id == data.id))
             ).scalar_one_or_none()
             if existing is not None:
-                if existing.owner_id == user.id:
+                if existing.deleted_at is not None:
+                    raise ConflictException("Cette ressource a été supprimée.")
+                if existing.owner_id == user_id:
                     return farm_to_response(existing), False
                 raise ConflictException("Une ressource avec cet identifiant existe déjà.")
 
@@ -121,14 +129,28 @@ class FarmService:
         )
         farm = Farm(
             id=data.id or uuid.uuid4(),
-            owner_id=user.id,
+            owner_id=user_id,
             name=data.name,
             village=data.village,
             admin_area_id=data.admin_area_id,
             location=loc_geom,
         )
         session.add(farm)
-        await session.commit()
+        try:
+            await session.commit()
+        except IntegrityError:
+            await session.rollback()
+            if data.id is not None:
+                existing = (
+                    await session.execute(select(Farm).where(Farm.id == data.id))
+                ).scalar_one_or_none()
+                if existing is not None:
+                    if existing.deleted_at is not None:
+                        raise ConflictException("Cette ressource a été supprimée.")
+                    if existing.owner_id == user_id:
+                        return farm_to_response(existing), False
+                    raise ConflictException("Une ressource avec cet identifiant existe déjà.")
+            raise
         await session.refresh(farm)
         return farm_to_response(farm), True
 
@@ -285,12 +307,16 @@ class FarmService:
 
         if cursor:
             cursor_dt, cursor_id = decode_cursor(cursor)
+            try:
+                cursor_uuid = uuid.UUID(cursor_id)
+            except (ValueError, TypeError) as err:
+                raise ValidationException("Curseur de pagination invalide.") from err
             stmt = stmt.where(
                 or_(
                     Plot.created_at < cursor_dt,
                     and_(
                         Plot.created_at == cursor_dt,
-                        Plot.id < uuid.UUID(cursor_id),
+                        Plot.id < cursor_uuid,
                     ),
                 )
             )
@@ -315,6 +341,7 @@ class FarmService:
         farm_id: uuid.UUID,
         data: PlotCreateRequest,
     ) -> tuple[PlotResponse, bool]:
+        user_id = user.id
         farm = (
             await session.execute(
                 select(Farm).where(
@@ -324,20 +351,22 @@ class FarmService:
             )
         ).scalar_one_or_none()
 
-        if farm is None or farm.owner_id != user.id:
+        if farm is None or farm.owner_id != user_id:
             raise NotFoundException("Ferme introuvable.")
 
         if data.id is not None:
-            existing = (
-                await session.execute(
-                    select(Plot)
-                    .options(selectinload(Plot.farm))
-                    .where(Plot.id == data.id)
-                )
-            ).scalar_one_or_none()
-            if existing is not None:
-                if existing.farm.owner_id == user.id:
-                    return plot_to_response(existing), False
+            stmt = (
+                select(Plot, Farm.owner_id)
+                .join(Farm, Plot.farm_id == Farm.id)
+                .where(Plot.id == data.id)
+            )
+            row = (await session.execute(stmt)).first()
+            if row is not None:
+                existing_plot, farm_owner_id = row
+                if existing_plot.deleted_at is not None:
+                    raise ConflictException("Cette ressource a été supprimée.")
+                if farm_owner_id == user_id:
+                    return plot_to_response(existing_plot), False
                 raise ConflictException("Une ressource avec cet identifiant existe déjà.")
 
         await ensure_quota(session, user, "plots")
@@ -359,7 +388,25 @@ class FarmService:
             irrigation=data.irrigation,
         )
         session.add(plot)
-        await session.commit()
+        try:
+            await session.commit()
+        except IntegrityError:
+            await session.rollback()
+            if data.id is not None:
+                stmt = (
+                    select(Plot, Farm.owner_id)
+                    .join(Farm, Plot.farm_id == Farm.id)
+                    .where(Plot.id == data.id)
+                )
+                row = (await session.execute(stmt)).first()
+                if row is not None:
+                    existing_plot, farm_owner_id = row
+                    if existing_plot.deleted_at is not None:
+                        raise ConflictException("Cette ressource a été supprimée.")
+                    if farm_owner_id == user_id:
+                        return plot_to_response(existing_plot), False
+                    raise ConflictException("Une ressource avec cet identifiant existe déjà.")
+            raise
         await session.refresh(plot)
         return plot_to_response(plot), True
 
@@ -411,10 +458,14 @@ class FarmService:
         if data.name is not None:
             plot.name = data.name
         if data.geom is not None:
+            if data.area_ha is not None:
+                raise ValidationException("La surface est calculée à partir de la géométrie.")
             wkb_geom = geojson_to_postgis_polygon(data.geom)
             plot.area_ha = await compute_area_ha(session, wkb_geom)
             plot.geom = wkb_geom
         elif data.area_ha is not None:
+            if plot.geom is not None:
+                raise ValidationException("La surface est calculée à partir de la géométrie.")
             plot.area_ha = data.area_ha
         if data.soil_type is not None:
             plot.soil_type = data.soil_type

@@ -1,3 +1,4 @@
+import asyncio
 import re
 import uuid
 from datetime import date
@@ -390,3 +391,183 @@ async def test_farms_and_plots_cursor_pagination(client: AsyncClient) -> None:
     ]
     assert len(collected_ids) == 5
     assert set(collected_ids) == set(farm_ids)
+
+
+async def test_farm_and_plot_concurrent_same_id_idempotent(client: AsyncClient) -> None:
+    headers = await _register_verified(client, PHONE_USER1)
+    farm_id = str(uuid.uuid4())
+    farm_payload = {"id": farm_id, "name": "Ferme Concurrente"}
+    res1, res2 = await asyncio.gather(
+        client.post("/api/v1/farms", json=farm_payload, headers=headers),
+        client.post("/api/v1/farms", json=farm_payload, headers=headers),
+    )
+    assert {res1.status_code, res2.status_code} == {200, 201}
+    assert res1.json()["id"] == farm_id
+    assert res2.json()["id"] == farm_id
+
+    plot_id = str(uuid.uuid4())
+    plot_payload = {"id": plot_id, "name": "Parcelle Concurrente", "area_ha": 1.5}
+    p_res1, p_res2 = await asyncio.gather(
+        client.post(f"/api/v1/farms/{farm_id}/plots", json=plot_payload, headers=headers),
+        client.post(f"/api/v1/farms/{farm_id}/plots", json=plot_payload, headers=headers),
+    )
+    assert {p_res1.status_code, p_res2.status_code} == {200, 201}
+    assert p_res1.json()["id"] == plot_id
+    assert p_res2.json()["id"] == plot_id
+
+
+async def test_farm_and_plot_deleted_id_conflict_409(client: AsyncClient) -> None:
+    headers = await _register_verified(client, PHONE_USER1)
+    farm_id = str(uuid.uuid4())
+    create_farm = await client.post(
+        "/api/v1/farms", json={"id": farm_id, "name": "Ferme Supprimable"}, headers=headers
+    )
+    assert create_farm.status_code == 201
+
+    del_farm = await client.delete(f"/api/v1/farms/{farm_id}", headers=headers)
+    assert del_farm.status_code == 204
+
+    recreate_farm = await client.post(
+        "/api/v1/farms", json={"id": farm_id, "name": "Ferme Supprimable"}, headers=headers
+    )
+    assert recreate_farm.status_code == 409
+    assert recreate_farm.json()["error"]["code"] == "CONFLICT"
+    assert recreate_farm.json()["error"]["message"] == "Cette ressource a été supprimée."
+
+    farm2_res = await client.post(
+        "/api/v1/farms", json={"name": "Ferme Active"}, headers=headers
+    )
+    farm2_id = farm2_res.json()["id"]
+
+    plot_id = str(uuid.uuid4())
+    create_plot = await client.post(
+        f"/api/v1/farms/{farm2_id}/plots",
+        json={"id": plot_id, "name": "Parcelle Supprimable", "area_ha": 1.0},
+        headers=headers,
+    )
+    assert create_plot.status_code == 201
+
+    del_plot = await client.delete(f"/api/v1/plots/{plot_id}", headers=headers)
+    assert del_plot.status_code == 204
+
+    recreate_plot = await client.post(
+        f"/api/v1/farms/{farm2_id}/plots",
+        json={"id": plot_id, "name": "Parcelle Supprimable", "area_ha": 1.0},
+        headers=headers,
+    )
+    assert recreate_plot.status_code == 409
+    assert recreate_plot.json()["error"]["code"] == "CONFLICT"
+    assert recreate_plot.json()["error"]["message"] == "Cette ressource a été supprimée."
+
+
+async def test_plot_area_ha_bounds_and_geometry_conflict(client: AsyncClient) -> None:
+    headers = await _register_verified(client, PHONE_USER1)
+    farm_res = await client.post(
+        "/api/v1/farms", json={"name": "Ferme Test Area"}, headers=headers
+    )
+    farm_id = farm_res.json()["id"]
+
+    err_zero = await client.post(
+        f"/api/v1/farms/{farm_id}/plots",
+        json={"name": "P0", "area_ha": 0},
+        headers=headers,
+    )
+    assert err_zero.status_code == 422
+
+    err_neg = await client.post(
+        f"/api/v1/farms/{farm_id}/plots",
+        json={"name": "Pneg", "area_ha": -2.0},
+        headers=headers,
+    )
+    assert err_neg.status_code == 422
+
+    err_large = await client.post(
+        f"/api/v1/farms/{farm_id}/plots",
+        json={"name": "Plarge", "area_ha": 10000.5},
+        headers=headers,
+    )
+    assert err_large.status_code == 422
+
+    poly = {
+        "type": "Polygon",
+        "coordinates": [
+            [
+                [2.1098, 13.5116],
+                [2.1107, 13.5116],
+                [2.1107, 13.5125],
+                [2.1098, 13.5125],
+                [2.1098, 13.5116],
+            ]
+        ],
+    }
+    plot_geom = await client.post(
+        f"/api/v1/farms/{farm_id}/plots",
+        json={"name": "PGeom", "geom": poly},
+        headers=headers,
+    )
+    assert plot_geom.status_code == 201
+    geom_plot_id = plot_geom.json()["id"]
+
+    patch_manual_area = await client.patch(
+        f"/api/v1/plots/{geom_plot_id}",
+        json={"area_ha": 5.0},
+        headers=headers,
+    )
+    assert patch_manual_area.status_code == 422
+    assert patch_manual_area.json()["error"]["code"] == "VALIDATION_ERROR"
+
+    plot_no_geom = await client.post(
+        f"/api/v1/farms/{farm_id}/plots",
+        json={"name": "PNoGeom", "area_ha": 2.0},
+        headers=headers,
+    )
+    assert plot_no_geom.status_code == 201
+    no_geom_plot_id = plot_no_geom.json()["id"]
+
+    patch_ok = await client.patch(
+        f"/api/v1/plots/{no_geom_plot_id}",
+        json={"area_ha": 4.5},
+        headers=headers,
+    )
+    assert patch_ok.status_code == 200
+    assert float(patch_ok.json()["area_ha"]) == 4.5
+
+    patch_bounds = await client.patch(
+        f"/api/v1/plots/{no_geom_plot_id}",
+        json={"area_ha": 0},
+        headers=headers,
+    )
+    assert patch_bounds.status_code == 422
+
+
+async def test_geo_point_non_numeric_and_invalid_cursor_422(
+    client: AsyncClient,
+) -> None:
+    headers = await _register_verified(client, PHONE_USER1)
+
+    bad_point1 = await client.post(
+        "/api/v1/farms",
+        json={"name": "BadPt1", "location": {"type": "Point", "coordinates": ["abc", "def"]}},
+        headers=headers,
+    )
+    assert bad_point1.status_code == 422
+    assert bad_point1.json()["error"]["code"] == "VALIDATION_ERROR"
+
+    bad_point2 = await client.post(
+        "/api/v1/farms",
+        json={"name": "BadPt2", "location": {"type": "Point", "coordinates": [None, 13.5]}},
+        headers=headers,
+    )
+    assert bad_point2.status_code == 422
+
+    cur_res1 = await client.get("/api/v1/farms?cursor=not-a-valid-cursor", headers=headers)
+    assert cur_res1.status_code == 422
+    assert cur_res1.json()["error"]["code"] == "VALIDATION_ERROR"
+
+    cur_res2 = await client.get("/api/v1/farms?cursor=eyJ0IjoiYmFkIiwiaWQiOiJub3QtdXVpZCJ9", headers=headers)
+    assert cur_res2.status_code == 422
+
+    cur_res3 = await client.get(
+        f"/api/v1/farms/{uuid.uuid4()}/plots?cursor=invalid-cursor", headers=headers
+    )
+    assert cur_res3.status_code == 422

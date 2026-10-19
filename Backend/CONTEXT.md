@@ -51,13 +51,14 @@ Plateforme nigérienne d'IA agricole. L'utilisateur photographie sa culture (ou 
 | Doc backend | Document Claude : https://claude.ai/code/artifact/9406325d-bce3-4764-b6aa-1001dae55965 (structure, tables, endpoints) |
 | Dépôt GitHub | https://github.com/Nabs-impacts/SmartAgri — backend dans `Backend/` |
 
-## 5. État d'avancement (≈ 20 % du backend)
+## 5. État d'avancement (≈ 26 % du backend)
 
 | Phase | Contenu | État |
 |---|---|---|
 | 1 | Fondations : config, middlewares, 45 modèles, migration, Docker, `/health` | **~100 % — validée sous Docker** (migration vérifiée par `alembic check`). Reste : pinning des dépendances |
 | 2 | Auth et comptes | **100 %** : 7 routes d'auth + `/users/me` complet (profil, mot de passe, appareils, consentements, export, suppression), 56 tests (commit `848c30f`). À compléter après la phase 3 : anonymisation (voir plus bas) |
-| 3 à 8 | Cœur agricole + sync, médias, IA, facturation, données/alertes, admin | 0 % |
+| 3 | Cœur agricole + sync | **tâche A faite** (seed, catalogues, fermes, parcelles, quota des parcelles : 70 tests, commit `a02604f`). Restent B (cycles, bilan, organisations) et C (sync, anonymisation complète) |
+| 4 à 8 | Médias, IA, facturation, données/alertes, admin | 0 % |
 
 **Validé le 17 octobre 2026** : `docker compose up -d --build` démarre les 7 services (`db`, `redis`, `rustfs`, `rustfs-init`, `api`, `worker`, `beat`) ; `alembic upgrade head` applique `0001_initial` ; `GET /health` renvoie `{"status":"healthy","database":"ok","redis":"ok","storage":"ok"}`. Le comptage de 50 relations dans le schéma `public` est normal : 45 tables + `alembic_version` + `spatial_ref_sys` (PostGIS) + la vue `v_cycle_yield` + 2 vues PostGIS.
 
@@ -254,7 +255,7 @@ Règles permanentes :
 - Avant de finir : make test et ruff passent, et PROGRESS.md est à jour.
 ```
 
-**Tâche A — seed, catalogues, fermes, parcelles :**
+**Tâche A — seed, catalogues, fermes, parcelles : FAITE (commit `a02604f`, 70 tests).** Revue : suppression douce en cascade, propriété (404), idempotence, surface PostGIS et quota corrects. Défauts relevés, à corriger en « partie 0 » de la tâche B : deux POST simultanés avec le même id client donnent une 500 (IntegrityError) ; un id client déjà supprimé est renvoyé comme existant ; `area_ha` modifiable à la main même quand la parcelle a une géométrie et sans bornes ; coordonnées non numériques ou curseur invalide pouvant donner une 500. Message utilisé :
 
 ```
 Lis smartagri-prompt-backend.md (sections 5, 7.4, 7.5 et 11) et PROGRESS.md.
@@ -313,6 +314,16 @@ Messages d'erreur en français avec accents. Mets à jour PROGRESS.md, puis arr�
 Lis smartagri-prompt-backend.md (sections 5, 7.3 et 7.4) et PROGRESS.md.
 Tâche B : cycles de culture, carnet, récoltes, bilan, organisations et accès des agents, avec tests. Fais les parties
 dans l'ordre et lance make test après chacune.
+
+Partie 0 : corrections sur la tâche A (chacune avec un test)
+0a. POST /farms et POST /farms/{id}/plots : si deux requêtes simultanées arrivent avec le même id client, la seconde ne
+    doit pas échouer en 500 (IntegrityError) : intercepte l'erreur, relis la ressource et applique la règle d'idempotence.
+0b. Si l'id client correspond à une ressource supprimée (deleted_at non nul), renvoie 409 « Cette ressource a été
+    supprimée. » au lieu de la renvoyer comme existante (fermes et parcelles).
+0c. Parcelles : area_ha doit être > 0 et <= 10000 dans les schémas de création et de modification ; si la parcelle a une
+    géométrie, refuse (422) une modification manuelle de area_ha (la surface vient de la géométrie).
+0d. geo.py : des coordonnées non numériques dans un point GeoJSON doivent donner 422 (pas 500) ; un curseur de pagination
+    invalide doit donner 422 sur toutes les routes paginées.
 
 Partie 1 : cycles, activités, récoltes
 1. app/services/cycle_service.py et app/api/v1/cycles.py : GET /plots/{id}/cycles ; POST /plots/{id}/cycles (id client

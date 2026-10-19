@@ -7,6 +7,9 @@ from fastapi import Query
 from pydantic import BaseModel
 
 
+from app.core.errors import ValidationException
+
+
 def encode_cursor(dt: datetime, item_id: str | uuid.UUID | int) -> str:
     payload = {
         "t": dt.isoformat(),
@@ -17,10 +20,17 @@ def encode_cursor(dt: datetime, item_id: str | uuid.UUID | int) -> str:
 
 
 def decode_cursor(cursor: str) -> tuple[datetime, str]:
-    padded = cursor + "=" * (-len(cursor) % 4)
-    raw = base64.urlsafe_b64decode(padded.encode("utf-8"))
-    payload = json.loads(raw.decode("utf-8"))
-    return datetime.fromisoformat(payload["t"]), str(payload["id"])
+    try:
+        padded = cursor + "=" * (-len(cursor) % 4)
+        raw = base64.urlsafe_b64decode(padded.encode("utf-8"))
+        payload = json.loads(raw.decode("utf-8"))
+        if not isinstance(payload, dict) or "t" not in payload or "id" not in payload:
+            raise ValidationException("Curseur de pagination invalide.")
+        return datetime.fromisoformat(payload["t"]), str(payload["id"])
+    except ValidationException:
+        raise
+    except Exception as err:
+        raise ValidationException("Curseur de pagination invalide.") from err
 
 
 class PaginationParams:
@@ -31,15 +41,14 @@ class PaginationParams:
     ) -> None:
         self.limit = limit
         self.cursor = cursor
+        if cursor is not None:
+            decode_cursor(cursor)
 
     @property
     def decoded_cursor(self) -> tuple[datetime, str] | None:
         if not self.cursor:
             return None
-        try:
-            return decode_cursor(self.cursor)
-        except Exception:
-            return None
+        return decode_cursor(self.cursor)
 
 
 class PaginatedResponse[T](BaseModel):
