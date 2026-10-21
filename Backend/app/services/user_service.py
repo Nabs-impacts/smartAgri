@@ -3,7 +3,7 @@ from datetime import UTC, date, datetime
 from decimal import Decimal
 from typing import Any
 
-from sqlalchemy import delete, func, select, update
+from sqlalchemy import case, delete, func, select, update
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
 
@@ -17,8 +17,18 @@ from app.core.errors import (
 from app.core.security import hash_password, verify_password
 from app.db.models.billing import Payment, Plan, Subscription, UsageRecord
 from app.db.models.farming import CropCycle, Farm, FarmActivity, Harvest, Plot
-from app.db.models.identity import AdminArea, Consent, Device, RefreshToken, User
-from app.db.models.media_ai import Diagnostic, Recommendation
+from app.db.models.field_data import Notification
+from app.db.models.identity import (
+    AdminArea,
+    Consent,
+    Device,
+    OtpCode,
+    RefreshToken,
+    User,
+)
+from app.db.models.knowledge import ChatMessage, ChatSession
+from app.db.models.media_ai import Diagnostic, MediaFile, Recommendation
+from app.db.models.organizations import OrganizationMember
 from app.schemas.user import (
     ConsentCreateRequest,
     ConsentResponse,
@@ -168,6 +178,64 @@ _PAYMENT_FIELDS = (
     "payer_phone",
     "status",
     "paid_at",
+    "created_at",
+)
+_SUBSCRIPTION_FIELDS = (
+    "id",
+    "user_id",
+    "organization_id",
+    "plan_id",
+    "status",
+    "current_period_start",
+    "current_period_end",
+    "auto_renew",
+    "canceled_at",
+    "created_at",
+    "updated_at",
+)
+_ORGANIZATION_MEMBERSHIP_FIELDS = (
+    "organization_id",
+    "member_role",
+    "joined_at",
+)
+_NOTIFICATION_FIELDS = (
+    "id",
+    "user_id",
+    "alert_id",
+    "channel",
+    "title",
+    "body",
+    "status",
+    "sent_at",
+    "read_at",
+    "created_at",
+)
+_CHAT_SESSION_FIELDS = ("id", "plot_id", "title", "created_at")
+_CHAT_MESSAGE_FIELDS = (
+    "id",
+    "session_id",
+    "role",
+    "content",
+    "media_id",
+    "citations",
+    "tokens_in",
+    "tokens_out",
+    "created_at",
+)
+_MEDIA_FIELDS = (
+    "id",
+    "owner_id",
+    "plot_id",
+    "crop_cycle_id",
+    "kind",
+    "mime_type",
+    "size_bytes",
+    "width",
+    "height",
+    "duration_s",
+    "sha256",
+    "captured_at",
+    "upload_status",
     "created_at",
 )
 
@@ -519,6 +587,55 @@ class UserService:
                 .order_by(Payment.created_at, Payment.id)
             )
         ).scalars().all()
+        subscriptions = (
+            await session.execute(
+                select(Subscription)
+                .where(Subscription.user_id == user.id)
+                .order_by(Subscription.created_at, Subscription.id)
+            )
+        ).scalars().all()
+        organization_memberships = (
+            await session.execute(
+                select(OrganizationMember)
+                .where(OrganizationMember.user_id == user.id)
+                .order_by(
+                    OrganizationMember.joined_at,
+                    OrganizationMember.organization_id,
+                )
+            )
+        ).scalars().all()
+        notifications = (
+            await session.execute(
+                select(Notification)
+                .where(Notification.user_id == user.id)
+                .order_by(Notification.created_at, Notification.id)
+            )
+        ).scalars().all()
+        chat_sessions = (
+            await session.execute(
+                select(ChatSession)
+                .where(ChatSession.user_id == user.id)
+                .order_by(ChatSession.created_at, ChatSession.id)
+            )
+        ).scalars().all()
+        chat_messages = (
+            await session.execute(
+                select(ChatMessage)
+                .join(ChatSession, ChatMessage.session_id == ChatSession.id)
+                .where(ChatSession.user_id == user.id)
+                .order_by(ChatMessage.created_at, ChatMessage.id)
+            )
+        ).scalars().all()
+        media_files = (
+            await session.execute(
+                select(MediaFile)
+                .where(
+                    MediaFile.owner_id == user.id,
+                    MediaFile.deleted_at.is_(None),
+                )
+                .order_by(MediaFile.created_at, MediaFile.id)
+            )
+        ).scalars().all()
 
         return UserDataExportResponse(
             user=_dump_record(user, _USER_FIELDS),
@@ -539,6 +656,29 @@ class UserService:
                 for item in recommendations
             ],
             payments=[_dump_record(item, _PAYMENT_FIELDS) for item in payments],
+            subscriptions=[
+                _dump_record(item, _SUBSCRIPTION_FIELDS)
+                for item in subscriptions
+            ],
+            organization_memberships=[
+                _dump_record(item, _ORGANIZATION_MEMBERSHIP_FIELDS)
+                for item in organization_memberships
+            ],
+            notifications=[
+                _dump_record(item, _NOTIFICATION_FIELDS)
+                for item in notifications
+            ],
+            chat_sessions=[
+                _dump_record(item, _CHAT_SESSION_FIELDS)
+                for item in chat_sessions
+            ],
+            chat_messages=[
+                _dump_record(item, _CHAT_MESSAGE_FIELDS)
+                for item in chat_messages
+            ],
+            media_files=[
+                _dump_record(item, _MEDIA_FIELDS) for item in media_files
+            ],
         )
 
     async def delete_account(
@@ -547,7 +687,45 @@ class UserService:
         user: User,
         client_ip: str | None = None,
     ) -> None:
+        owned_org_ids = list(
+            (
+                await session.scalars(
+                    select(OrganizationMember.organization_id).where(
+                        OrganizationMember.user_id == user.id,
+                        OrganizationMember.member_role == "owner",
+                    )
+                )
+            ).all()
+        )
+        for organization_id in owned_org_ids:
+            owner_count = int(
+                (
+                    await session.execute(
+                        select(func.count(OrganizationMember.user_id)).where(
+                            OrganizationMember.organization_id == organization_id,
+                            OrganizationMember.member_role == "owner",
+                        )
+                    )
+                ).scalar_one()
+            )
+            member_count = int(
+                (
+                    await session.execute(
+                        select(func.count(OrganizationMember.user_id)).where(
+                            OrganizationMember.organization_id == organization_id
+                        )
+                    )
+                ).scalar_one()
+            )
+            if owner_count == 1 and member_count > 1:
+                raise ConflictException(
+                    "Vous êtes le seul propriétaire d'une organisation qui compte "
+                    "d'autres membres. Transférez la propriété avant de supprimer "
+                    "votre compte."
+                )
+
         now = datetime.now(UTC)
+        old_phone = user.phone
         anonymized_phone = f"deleted-{uuid.uuid4().hex}"
         user.phone = anonymized_phone
         user.email = None
@@ -555,6 +733,73 @@ class UserService:
         user.password_hash = None
         user.is_active = False
         user.deleted_at = now
+
+        await session.execute(delete(OtpCode).where(OtpCode.phone == old_phone))
+        await session.execute(
+            update(Payment)
+            .where(Payment.user_id == user.id)
+            .values(
+                payer_phone=case(
+                    (Payment.payer_phone.is_(None), None),
+                    else_=func.concat(
+                        "**", func.right(Payment.payer_phone, 2)
+                    ),
+                )
+            )
+        )
+        await session.execute(
+            update(Farm)
+            .where(Farm.owner_id == user.id)
+            .values(
+                location=None,
+                village=None,
+                name="Exploitation supprimée",
+            )
+        )
+        user_farm_ids = select(Farm.id).where(Farm.owner_id == user.id)
+        await session.execute(
+            update(Plot)
+            .where(Plot.farm_id.in_(user_farm_ids))
+            .values(geom=None, name="Parcelle supprimée")
+        )
+        user_plot_ids = select(Plot.id).where(Plot.farm_id.in_(user_farm_ids))
+        await session.execute(
+            update(CropCycle)
+            .where(CropCycle.plot_id.in_(user_plot_ids))
+            .values(notes=None)
+        )
+        user_cycle_ids = select(CropCycle.id).where(
+            CropCycle.plot_id.in_(user_plot_ids)
+        )
+        await session.execute(
+            update(FarmActivity)
+            .where(FarmActivity.crop_cycle_id.in_(user_cycle_ids))
+            .values(notes=None)
+        )
+        await session.execute(
+            update(Diagnostic)
+            .where(Diagnostic.user_id == user.id)
+            .values(location=None, user_note=None)
+        )
+        user_chat_session_ids = select(ChatSession.id).where(
+            ChatSession.user_id == user.id
+        )
+        await session.execute(
+            delete(ChatMessage).where(
+                ChatMessage.session_id.in_(user_chat_session_ids)
+            )
+        )
+        await session.execute(
+            delete(ChatSession).where(ChatSession.user_id == user.id)
+        )
+        await session.execute(
+            delete(Notification).where(Notification.user_id == user.id)
+        )
+        await session.execute(
+            delete(OrganizationMember).where(
+                OrganizationMember.user_id == user.id
+            )
+        )
         await session.execute(delete(Device).where(Device.user_id == user.id))
         await session.execute(
             delete(RefreshToken).where(RefreshToken.user_id == user.id)

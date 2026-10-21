@@ -190,10 +190,9 @@ class SyncService:
 
         existing = await session.get(Plot, change.id)
         if existing is not None:
-            if existing.farm_id != data.farm_id:
-                parent_owner = await self._farm_owner(session, existing.farm_id)
-                if parent_owner != user.id:
-                    return self._rejected(change, OTHER_USER_ERROR)
+            parent_owner = await self._farm_owner(session, existing.farm_id)
+            if parent_owner != user.id:
+                return self._rejected(change, OTHER_USER_ERROR)
             if existing.deleted_at is not None:
                 return self._rejected(change, DELETED_ERROR)
             if client_updated <= existing.updated_at:
@@ -250,6 +249,8 @@ class SyncService:
 
         existing = await session.get(CropCycle, change.id)
         if existing is not None:
+            if await self._cycle_owner(session, existing.id) != user.id:
+                return self._rejected(change, OTHER_USER_ERROR)
             if existing.deleted_at is not None:
                 return self._rejected(change, DELETED_ERROR)
             if client_updated <= existing.updated_at:
@@ -300,6 +301,11 @@ class SyncService:
 
         existing = await session.get(FarmActivity, change.id)
         if existing is not None:
+            if (
+                await self._activity_owner(session, existing.id)
+                != user.id
+            ):
+                return self._rejected(change, OTHER_USER_ERROR)
             if existing.deleted_at is not None:
                 return self._rejected(change, DELETED_ERROR)
             if client_updated <= existing.updated_at:
@@ -348,6 +354,8 @@ class SyncService:
 
         existing = await session.get(Harvest, change.id)
         if existing is not None:
+            if await self._harvest_owner(session, existing.id) != user.id:
+                return self._rejected(change, OTHER_USER_ERROR)
             if existing.deleted_at is not None:
                 return self._rejected(change, DELETED_ERROR)
             if client_updated <= existing.updated_at:
@@ -381,6 +389,47 @@ class SyncService:
     ) -> uuid.UUID | None:
         return (
             await session.execute(select(Farm.owner_id).where(Farm.id == farm_id))
+        ).scalar_one_or_none()
+
+    async def _cycle_owner(
+        self, session: AsyncSession, cycle_id: uuid.UUID
+    ) -> uuid.UUID | None:
+        return (
+            await session.execute(
+                select(Farm.owner_id)
+                .select_from(Farm)
+                .join(Plot, Plot.farm_id == Farm.id)
+                .join(CropCycle, CropCycle.plot_id == Plot.id)
+                .where(CropCycle.id == cycle_id)
+            )
+        ).scalar_one_or_none()
+
+    async def _activity_owner(
+        self, session: AsyncSession, activity_id: uuid.UUID
+    ) -> uuid.UUID | None:
+        return (
+            await session.execute(
+                select(Farm.owner_id)
+                .select_from(Farm)
+                .join(Plot, Plot.farm_id == Farm.id)
+                .join(CropCycle, CropCycle.plot_id == Plot.id)
+                .join(FarmActivity, FarmActivity.crop_cycle_id == CropCycle.id)
+                .where(FarmActivity.id == activity_id)
+            )
+        ).scalar_one_or_none()
+
+    async def _harvest_owner(
+        self, session: AsyncSession, harvest_id: uuid.UUID
+    ) -> uuid.UUID | None:
+        return (
+            await session.execute(
+                select(Farm.owner_id)
+                .select_from(Farm)
+                .join(Plot, Plot.farm_id == Farm.id)
+                .join(CropCycle, CropCycle.plot_id == Plot.id)
+                .join(Harvest, Harvest.crop_cycle_id == CropCycle.id)
+                .where(Harvest.id == harvest_id)
+            )
         ).scalar_one_or_none()
 
     async def _farm_parent_error(

@@ -89,6 +89,10 @@ class ConsentResponse(BaseModel):
     created_at: datetime
 
 
+class AccountDeleteRequest(BaseModel):
+    confirmation: Literal["SUPPRIMER MON COMPTE"]
+
+
 class UserDataExportResponse(BaseModel):
     user: dict[str, Any]
     devices: list[dict[str, Any]]
@@ -101,3 +105,9 @@ class UserDataExportResponse(BaseModel):
     diagnostics: list[dict[str, Any]]
     recommendations: list[dict[str, Any]]
     payments: list[dict[str, Any]]
+    subscriptions: list[dict[str, Any]]
+    organization_memberships: list[dict[str, Any]]
+    notifications: list[dict[str, Any]]
+    chat_sessions: list[dict[str, Any]]
+    chat_messages: list[dict[str, Any]]
+    media_files: list[dict[str, Any]]

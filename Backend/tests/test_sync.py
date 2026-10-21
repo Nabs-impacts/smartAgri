@@ -7,8 +7,16 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
-from app.db.models.farming import Crop
+from app.db.models.farming import (
+    Crop,
+    CropCycle,
+    Farm,
+    FarmActivity,
+    Harvest,
+    Plot,
+)
 from app.providers.sms.fake import FakeSmsProvider
+from app.services.sync_service import OTHER_USER_ERROR
 
 PHONE_USER1 = "+22792000001"
 PHONE_USER2 = "+22792000002"
@@ -557,3 +565,150 @@ async def test_push_enforces_plot_quota(
         "rejected",
     ]
     assert "Quota" in results[3]["error"]
+
+
+def _delete_change(entity: str, row_id: uuid.UUID) -> dict:
+    return {
+        "entity": entity,
+        "op": "delete",
+        "id": str(row_id),
+        "data": {},
+        "updated_at": _iso(_now()),
+    }
+
+
+def _change_by_id(pull_body: dict, entity: str, row_id: uuid.UUID) -> dict:
+    return next(
+        change
+        for change in pull_body["changes"]
+        if change["entity"] == entity and change["id"] == str(row_id)
+    )
+
+
+async def _create_chain(
+    client: AsyncClient,
+    headers: dict[str, str],
+    crop_id: int,
+    updated_at: datetime,
+) -> tuple[uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID, uuid.UUID]:
+    farm_id = uuid.uuid4()
+    plot_id = uuid.uuid4()
+    cycle_id = uuid.uuid4()
+    activity_id = uuid.uuid4()
+    harvest_id = uuid.uuid4()
+    results = await _push(
+        client,
+        headers,
+        [
+            _farm_change(farm_id, "Ferme", updated_at),
+            _plot_change(plot_id, farm_id, "Parcelle", updated_at),
+            _cycle_change(cycle_id, plot_id, crop_id, updated_at),
+            _activity_change(activity_id, cycle_id, updated_at),
+            _harvest_change(harvest_id, cycle_id, updated_at),
+        ],
+    )
+    assert [result["status"] for result in results] == ["applied"] * 5
+    return farm_id, plot_id, cycle_id, activity_id, harvest_id
+
+
+async def test_cannot_upsert_other_user_entity_with_own_parent(
+    client: AsyncClient, db_session: AsyncSession
+) -> None:
+    headers_a, _ = await _register_verified(client, PHONE_USER1)
+    headers_b, _ = await _register_verified(client, PHONE_USER2)
+    crop_id = await _crop_id(db_session)
+    now = _now()
+    farm_a, plot_a, cycle_a, activity_a, harvest_a = await _create_chain(
+        client, headers_a, crop_id, now
+    )
+    farm_b, plot_b, cycle_b, _, _ = await _create_chain(
+        client, headers_b, crop_id, now
+    )
+
+    later = now + timedelta(minutes=1)
+    results = await _push(
+        client,
+        headers_b,
+        [
+            _plot_change(plot_a, farm_b, "Parcelle volée", later),
+            _cycle_change(cycle_a, plot_b, crop_id, later),
+            _activity_change(activity_a, cycle_b, later),
+            _harvest_change(harvest_a, cycle_b, later),
+        ],
+    )
+
+    assert [result["status"] for result in results] == ["rejected"] * 4
+    assert [result["error"] for result in results] == [OTHER_USER_ERROR] * 4
+
+    db_session.expire_all()
+    plot_row = await db_session.get(Plot, plot_a)
+    cycle_row = await db_session.get(CropCycle, cycle_a)
+    activity_row = await db_session.get(FarmActivity, activity_a)
+    harvest_row = await db_session.get(Harvest, harvest_a)
+    assert plot_row is not None and plot_row.farm_id == farm_a
+    assert cycle_row is not None and cycle_row.plot_id == plot_a
+    assert activity_row is not None and activity_row.crop_cycle_id == cycle_a
+    assert harvest_row is not None and harvest_row.crop_cycle_id == cycle_a
+
+    pull_a = await _pull(client, headers_a)
+    assert _change_by_id(pull_a, "plot", plot_a)["data"]["farm_id"] == str(
+        farm_a
+    )
+    assert _change_by_id(pull_a, "crop_cycle", cycle_a)["data"][
+        "plot_id"
+    ] == str(plot_a)
+    assert _change_by_id(pull_a, "farm_activity", activity_a)["data"][
+        "crop_cycle_id"
+    ] == str(cycle_a)
+    assert _change_by_id(pull_a, "harvest", harvest_a)["data"][
+        "crop_cycle_id"
+    ] == str(cycle_a)
+
+
+async def test_cannot_delete_other_user_entities(
+    client: AsyncClient, db_session: AsyncSession
+) -> None:
+    headers_a, _ = await _register_verified(client, PHONE_USER1)
+    headers_b, _ = await _register_verified(client, PHONE_USER2)
+    crop_id = await _crop_id(db_session)
+    now = _now()
+    farm_id, plot_id, cycle_id, activity_id, harvest_id = await _create_chain(
+        client, headers_a, crop_id, now
+    )
+
+    results = await _push(
+        client,
+        headers_b,
+        [
+            _delete_change("farm", farm_id),
+            _delete_change("plot", plot_id),
+            _delete_change("crop_cycle", cycle_id),
+            _delete_change("farm_activity", activity_id),
+            _delete_change("harvest", harvest_id),
+        ],
+    )
+
+    assert [result["status"] for result in results] == ["rejected"] * 5
+    assert [result["error"] for result in results] == [OTHER_USER_ERROR] * 5
+
+    pull_a = await _pull(client, headers_a)
+    for entity, row_id in (
+        ("farm", farm_id),
+        ("plot", plot_id),
+        ("crop_cycle", cycle_id),
+        ("farm_activity", activity_id),
+        ("harvest", harvest_id),
+    ):
+        assert _change_by_id(pull_a, entity, row_id)["deleted_at"] is None
+
+    db_session.expire_all()
+    farm_row = await db_session.get(Farm, farm_id)
+    plot_row = await db_session.get(Plot, plot_id)
+    cycle_row = await db_session.get(CropCycle, cycle_id)
+    activity_row = await db_session.get(FarmActivity, activity_id)
+    harvest_row = await db_session.get(Harvest, harvest_id)
+    assert farm_row is not None and farm_row.deleted_at is None
+    assert plot_row is not None and plot_row.deleted_at is None
+    assert cycle_row is not None and cycle_row.deleted_at is None
+    assert activity_row is not None and activity_row.deleted_at is None
+    assert harvest_row is not None and harvest_row.deleted_at is None

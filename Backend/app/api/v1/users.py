@@ -8,6 +8,7 @@ from app.db.models.identity import User
 from app.db.session import get_db
 from app.schemas.auth import MessageResponse
 from app.schemas.user import (
+    AccountDeleteRequest,
     ConsentCreateRequest,
     ConsentResponse,
     DeviceCreateRequest,
@@ -41,6 +42,7 @@ async def export_me(
 
 @router.delete("/me", response_model=MessageResponse)
 async def delete_me(
+    payload: AccountDeleteRequest,
     request: Request,
     current_user: User = Depends(get_current_user),
     session: AsyncSession = Depends(get_db),
