@@ -1,5 +1,6 @@
 import hashlib
 import json
+from collections.abc import AsyncGenerator
 from typing import Any
 
 from fastapi import Depends, Request
@@ -34,6 +35,7 @@ class IdempotencyContext:
         self.storage_key = storage_key
         self.lock_key = lock_key
         self.body_hash = body_hash
+        self.saved = False
 
     async def save(self, status_code: int, body: Any) -> None:
         payload = json.dumps(body, ensure_ascii=False, default=str)
@@ -47,24 +49,40 @@ class IdempotencyContext:
         )
         await self.redis.expire(self.storage_key, settings.IDEMPOTENCY_TTL_SECONDS)
         await self.redis.delete(self.lock_key)
+        self.saved = True
+
+
+def _body_hash(body: bytes) -> str:
+    try:
+        parsed = json.loads(body)
+    except (TypeError, ValueError):
+        return hashlib.sha256(body).hexdigest()
+    canonical = json.dumps(
+        parsed,
+        sort_keys=True,
+        separators=(",", ":"),
+        ensure_ascii=False,
+    )
+    return hashlib.sha256(canonical.encode("utf-8")).hexdigest()
 
 
 def idempotency_dependency(required: bool = False) -> Any:
     async def dependency(
         request: Request,
         current_user: User = Depends(get_current_user),
-    ) -> IdempotencyContext | None:
+    ) -> AsyncGenerator[IdempotencyContext | None, None]:
         raw_key = request.headers.get("Idempotency-Key")
         if raw_key is None:
             if required:
                 raise ValidationException("En-tête Idempotency-Key requis.")
-            return None
+            yield None
+            return
         key = raw_key.strip()
         if not key or len(key) > 255:
             raise ValidationException("Clé d'idempotence invalide.")
 
         body = await request.body()
-        body_hash = hashlib.sha256(body).hexdigest()
+        body_hash = _body_hash(body)
         route = request.scope.get("route")
         route_path = getattr(route, "path", request.url.path)
         route_name = f"{request.method}:{route_path}"
@@ -94,7 +112,12 @@ def idempotency_dependency(required: bool = False) -> Any:
             raise ConflictException(
                 "Une requête avec cette clé d'idempotence est déjà en cours."
             )
-        return IdempotencyContext(redis, storage_key, lock_key, body_hash)
+        context = IdempotencyContext(redis, storage_key, lock_key, body_hash)
+        try:
+            yield context
+        finally:
+            if not context.saved:
+                await context.redis.delete(context.lock_key)
 
     return dependency
 

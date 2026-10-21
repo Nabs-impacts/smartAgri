@@ -109,6 +109,27 @@ class StorageService:
 
         return await asyncio.to_thread(_head)
 
+    async def read_prefix(self, key: str, length: int = 32) -> bytes:
+        def _read() -> bytes:
+            try:
+                response = self._internal().get_object(
+                    Bucket=settings.S3_BUCKET,
+                    Key=key,
+                    Range=f"bytes=0-{length - 1}",
+                )
+            except ClientError as exc:
+                code = exc.response.get("Error", {}).get("Code")
+                if code in ("404", "NoSuchKey", "NotFound"):
+                    return b""
+                raise
+            body = response["Body"]
+            try:
+                return body.read(length)
+            finally:
+                body.close()
+
+        return await asyncio.to_thread(_read)
+
     async def delete(self, key: str) -> None:
         def _delete() -> None:
             try:

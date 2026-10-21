@@ -9,3 +9,4 @@ celery = Celery(
 )
 
 celery.autodiscover_tasks(["app.workers"], related_name="tasks_media", force=True)
+celery.autodiscover_tasks(["app.workers"], related_name="tasks_diagnostic", force=True)

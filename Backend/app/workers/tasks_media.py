@@ -15,7 +15,13 @@ async def _delete_objects(keys: list[str]) -> None:
         await storage_service.delete(key)
 
 
-@celery.task(name="tasks_media.purge_user_media")
+@celery.task(
+    name="tasks_media.purge_user_media",
+    autoretry_for=(Exception,),
+    retry_backoff=True,
+    retry_backoff_max=600,
+    max_retries=5,
+)
 def purge_user_media(user_id: str) -> int:
     owner_id = uuid.UUID(user_id)
     with SyncSessionLocal() as session:

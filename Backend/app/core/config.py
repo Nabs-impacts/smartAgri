@@ -83,6 +83,8 @@ class Settings(BaseSettings):
     INFERENCE_MODE: Literal["stub", "onnx"] = "stub"
     MODEL_CACHE_DIR: str = "/tmp/smartagri_models"
     DIAGNOSTIC_CONFIDENCE_THRESHOLD: float = 0.70
+    DIAGNOSTIC_SEVERITY_HIGH_MIN: float = 0.85
+    DIAGNOSTIC_SEVERITY_MEDIUM_MIN: float = 0.70
     OUTBREAK_MIN_CONFIDENCE: float = 0.50
     OUTBREAK_ALERT_THRESHOLD: int = 5
     OUTBREAK_ALERT_WINDOW_DAYS: int = 7

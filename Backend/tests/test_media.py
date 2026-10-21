@@ -1,21 +1,34 @@
 import hashlib
 import re
 import uuid
-from datetime import UTC, datetime
+from datetime import UTC, datetime, timedelta
 
 import httpx
+import pytest
 from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
+from app.core.errors import QuotaExceededException
 from app.db.models.identity import User
 from app.db.models.media_ai import MediaFile
 from app.providers.sms.fake import FakeSmsProvider
+from app.services.quota_service import ensure_storage_quota
 from app.services.storage_service import storage_service
 
 PHONE_USER1 = "+22793000001"
 PHONE_USER2 = "+22793000002"
 OTP_PATTERN = re.compile(r"(\d{6})")
+PNG_SIGNATURE = b"\x89PNG\r\n\x1a\n"
+MP4_SIGNATURE = b"\x00\x00\x00\x18ftypisom"
+
+
+def _png(payload: bytes) -> bytes:
+    return PNG_SIGNATURE + payload
+
+
+def _mp4(payload: bytes, size: int) -> bytes:
+    return (MP4_SIGNATURE + payload)[:size]
 
 
 def _last_otp_code() -> str:
@@ -109,7 +122,7 @@ def _iter_keys(value: object):
 
 async def test_media_upload_roundtrip(client: AsyncClient) -> None:
     headers = await _register_verified(client, PHONE_USER1)
-    data = b"contenu-image-de-test"
+    data = _png(b"contenu-image-de-test")
 
     requested = await _request_upload(client, headers, _image_payload(data))
     assert requested.status_code == 201
@@ -279,10 +292,36 @@ async def test_upload_validation_limits(client: AsyncClient) -> None:
     assert invalid_sha.status_code == 422
 
 
+async def test_unknown_mime_without_extension_is_rejected(
+    client: AsyncClient,
+    monkeypatch: pytest.MonkeyPatch,
+) -> None:
+    from app.core.config import settings
+
+    headers = await _register_verified(client, PHONE_USER1)
+    monkeypatch.setattr(
+        settings,
+        "ALLOWED_IMAGE_MIME",
+        [*settings.ALLOWED_IMAGE_MIME, "image/tiff"],
+    )
+    response = await _request_upload(
+        client,
+        headers,
+        {
+            "kind": "image",
+            "mime_type": "image/tiff",
+            "size_bytes": 10,
+            "sha256": "a" * 64,
+        },
+    )
+    assert response.status_code == 400
+    assert response.json()["error"]["code"] == "UPLOAD_INVALID"
+
+
 async def test_media_id_idempotence(client: AsyncClient) -> None:
     headers = await _register_verified(client, PHONE_USER1)
     other_headers = await _register_verified(client, PHONE_USER2)
-    data = b"image-idempotente"
+    data = _png(b"image-idempotente")
     media_id = str(uuid.uuid4())
     payload = _image_payload(data, id=media_id)
 
@@ -328,7 +367,7 @@ async def test_media_id_idempotence(client: AsyncClient) -> None:
 
 async def test_media_deduplicates_sha256(client: AsyncClient) -> None:
     headers = await _register_verified(client, PHONE_USER1)
-    data = b"meme-contenu"
+    data = _png(b"meme-contenu")
 
     first = await _upload_and_complete(client, headers, data)
     second = await _request_upload(client, headers, _image_payload(data))
@@ -360,7 +399,7 @@ async def test_complete_without_put_marks_failed(client: AsyncClient) -> None:
 
 async def test_complete_twice_is_stable(client: AsyncClient) -> None:
     headers = await _register_verified(client, PHONE_USER1)
-    data = b"deux-fois"
+    data = _png(b"deux-fois")
     requested = await _request_upload(client, headers, _image_payload(data))
     media_id = requested.json()["media"]["id"]
     assert (await _put_object(requested.json()["upload"], data)).status_code == 200
@@ -379,7 +418,7 @@ async def test_complete_twice_is_stable(client: AsyncClient) -> None:
 async def test_inter_user_isolation(client: AsyncClient) -> None:
     headers = await _register_verified(client, PHONE_USER1)
     other_headers = await _register_verified(client, PHONE_USER2)
-    data = b"prive"
+    data = _png(b"prive")
     requested = await _request_upload(client, headers, _image_payload(data))
     media_id = requested.json()["media"]["id"]
 
@@ -426,7 +465,7 @@ async def test_soft_delete_keeps_s3_object(
     client: AsyncClient, db_session: AsyncSession
 ) -> None:
     headers = await _register_verified(client, PHONE_USER1)
-    data = b"suppression-douce"
+    data = _png(b"suppression-douce")
     media = await _upload_and_complete(client, headers, data)
     media_id = media["id"]
 
@@ -449,7 +488,7 @@ async def test_soft_delete_keeps_s3_object(
 async def test_idempotency_key(client: AsyncClient) -> None:
     headers = await _register_verified(client, PHONE_USER1)
     other_headers = await _register_verified(client, PHONE_USER2)
-    data = b"idempotence-cle"
+    data = _png(b"idempotence-cle")
     payload = _image_payload(data)
     key = "cle-partagee"
 
@@ -459,7 +498,7 @@ async def test_idempotency_key(client: AsyncClient) -> None:
     assert second.status_code == 201
     assert first.json() == second.json()
 
-    different_body = _image_payload(b"autre-corps")
+    different_body = _image_payload(_png(b"autre-corps"))
     conflict = await _request_upload(
         client, headers, different_body, idempotency_key=key
     )
@@ -470,6 +509,142 @@ async def test_idempotency_key(client: AsyncClient) -> None:
     )
     assert other_user.status_code == 201
     assert other_user.json()["media"]["id"] != first.json()["media"]["id"]
+
+
+async def test_idempotency_lock_released_after_error(
+    client: AsyncClient,
+) -> None:
+    headers = await _register_verified(client, PHONE_USER1)
+    key = "cle-erreur-puis-reprise"
+    invalid = _image_payload(
+        _png(b"corps-invalide"),
+        size_bytes=0,
+    )
+    body = _png(b"corps-corrige")
+
+    failed = await _request_upload(client, headers, invalid, idempotency_key=key)
+    assert failed.status_code == 400
+    assert failed.json()["error"]["code"] == "UPLOAD_INVALID"
+
+    retried = await _request_upload(
+        client,
+        headers,
+        _image_payload(body),
+        idempotency_key=key,
+    )
+    assert retried.status_code == 201
+    assert retried.json()["already_uploaded"] is False
+
+
+async def test_idempotency_ignores_json_key_order(client: AsyncClient) -> None:
+    headers = await _register_verified(client, PHONE_USER1)
+    data = _png(b"ordre-des-cles")
+    key = "cle-ordre-json"
+    payload = _image_payload(data)
+    reordered = {
+        "sha256": payload["sha256"],
+        "size_bytes": payload["size_bytes"],
+        "mime_type": payload["mime_type"],
+        "kind": payload["kind"],
+    }
+
+    first = await _request_upload(client, headers, payload, idempotency_key=key)
+    second = await _request_upload(client, headers, reordered, idempotency_key=key)
+    assert first.status_code == 201
+    assert second.status_code == 201
+    assert first.json() == second.json()
+
+
+async def test_complete_rejects_content_not_matching_type(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    headers = await _register_verified(client, PHONE_USER1)
+    data = b"ceci est un fichier texte, pas une image jpeg"
+    payload = {
+        "kind": "image",
+        "mime_type": "image/jpeg",
+        "size_bytes": len(data),
+        "sha256": hashlib.sha256(data).hexdigest(),
+    }
+
+    requested = await _request_upload(client, headers, payload)
+    assert requested.status_code == 201
+    media_id = requested.json()["media"]["id"]
+    assert (await _put_object(requested.json()["upload"], data)).status_code == 200
+
+    completed = await client.post(
+        f"/api/v1/media/{media_id}/complete",
+        json={},
+        headers=headers,
+    )
+    assert completed.status_code == 400
+    assert completed.json()["error"]["code"] == "UPLOAD_INVALID"
+    assert completed.json()["error"]["message"] == (
+        "Le contenu du fichier ne correspond pas au type annoncé."
+    )
+
+    fetched = await client.get(f"/api/v1/media/{media_id}", headers=headers)
+    assert fetched.status_code == 200
+    assert fetched.json()["upload_status"] == "failed"
+    assert fetched.json()["url"] is None
+
+    row = (
+        await db_session.execute(
+            select(MediaFile).where(MediaFile.id == uuid.UUID(media_id))
+        )
+    ).scalar_one()
+    exists, _ = await storage_service.head(row.storage_key)
+    assert exists is False
+
+
+def test_purge_user_media_retry_attributes() -> None:
+    from app.workers.tasks_media import purge_user_media
+
+    assert purge_user_media.autoretry_for == (Exception,)
+    assert purge_user_media.retry_backoff is True
+    assert purge_user_media.retry_backoff_max == 600
+    assert purge_user_media.max_retries == 5
+
+
+async def test_storage_quota_counts_only_active_media(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    await _register_verified(client, PHONE_USER1)
+    owner = (
+        await db_session.execute(select(User).where(User.phone == PHONE_USER1))
+    ).scalar_one()
+    now = datetime.now(UTC)
+    megabyte = 1024 * 1024
+    rows = [
+        ("uploaded", 10, now),
+        ("pending", 20, now - timedelta(hours=1)),
+        ("pending", 30, now - timedelta(hours=25)),
+        ("failed", 40, now),
+    ]
+    for index, (status, size_mb, created_at) in enumerate(rows):
+        db_session.add(
+            MediaFile(
+                owner_id=owner.id,
+                kind="image",
+                storage_key=f"users/{owner.id}/quota/{index}.png",
+                mime_type="image/png",
+                size_bytes=size_mb * megabyte,
+                sha256=f"{index:064d}",
+                upload_status=status,
+                created_at=created_at,
+            )
+        )
+    await db_session.commit()
+
+    with pytest.raises(QuotaExceededException) as error:
+        await ensure_storage_quota(db_session, owner, 80 * megabyte)
+    assert error.value.details == {
+        "metric": "storage_mb",
+        "limit": 100,
+        "used": 30,
+    }
 
 
 async def test_storage_quota_exceeded(
@@ -502,7 +677,7 @@ async def test_storage_quota_exceeded(
 
 async def test_multipart_video_roundtrip(client: AsyncClient) -> None:
     headers = await _register_verified(client, PHONE_USER1)
-    data = bytes(range(256)) * (10 * 1024 * 1024 // 256)
+    data = _mp4(bytes(range(256)) * (10 * 1024 * 1024), 10 * 1024 * 1024)
     assert len(data) == 10 * 1024 * 1024
     payload = {
         "kind": "video",
@@ -590,7 +765,7 @@ async def test_purge_user_media_is_idempotent(
     from app.workers.tasks_media import purge_user_media
 
     headers = await _register_verified(client, PHONE_USER1)
-    data = b"media-a-purger"
+    data = _png(b"media-a-purger")
     payload = _image_payload(
         data,
         lat=13.5116,

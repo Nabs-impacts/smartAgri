@@ -1,6 +1,7 @@
 import math
+from datetime import UTC, datetime, timedelta
 
-from sqlalchemy import func, select
+from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import QuotaExceededException
@@ -59,11 +60,19 @@ class QuotaService:
         if limit is None or limit == -1:
             return
 
+        pending_cutoff = datetime.now(UTC) - timedelta(hours=24)
         used_bytes = (
             await session.execute(
                 select(func.coalesce(func.sum(MediaFile.size_bytes), 0)).where(
                     MediaFile.owner_id == user.id,
                     MediaFile.deleted_at.is_(None),
+                    or_(
+                        MediaFile.upload_status == "uploaded",
+                        (
+                            (MediaFile.upload_status == "pending")
+                            & (MediaFile.created_at >= pending_cutoff)
+                        ),
+                    ),
                 )
             )
         ).scalar_one() or 0

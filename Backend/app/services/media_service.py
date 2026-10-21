@@ -33,11 +33,6 @@ from app.services.storage_service import storage_service
 
 _MULTIPART_TTL_SECONDS = 86400
 
-_ALLOWED_MIME = {
-    "image": settings.ALLOWED_IMAGE_MIME,
-    "video": settings.ALLOWED_VIDEO_MIME,
-    "audio": settings.ALLOWED_AUDIO_MIME,
-}
 _MAX_BYTES = {
     "image": settings.MAX_IMAGE_BYTES,
     "video": settings.MAX_VIDEO_BYTES,
@@ -65,8 +60,53 @@ def _multipart_key(media_id: uuid.UUID) -> str:
     return f"media:multipart:{media_id}"
 
 
+def _allowed_mime(kind: str) -> list[str]:
+    if kind == "image":
+        return settings.ALLOWED_IMAGE_MIME
+    if kind == "video":
+        return settings.ALLOWED_VIDEO_MIME
+    return settings.ALLOWED_AUDIO_MIME
+
+
+def _signature_matches(mime_type: str, prefix: bytes) -> bool:
+    if mime_type == "image/jpeg":
+        return prefix.startswith(b"\xff\xd8\xff")
+    if mime_type == "image/png":
+        return prefix.startswith(b"\x89PNG\r\n\x1a\n")
+    if mime_type == "image/webp":
+        return prefix.startswith(b"RIFF") and prefix[8:12] == b"WEBP"
+    if mime_type == "video/mp4":
+        return prefix[4:8] == b"ftyp"
+    if mime_type == "video/quicktime":
+        return prefix[4:8] in (b"ftyp", b"moov", b"mdat", b"wide", b"free")
+    if mime_type == "audio/mpeg":
+        return prefix.startswith(b"ID3") or (
+            len(prefix) >= 2
+            and prefix[0] == 0xFF
+            and (prefix[1] & 0xE0) == 0xE0
+        )
+    if mime_type == "audio/wav":
+        return prefix.startswith(b"RIFF") and prefix[8:12] == b"WAVE"
+    if mime_type == "audio/ogg":
+        return prefix.startswith(b"OggS")
+    if mime_type == "audio/mp4":
+        return prefix[4:8] == b"ftyp"
+    if mime_type == "audio/aac":
+        return (
+            len(prefix) >= 2
+            and prefix[0] == 0xFF
+            and (prefix[1] & 0xF0) == 0xF0
+        )
+    return False
+
+
 def _validate_upload(data: MediaUploadRequest) -> None:
-    if data.mime_type not in _ALLOWED_MIME[data.kind]:
+    if data.mime_type not in _allowed_mime(data.kind):
+        raise UploadInvalidException(
+            "Type MIME non autorisé pour ce type de média."
+        )
+
+    if data.mime_type not in _EXTENSIONS:
         raise UploadInvalidException(
             "Type MIME non autorisé pour ce type de média."
         )
@@ -442,6 +482,16 @@ class MediaService:
             await session.commit()
             raise UploadInvalidException(
                 "Le fichier téléversé est absent ou sa taille ne correspond pas."
+            )
+
+        prefix = await storage_service.read_prefix(media.storage_key, 32)
+        if not _signature_matches(media.mime_type, prefix):
+            await self._abort_multipart(media)
+            await storage_service.delete(media.storage_key)
+            media.upload_status = "failed"
+            await session.commit()
+            raise UploadInvalidException(
+                "Le contenu du fichier ne correspond pas au type annoncé."
             )
 
         media.upload_status = "uploaded"
