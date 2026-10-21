@@ -1019,3 +1019,87 @@ async def test_summary_comparison_excludes_farm_owner(
     assert comparison is not None
     assert comparison["sample_size"] == 5
     assert float(comparison["average_yield_kg_per_ha"]) == 400.0
+
+
+async def test_timeline_orders_and_paginates_diagnostics_by_utc_date_and_id(
+    client: AsyncClient, db_session: AsyncSession
+) -> None:
+    headers = await _register_verified(client, PHONE_USER1)
+    plot = await _create_plot(client, headers)
+    crop_id = await _crop_id(db_session)
+    cycle = (
+        await client.post(
+            f"/api/v1/plots/{plot['id']}/cycles",
+            json={"crop_id": crop_id},
+            headers=headers,
+        )
+    ).json()
+    cycle_id = cycle["id"]
+
+    activity = (
+        await client.post(
+            f"/api/v1/cycles/{cycle_id}/activities",
+            json={"type": "weeding", "performed_on": "2026-05-04"},
+            headers=headers,
+        )
+    ).json()
+    harvest = (
+        await client.post(
+            f"/api/v1/cycles/{cycle_id}/harvests",
+            json={"harvested_on": "2026-05-04", "quantity_kg": 10},
+            headers=headers,
+        )
+    ).json()
+
+    user = (
+        await db_session.execute(select(User).where(User.phone == PHONE_USER1))
+    ).scalar_one()
+    diagnostic_ids = [
+        uuid.UUID("00000000-0000-0000-0000-000000000001"),
+        uuid.UUID("00000000-0000-0000-0000-000000000002"),
+        uuid.UUID("00000000-0000-0000-0000-000000000003"),
+    ]
+    created_hours = [10, 9, 8]
+    for diagnostic_id, hour in zip(diagnostic_ids, created_hours, strict=True):
+        db_session.add(
+            Diagnostic(
+                id=diagnostic_id,
+                user_id=user.id,
+                plot_id=uuid.UUID(plot["id"]),
+                crop_id=crop_id,
+                status="done",
+                created_at=datetime(2026, 5, 4, hour, tzinfo=UTC),
+            )
+        )
+    await db_session.commit()
+
+    expected_ids = sorted(
+        [
+            uuid.UUID(activity["id"]),
+            uuid.UUID(harvest["id"]),
+            *diagnostic_ids,
+        ],
+        reverse=True,
+    )
+
+    collected: list[uuid.UUID] = []
+    cursor = None
+    pages = 0
+    while True:
+        url = f"/api/v1/plots/{plot['id']}/timeline?limit=2"
+        if cursor is not None:
+            url += f"&cursor={cursor}"
+        response = await client.get(url, headers=headers)
+        assert response.status_code == 200
+        body = response.json()
+        collected.extend(uuid.UUID(item["id"]) for item in body["items"])
+        cursor = body["next_cursor"]
+        pages += 1
+        if cursor is None:
+            break
+
+    assert pages > 1
+    assert len(collected) == len(set(collected))
+    assert collected == expected_ids
+    diagnostic_order = [item for item in collected if item in diagnostic_ids]
+    assert diagnostic_order == list(reversed(diagnostic_ids))

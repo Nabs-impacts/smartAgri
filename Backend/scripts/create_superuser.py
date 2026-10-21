@@ -16,6 +16,7 @@ async def create_or_update_superuser(
     phone: str,
     name: str,
     password: str,
+    role: str = "super_admin",
 ) -> None:
     norm_phone = normalize_phone(phone)
     pwd_hash = hash_password(password)
@@ -29,7 +30,7 @@ async def create_or_update_superuser(
             phone=norm_phone,
             full_name=name,
             password_hash=pwd_hash,
-            role="super_admin",
+            role=role,
             is_active=True,
             phone_verified_at=now,
             language="fr",
@@ -38,7 +39,7 @@ async def create_or_update_superuser(
     else:
         user.full_name = name
         user.password_hash = pwd_hash
-        user.role = "super_admin"
+        user.role = role
         user.is_active = True
         if user.phone_verified_at is None:
             user.phone_verified_at = now
@@ -54,6 +55,12 @@ async def main() -> None:
     parser.add_argument("--phone", dest="flag_phone", default=None)
     parser.add_argument("--name", dest="flag_name", default=None)
     parser.add_argument("--password", dest="flag_password", default=None)
+    parser.add_argument(
+        "--role",
+        dest="role",
+        choices=["super_admin", "gov_admin", "agronomist", "org_admin"],
+        default="super_admin",
+    )
 
     args = parser.parse_args()
 
@@ -65,7 +72,9 @@ async def main() -> None:
         sys.exit(1)
 
     async with AsyncSessionLocal() as session:
-        await create_or_update_superuser(session, phone, name, password)
+        await create_or_update_superuser(
+            session, phone, name, password, args.role
+        )
 
 
 if __name__ == "__main__":

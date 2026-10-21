@@ -99,6 +99,10 @@ def _date_cursor(value: date) -> datetime:
     return datetime.combine(value, time.min, tzinfo=UTC)
 
 
+def _diagnostic_utc_date():
+    return func.date(func.timezone("UTC", Diagnostic.created_at))
+
+
 def _localized_label_name(label: DiagnosisLabel, language: str) -> str:
     if language == "ha" and label.name_ha:
         return label.name_ha
@@ -789,9 +793,9 @@ class CycleService:
             )
             diagnostics_stmt = diagnostics_stmt.where(
                 or_(
-                    func.date(Diagnostic.created_at) < cursor_date,
+                    _diagnostic_utc_date() < cursor_date,
                     and_(
-                        func.date(Diagnostic.created_at) == cursor_date,
+                        _diagnostic_utc_date() == cursor_date,
                         Diagnostic.id < cursor_uuid,
                     ),
                 )
@@ -804,7 +808,7 @@ class CycleService:
             Harvest.harvested_on.desc(), Harvest.id.desc()
         ).limit(limit + 1)
         diagnostics_stmt = diagnostics_stmt.order_by(
-            Diagnostic.created_at.desc(), Diagnostic.id.desc()
+            _diagnostic_utc_date().desc(), Diagnostic.id.desc()
         ).limit(limit + 1)
 
         activities = list((await session.scalars(activities_stmt)).all())

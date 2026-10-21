@@ -424,6 +424,35 @@ async def test_foreign_plot_and_cycle_return_404(
     )
 
 
+async def test_cycle_must_belong_to_given_plot(
+    client: AsyncClient,
+    db_session: AsyncSession,
+) -> None:
+    headers, user_id = await _register_verified(client, PHONE_OWNER)
+    crop_id = await _crop_id(db_session)
+    plot_with_cycle = await _create_plot(client, headers)
+    other_plot = await _create_plot(client, headers)
+    cycle = await _create_cycle(
+        client, headers, plot_with_cycle["id"], crop_id
+    )
+    media = await _add_media(db_session, user_id)
+    await db_session.commit()
+
+    response = await client.post(
+        "/api/v1/diagnostics",
+        json={
+            "media_ids": [str(media.id)],
+            "plot_id": other_plot["id"],
+            "crop_cycle_id": cycle["id"],
+        },
+        headers=headers,
+    )
+    assert response.status_code == 422
+    assert response.json()["error"]["message"] == (
+        "Le cycle de culture ne correspond pas à la parcelle."
+    )
+
+
 async def test_crop_derived_from_cycle(
     client: AsyncClient,
     db_session: AsyncSession,

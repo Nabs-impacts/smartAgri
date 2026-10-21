@@ -1,4 +1,4 @@
-.PHONY: up down logs migrate migrate-check revision seed superuser test lint format shell
+.PHONY: up down logs migrate migrate-check revision seed superuser seed-demo test lint format shell
 
 up:
 	docker compose up -d
@@ -23,6 +23,9 @@ seed:
 
 superuser:
 	python3 scripts/create_superuser.py $(ARGS)
+
+seed-demo:
+	python3 scripts/seed_demo.py
 
 test:
 	docker compose run --rm -T --build api pytest tests

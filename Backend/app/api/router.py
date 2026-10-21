@@ -1,6 +1,7 @@
 from fastapi import APIRouter
 
 from app.api.v1 import (
+    admin_stats,
     auth,
     catalog,
     cycles,
@@ -34,5 +35,8 @@ api_router.include_router(
     tags=["recommendations"],
 )
 api_router.include_router(sync.router, prefix="/sync", tags=["sync"])
+api_router.include_router(
+    admin_stats.router, prefix="/admin/stats", tags=["admin-stats"]
+)
 
 

@@ -255,6 +255,14 @@ class DiagnosticApiService:
             cycle = await self._load_owned_cycle(
                 session, user.id, data.crop_cycle_id
             )
+        if (
+            cycle is not None
+            and data.plot_id is not None
+            and cycle.plot_id != data.plot_id
+        ):
+            raise ValidationException(
+                "Le cycle de culture ne correspond pas à la parcelle."
+            )
 
         crop_id = data.crop_id
         if crop_id is None and cycle is not None:
