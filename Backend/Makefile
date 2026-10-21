@@ -1,4 +1,4 @@
-.PHONY: up down logs migrate migrate-check revision seed superuser seed-demo test lint format shell
+.PHONY: up down logs migrate migrate-check revision seed superuser seed-demo demo-smoke test lint format shell
 
 up:
 	docker compose up -d
@@ -19,13 +19,16 @@ revision:
 	alembic revision --autogenerate -m "auto"
 
 seed:
-	python3 scripts/seed.py
+	docker compose exec -T api python -m scripts.seed
 
 superuser:
-	python3 scripts/create_superuser.py $(ARGS)
+	@docker compose exec -T api python -m scripts.create_superuser $(ARGS)
 
 seed-demo:
-	python3 scripts/seed_demo.py
+	docker compose exec -T -e DEMO_PASSWORD api python -m scripts.seed_demo
+
+demo-smoke:
+	docker compose exec -T -e DEMO_PASSWORD -e GOV_PASSWORD -e API_URL=$${API_URL:-http://localhost:8000} api python -m scripts.demo_smoke
 
 test:
 	docker compose run --rm -T --build api pytest tests
