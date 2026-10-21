@@ -5,11 +5,13 @@ from decimal import Decimal
 from sqlalchemy import and_, func, or_, select, text
 from sqlalchemy.exc import IntegrityError
 from sqlalchemy.ext.asyncio import AsyncSession
+from sqlalchemy.orm import selectinload
 
 from app.core.errors import ConflictException, NotFoundException, ValidationException
 from app.core.pagination import decode_cursor, encode_cursor
 from app.db.models.farming import Crop, CropCycle, Farm, FarmActivity, Harvest, Plot
 from app.db.models.identity import User
+from app.db.models.media_ai import DiagnosisLabel, Diagnostic
 from app.schemas.cycle import (
     ActivityCreateRequest,
     ActivityResponse,
@@ -21,7 +23,9 @@ from app.schemas.cycle import (
     CycleUpdateRequest,
     HarvestCreateRequest,
     HarvestResponse,
+    TimelineDiagnosticInfo,
     TimelineItem,
+    TimelineLabel,
 )
 from app.services.access_service import can_read_farm
 
@@ -93,6 +97,14 @@ def _raise_existing_resource_conflict(
 
 def _date_cursor(value: date) -> datetime:
     return datetime.combine(value, time.min, tzinfo=UTC)
+
+
+def _localized_label_name(label: DiagnosisLabel, language: str) -> str:
+    if language == "ha" and label.name_ha:
+        return label.name_ha
+    if language == "dje" and label.name_dje:
+        return label.name_dje
+    return label.name_fr
 
 
 def _parse_uuid_cursor(cursor: str) -> tuple[datetime, uuid.UUID]:
@@ -717,6 +729,7 @@ class CycleService:
         session: AsyncSession,
         user_id: uuid.UUID,
         plot_id: uuid.UUID,
+        language: str = "fr",
         limit: int = 20,
         cursor: str | None = None,
     ) -> tuple[list[TimelineItem], str | None]:
@@ -746,6 +759,14 @@ class CycleService:
                 CropCycle.deleted_at.is_(None),
             )
         )
+        diagnostics_stmt = (
+            select(Diagnostic)
+            .options(selectinload(Diagnostic.top_label))
+            .where(
+                Diagnostic.plot_id == plot_id,
+                Diagnostic.deleted_at.is_(None),
+            )
+        )
 
         if cursor_date is not None and cursor_uuid is not None:
             activities_stmt = activities_stmt.where(
@@ -766,6 +787,15 @@ class CycleService:
                     ),
                 )
             )
+            diagnostics_stmt = diagnostics_stmt.where(
+                or_(
+                    func.date(Diagnostic.created_at) < cursor_date,
+                    and_(
+                        func.date(Diagnostic.created_at) == cursor_date,
+                        Diagnostic.id < cursor_uuid,
+                    ),
+                )
+            )
 
         activities_stmt = activities_stmt.order_by(
             FarmActivity.performed_on.desc(), FarmActivity.id.desc()
@@ -773,11 +803,17 @@ class CycleService:
         harvests_stmt = harvests_stmt.order_by(
             Harvest.harvested_on.desc(), Harvest.id.desc()
         ).limit(limit + 1)
+        diagnostics_stmt = diagnostics_stmt.order_by(
+            Diagnostic.created_at.desc(), Diagnostic.id.desc()
+        ).limit(limit + 1)
 
         activities = list((await session.scalars(activities_stmt)).all())
         harvests = list((await session.scalars(harvests_stmt)).all())
+        diagnostics = list((await session.scalars(diagnostics_stmt)).all())
 
-        events: list[tuple[date, uuid.UUID, str, FarmActivity | Harvest]] = []
+        events: list[
+            tuple[date, uuid.UUID, str, FarmActivity | Harvest | Diagnostic]
+        ] = []
         events.extend(
             (activity.performed_on, activity.id, "activity", activity)
             for activity in activities
@@ -785,6 +821,15 @@ class CycleService:
         events.extend(
             (harvest.harvested_on, harvest.id, "harvest", harvest)
             for harvest in harvests
+        )
+        events.extend(
+            (
+                diagnostic.created_at.astimezone(UTC).date(),
+                diagnostic.id,
+                "diagnostic",
+                diagnostic,
+            )
+            for diagnostic in diagnostics
         )
         events.sort(key=lambda event: (event[0], event[1]), reverse=True)
 
@@ -797,8 +842,27 @@ class CycleService:
 
         items: list[TimelineItem] = []
         for occurred_on, event_id, event_type, event in selected:
-            activity = activity_to_response(event) if event_type == "activity" else None
-            harvest = harvest_to_response(event) if event_type == "harvest" else None
+            activity = (
+                activity_to_response(event) if event_type == "activity" else None
+            )
+            harvest = (
+                harvest_to_response(event) if event_type == "harvest" else None
+            )
+            diagnostic = None
+            if event_type == "diagnostic" and isinstance(event, Diagnostic):
+                label = event.top_label
+                top_label = None
+                if label is not None:
+                    top_label = TimelineLabel(
+                        code=label.code,
+                        name=_localized_label_name(label, language),
+                    )
+                diagnostic = TimelineDiagnosticInfo(
+                    status=event.status,
+                    top_label=top_label,
+                    confidence=event.confidence,
+                    severity=event.severity,
+                )
             items.append(
                 TimelineItem(
                     id=event_id,
@@ -807,6 +871,7 @@ class CycleService:
                     created_at=event.created_at,
                     activity=activity,
                     harvest=harvest,
+                    diagnostic=diagnostic,
                 )
             )
 

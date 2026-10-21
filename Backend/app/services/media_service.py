@@ -19,7 +19,7 @@ from app.core.geo import geojson_to_postgis_point, postgis_to_geojson
 from app.core.rate_limit import get_redis_client
 from app.db.models.farming import CropCycle, Farm, Plot
 from app.db.models.identity import User
-from app.db.models.media_ai import MediaFile
+from app.db.models.media_ai import Diagnostic, DiagnosticMedia, MediaFile
 from app.schemas.media import (
     MediaCompleteRequest,
     MediaResponse,
@@ -516,6 +516,24 @@ class MediaService:
         if media is None:
             raise NotFoundException("Média introuvable.")
         if media.owner_id != user.id and user.role != "super_admin":
+            if user.role == "agronomist":
+                linked = (
+                    await session.execute(
+                        select(Diagnostic.id)
+                        .join(
+                            DiagnosticMedia,
+                            DiagnosticMedia.diagnostic_id == Diagnostic.id,
+                        )
+                        .where(
+                            DiagnosticMedia.media_id == media.id,
+                            Diagnostic.status == "needs_review",
+                            Diagnostic.deleted_at.is_(None),
+                        )
+                        .limit(1)
+                    )
+                ).scalar_one_or_none()
+                if linked is not None:
+                    return media_to_response(media)
             raise NotFoundException("Média introuvable.")
         return media_to_response(media)
 

@@ -128,10 +128,23 @@ class CycleSummaryResponse(BaseModel):
     comparison: CycleComparisonResponse | None = None
 
 
+class TimelineLabel(BaseModel):
+    code: str
+    name: str
+
+
+class TimelineDiagnosticInfo(BaseModel):
+    status: str
+    top_label: TimelineLabel | None = None
+    confidence: Decimal | None = None
+    severity: str | None = None
+
+
 class TimelineItem(BaseModel):
     id: uuid.UUID
-    type: Literal["activity", "harvest"]
+    type: Literal["activity", "harvest", "diagnostic"]
     occurred_on: date
     created_at: datetime
     activity: ActivityResponse | None = None
     harvest: HarvestResponse | None = None
+    diagnostic: TimelineDiagnosticInfo | None = None

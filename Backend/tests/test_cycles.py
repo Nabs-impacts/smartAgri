@@ -9,7 +9,8 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.config import settings
 from app.db.models.farming import Crop, CropCycle, Harvest
-from app.db.models.identity import AdminArea
+from app.db.models.identity import AdminArea, User
+from app.db.models.media_ai import DiagnosisLabel, Diagnostic
 from app.providers.sms.fake import FakeSmsProvider
 
 PHONE_USER1 = "+22793000001"
@@ -475,6 +476,27 @@ async def test_timeline_merges_and_paginates(
         )
         assert res.status_code == 201
 
+    user = (
+        await db_session.execute(select(User).where(User.phone == PHONE_USER1))
+    ).scalar_one()
+    healthy = (
+        await db_session.execute(
+            select(DiagnosisLabel).where(DiagnosisLabel.code == "healthy")
+        )
+    ).scalar_one()
+    diagnostic = Diagnostic(
+        user_id=user.id,
+        plot_id=uuid.UUID(plot["id"]),
+        crop_id=crop_id,
+        status="done",
+        top_label_id=healthy.id,
+        confidence=0.8,
+        severity="medium",
+        created_at=datetime(2026, 5, 4, 12, tzinfo=UTC),
+    )
+    db_session.add(diagnostic)
+    await db_session.commit()
+
     page1 = await client.get(
         f"/api/v1/plots/{plot['id']}/timeline?limit=2", headers=headers
     )
@@ -483,12 +505,17 @@ async def test_timeline_merges_and_paginates(
     assert len(first_page["items"]) == 2
     assert [item["occurred_on"] for item in first_page["items"]] == [
         "2026-05-05",
-        "2026-05-03",
+        "2026-05-04",
     ]
     assert [item["type"] for item in first_page["items"]] == [
         "harvest",
-        "activity",
+        "diagnostic",
     ]
+    diagnostic_item = first_page["items"][1]["diagnostic"]
+    assert diagnostic_item["status"] == "done"
+    assert diagnostic_item["top_label"]["code"] == "healthy"
+    assert diagnostic_item["top_label"]["name"]
+    assert diagnostic_item["severity"] == "medium"
     assert first_page["next_cursor"] is not None
 
     page2 = await client.get(
@@ -499,14 +526,27 @@ async def test_timeline_merges_and_paginates(
     assert page2.status_code == 200
     second_page = page2.json()
     assert [item["occurred_on"] for item in second_page["items"]] == [
+        "2026-05-03",
         "2026-05-02",
-        "2026-05-01",
     ]
     assert [item["type"] for item in second_page["items"]] == [
-        "harvest",
         "activity",
+        "harvest",
     ]
-    assert second_page["next_cursor"] is None
+    assert second_page["next_cursor"] is not None
+
+    page3 = await client.get(
+        f"/api/v1/plots/{plot['id']}/timeline?limit=2"
+        f"&cursor={second_page['next_cursor']}",
+        headers=headers,
+    )
+    assert page3.status_code == 200
+    third_page = page3.json()
+    assert [item["occurred_on"] for item in third_page["items"]] == [
+        "2026-05-01"
+    ]
+    assert [item["type"] for item in third_page["items"]] == ["activity"]
+    assert third_page["next_cursor"] is None
 
 
 async def test_inter_user_resources_return_404(

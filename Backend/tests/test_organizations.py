@@ -1,11 +1,14 @@
 import asyncio
 import re
+import uuid
+from datetime import UTC, datetime
 
 from httpx import AsyncClient
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.db.models.farming import Crop
+from app.db.models.media_ai import Diagnostic
 from app.db.models.organizations import Organization
 from app.providers.sms.fake import FakeSmsProvider
 
@@ -489,6 +492,7 @@ async def test_organization_dashboard_numbers(
 ) -> None:
     owner_headers, owner_id = await _register_verified(client, PHONE_OWNER)
     member_headers, member_id = await _register_verified(client, PHONE_MEMBER)
+    _, outsider_id = await _register_verified(client, PHONE_OUTSIDER)
     crop_id = await _crop_id(db_session)
 
     organization = await _create_organization(client, owner_headers)
@@ -526,6 +530,45 @@ async def test_organization_dashboard_numbers(
         )
         assert harvest.status_code == 201
 
+    now = datetime.now(UTC)
+    previous_month = datetime(2020, 1, 1, tzinfo=UTC)
+    db_session.add_all(
+        [
+            Diagnostic(
+                user_id=uuid.UUID(owner_id),
+                status="done",
+                created_at=now,
+            ),
+            Diagnostic(
+                user_id=uuid.UUID(owner_id),
+                status="failed",
+                created_at=now,
+            ),
+            Diagnostic(
+                user_id=uuid.UUID(member_id),
+                status="needs_review",
+                created_at=now,
+            ),
+            Diagnostic(
+                user_id=uuid.UUID(outsider_id),
+                status="done",
+                created_at=now,
+            ),
+            Diagnostic(
+                user_id=uuid.UUID(owner_id),
+                status="done",
+                created_at=now,
+                deleted_at=now,
+            ),
+            Diagnostic(
+                user_id=uuid.UUID(owner_id),
+                status="done",
+                created_at=previous_month,
+            ),
+        ]
+    )
+    await db_session.commit()
+
     members = await client.get(
         f"/api/v1/organizations/{organization_id}/members",
         headers=owner_headers,
@@ -546,7 +589,7 @@ async def test_organization_dashboard_numbers(
     assert body["member_count"] == 2
     assert body["plot_count"] == 3
     assert float(body["total_area_ha"]) == 7.0
-    assert body["diagnostics_this_month"] == 0
+    assert body["diagnostics_this_month"] == 3
     assert body["active_alerts"] == 0
     assert len(body["average_yield_by_crop"]) == 1
     yield_row = body["average_yield_by_crop"][0]

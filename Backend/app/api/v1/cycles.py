@@ -200,6 +200,7 @@ async def get_timeline(
         session=session,
         user_id=current_user.id,
         plot_id=id,
+        language=current_user.language,
         limit=pagination.limit,
         cursor=pagination.cursor,
     )

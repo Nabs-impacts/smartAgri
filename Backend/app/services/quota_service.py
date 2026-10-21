@@ -5,12 +5,18 @@ from sqlalchemy import func, or_, select
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from app.core.errors import QuotaExceededException
+from app.db.models.billing import UsageRecord
 from app.db.models.farming import Farm, Plot
 from app.db.models.identity import User
 from app.db.models.media_ai import MediaFile
 from app.services.subscription_service import subscription_service
 
 _MEGABYTE = 1024 * 1024
+
+_MONTHLY_METRIC_KEYS = {
+    "diagnostic": "diagnostics_per_month",
+    "video_analysis": "video_analyses_per_month",
+}
 
 
 class QuotaService:
@@ -45,6 +51,38 @@ class QuotaService:
                     message="Quota de parcelles dépassé pour votre forfait.",
                     details={"metric": metric, "limit": limit, "used": used},
                 )
+
+    async def ensure_monthly_quota(
+        self,
+        session: AsyncSession,
+        user: User,
+        metric: str,
+    ) -> None:
+        key = _MONTHLY_METRIC_KEYS.get(metric, metric)
+        subscription, plan = await subscription_service.get_effective_subscription(
+            session, user.id
+        )
+        quotas = plan.quotas or {}
+        limit = quotas.get(key)
+        if limit is None or limit == -1:
+            return
+
+        used = 0
+        if subscription is not None:
+            period = datetime.now(UTC).date().replace(day=1)
+            stmt = select(
+                func.coalesce(func.sum(UsageRecord.quantity), 0)
+            ).where(
+                UsageRecord.subscription_id == subscription.id,
+                UsageRecord.metric == metric,
+                UsageRecord.period == period,
+            )
+            used = int((await session.execute(stmt)).scalar_one() or 0)
+
+        if used >= limit:
+            raise QuotaExceededException(
+                details={"metric": metric, "limit": limit, "used": used},
+            )
 
     async def ensure_storage_quota(
         self,
@@ -95,6 +133,14 @@ async def ensure_quota(
     metric: str,
 ) -> None:
     await quota_service.ensure_quota(session, user, metric)
+
+
+async def ensure_monthly_quota(
+    session: AsyncSession,
+    user: User,
+    metric: str,
+) -> None:
+    await quota_service.ensure_monthly_quota(session, user, metric)
 
 
 async def ensure_storage_quota(

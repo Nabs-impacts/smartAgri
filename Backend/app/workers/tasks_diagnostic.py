@@ -3,19 +3,15 @@ from datetime import UTC, datetime
 
 from celery import Task
 
+from app.core.logging import get_logger
 from app.db.models.media_ai import Diagnostic
 from app.db.session import SyncSessionLocal
 from app.services.diagnostic_service import run_pipeline
 from app.workers.celery_app import celery
 
-_ERROR_MAX_LENGTH = 500
+logger = get_logger("tasks_diagnostic")
 
-
-def _short_error(exc: Exception) -> str:
-    message = str(exc).strip()
-    if not message:
-        message = "Le diagnostic a échoué."
-    return message[:_ERROR_MAX_LENGTH]
+_FAILED_MESSAGE = "Le diagnostic a échoué. Réessayez plus tard."
 
 
 def _mark_failed(diagnostic_id: str, message: str) -> None:
@@ -42,7 +38,11 @@ def run_diagnostic(self: Task, diagnostic_id: str) -> None:
             run_pipeline(session, uuid.UUID(diagnostic_id))
     except Exception as exc:
         if self.request.retries >= self.max_retries:
-            _mark_failed(diagnostic_id, _short_error(exc))
+            logger.exception(
+                "diagnostic_run_failed",
+                diagnostic_id=diagnostic_id,
+            )
+            _mark_failed(diagnostic_id, _FAILED_MESSAGE)
             return
         raise self.retry(
             exc=exc,

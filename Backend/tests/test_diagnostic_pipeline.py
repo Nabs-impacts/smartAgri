@@ -2,6 +2,7 @@ import asyncio
 import hashlib
 import uuid
 from datetime import UTC, datetime
+from decimal import Decimal
 
 import pytest
 from sqlalchemy import delete, func, select
@@ -24,6 +25,7 @@ from app.ml.inference import predict_stub
 from app.ml.rules_engine import build_recommendation
 from app.services import diagnostic_service
 from app.services.diagnostic_service import compute_severity, run_pipeline
+from app.workers import tasks_diagnostic
 from app.workers.tasks_diagnostic import run_diagnostic
 
 PHONE = "+22794000001"
@@ -431,12 +433,24 @@ async def test_inference_failure_marks_diagnostic_failed_after_retries(
     def _raise(*args, **kwargs):
         raise RuntimeError("Échec simulé de l'inférence.")
 
+    class _Logger:
+        def __init__(self) -> None:
+            self.calls: list[tuple[str, dict]] = []
+
+        def exception(self, event: str, **kwargs) -> None:
+            self.calls.append((event, kwargs))
+
+    logger = _Logger()
+    monkeypatch.setattr(tasks_diagnostic, "logger", logger)
     monkeypatch.setattr(diagnostic_service, "predict_stub", _raise)
     await _run_task(diagnostic.id)
 
     refreshed = await _diagnostic(db_session, diagnostic.id)
     assert refreshed.status == "failed"
-    assert refreshed.error == "Échec simulé de l'inférence."
+    assert refreshed.error == "Le diagnostic a échoué. Réessayez plus tard."
+    assert "Échec simulé de l'inférence." not in refreshed.error
+    assert len(logger.calls) == 1
+    assert logger.calls[0][1]["diagnostic_id"] == str(diagnostic.id)
 
 
 async def test_onnx_mode_marks_diagnostic_failed(
@@ -462,3 +476,45 @@ async def test_onnx_mode_marks_diagnostic_failed(
 
 def test_predict_stub_returns_nothing_without_labels() -> None:
     assert predict_stub(["a" * 64], 1, []) == []
+
+
+async def test_on_device_prediction_is_preserved_and_not_in_server_top_three(
+    db_session: AsyncSession,
+) -> None:
+    user = await _create_user(db_session)
+    crop = await _crop(db_session)
+    diagnostic = await _create_diagnostic(
+        db_session,
+        user,
+        crop,
+        hashlib.sha256(b"embarque").hexdigest(),
+    )
+    label = (
+        await db_session.execute(
+            select(DiagnosisLabel)
+            .join(LabelCrop, LabelCrop.label_id == DiagnosisLabel.id)
+            .where(LabelCrop.crop_id == crop.id)
+            .order_by(DiagnosisLabel.id)
+            .limit(1)
+        )
+    ).scalar_one()
+    db_session.add(
+        DiagnosticPrediction(
+            diagnostic_id=diagnostic.id,
+            label_id=label.id,
+            confidence=Decimal("0.900"),
+            rank=9,
+            bbox={"source": "on_device"},
+        )
+    )
+    await db_session.commit()
+
+    await _run(diagnostic.id)
+
+    predictions = await _predictions(db_session, diagnostic.id)
+    on_device = [row for row in predictions if row.rank == 9]
+    server = [row for row in predictions if row.rank != 9]
+    assert len(on_device) == 1
+    assert on_device[0].bbox == {"source": "on_device"}
+    assert [row.rank for row in server] == [1, 2, 3]
+    assert all(row.bbox is None for row in server)

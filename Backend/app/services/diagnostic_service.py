@@ -1,7 +1,7 @@
 import uuid
 from datetime import UTC, datetime
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, or_, select
 from sqlalchemy.orm import Session
 
 from app.core.config import settings
@@ -92,7 +92,13 @@ def run_pipeline(session: Session, diagnostic_id: uuid.UUID) -> None:
 
     session.execute(
         delete(DiagnosticPrediction).where(
-            DiagnosticPrediction.diagnostic_id == diagnostic.id
+            DiagnosticPrediction.diagnostic_id == diagnostic.id,
+            or_(
+                DiagnosticPrediction.bbox.is_(None),
+                DiagnosticPrediction.bbox["source"].astext.is_distinct_from(
+                    "on_device"
+                ),
+            ),
         )
     )
     labels_by_id = {label.id: label for label in labels}

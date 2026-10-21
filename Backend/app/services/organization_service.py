@@ -17,6 +17,7 @@ from app.core.security import normalize_phone
 from app.db.models.billing import Plan, Subscription
 from app.db.models.farming import Farm, Plot
 from app.db.models.identity import AdminArea, User
+from app.db.models.media_ai import Diagnostic
 from app.db.models.organizations import Organization, OrganizationMember
 from app.schemas.farm import FarmResponse
 from app.schemas.organization import (
@@ -544,12 +545,37 @@ class OrganizationService:
             for row in yield_rows
         ]
 
+        now = datetime.now(UTC)
+        month_start = now.replace(
+            day=1, hour=0, minute=0, second=0, microsecond=0
+        )
+        if month_start.month == 12:
+            next_month = month_start.replace(year=month_start.year + 1, month=1)
+        else:
+            next_month = month_start.replace(month=month_start.month + 1)
+
+        diagnostics_count = (
+            await session.execute(
+                select(func.count(Diagnostic.id))
+                .join(
+                    OrganizationMember,
+                    OrganizationMember.user_id == Diagnostic.user_id,
+                )
+                .where(
+                    OrganizationMember.organization_id == organization_id,
+                    Diagnostic.deleted_at.is_(None),
+                    Diagnostic.created_at >= month_start,
+                    Diagnostic.created_at < next_month,
+                )
+            )
+        ).scalar_one()
+
         return OrganizationDashboardResponse(
             member_count=int(member_count),
             plot_count=int(aggregates[0]),
             total_area_ha=Decimal(aggregates[1] or 0),
             average_yield_by_crop=yields,
-            diagnostics_this_month=0,
+            diagnostics_this_month=int(diagnostics_count or 0),
             active_alerts=0,
         )
 
