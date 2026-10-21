@@ -1082,3 +1082,31 @@ async def test_export_includes_extended_data(
 
     keys = list(_iter_keys(body))
     assert not any("storage_key" in key.lower() for key in keys)
+
+
+async def test_delete_account_enqueues_media_purge(
+    client: AsyncClient, db_session: AsyncSession, monkeypatch
+) -> None:
+    from app.workers import tasks_media
+
+    tokens = await _register_verified(client, phone=PHONE)
+    headers = _auth_headers(tokens)
+    user = (
+        await db_session.execute(select(User).where(User.phone == PHONE))
+    ).scalar_one()
+    calls: list[str] = []
+    monkeypatch.setattr(
+        tasks_media.purge_user_media,
+        "delay",
+        lambda user_id: calls.append(user_id),
+    )
+
+    deleted = await client.request(
+        "DELETE",
+        "/api/v1/users/me",
+        json={"confirmation": "SUPPRIMER MON COMPTE"},
+        headers=headers,
+    )
+
+    assert deleted.status_code == 200
+    assert calls == [str(user.id)]

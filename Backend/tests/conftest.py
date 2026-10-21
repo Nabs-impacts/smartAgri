@@ -7,6 +7,7 @@ from urllib.parse import urlsplit, urlunsplit
 
 TEST_DATABASE_NAME = "smartagri_test"
 TEST_REDIS_INDEX = 3
+TEST_S3_BUCKET = "smartagri-test"
 EXCLUDED_TABLES = {"alembic_version", "spatial_ref_sys"}
 
 
@@ -33,11 +34,19 @@ _base_redis_url = os.environ.get("REDIS_URL", "redis://redis:6379/0")
 os.environ["DATABASE_URL"] = _with_database(_base_database_url, TEST_DATABASE_NAME)
 os.environ["DATABASE_URL_SYNC"] = _with_database(_base_database_url_sync, TEST_DATABASE_NAME)
 os.environ["REDIS_URL"] = _with_redis_index(_base_redis_url, TEST_REDIS_INDEX)
+os.environ["CELERY_BROKER_URL"] = _with_redis_index(_base_redis_url, 4)
+os.environ["CELERY_RESULT_BACKEND"] = _with_redis_index(_base_redis_url, 5)
 os.environ["SMS_PROVIDER"] = "fake"
 os.environ["REFRESH_REUSE_GRACE_SECONDS"] = "0"
+os.environ["S3_BUCKET"] = TEST_S3_BUCKET
+os.environ["S3_PUBLIC_ENDPOINT_URL"] = os.environ.get(
+    "S3_ENDPOINT_URL", "http://rustfs:9000"
+)
 
 import asyncpg
+import boto3
 import pytest
+from botocore.exceptions import ClientError
 from httpx import ASGITransport, AsyncClient
 import redis.asyncio as redis
 from sqlalchemy import text
@@ -48,6 +57,8 @@ from sqlalchemy.ext.asyncio import (
     create_async_engine,
 )
 from sqlalchemy.pool import NullPool
+
+from botocore.config import Config
 
 import app.core.rate_limit as rate_limit_module
 from app.core.rate_limit import get_redis_client
@@ -79,6 +90,53 @@ async def _create_test_database() -> None:
             await connection.execute(f'CREATE DATABASE "{TEST_DATABASE_NAME}"')
     finally:
         await connection.close()
+
+
+def _storage_client():
+    return boto3.client(
+        "s3",
+        endpoint_url=os.environ.get("S3_ENDPOINT_URL", "http://rustfs:9000"),
+        aws_access_key_id=os.environ.get("S3_ACCESS_KEY", "rustfsadmin"),
+        aws_secret_access_key=os.environ.get("S3_SECRET_KEY", "rustfsadmin"),
+        region_name=os.environ.get("S3_REGION", "us-east-1"),
+        config=Config(s3={"addressing_style": "path"}),
+    )
+
+
+def _assert_storage_target(client) -> None:
+    assert TEST_S3_BUCKET == "smartagri-test", (
+        f"Réinitialisation refusée: bucket '{TEST_S3_BUCKET}' inattendu."
+    )
+    client.head_bucket(Bucket=TEST_S3_BUCKET)
+
+
+def _empty_storage(client) -> None:
+    _assert_storage_target(client)
+    continuation: str | None = None
+    while True:
+        kwargs = {"Bucket": TEST_S3_BUCKET}
+        if continuation:
+            kwargs["ContinuationToken"] = continuation
+        response = client.list_objects_v2(**kwargs)
+        keys = [{"Key": item["Key"]} for item in response.get("Contents", [])]
+        if keys:
+            client.delete_objects(
+                Bucket=TEST_S3_BUCKET,
+                Delete={"Objects": keys, "Quiet": True},
+            )
+        if not response.get("IsTruncated"):
+            break
+        continuation = response.get("NextContinuationToken")
+
+
+@pytest.fixture(scope="session", autouse=True)
+def prepare_storage() -> None:
+    client = _storage_client()
+    try:
+        client.head_bucket(Bucket=TEST_S3_BUCKET)
+    except ClientError:
+        client.create_bucket(Bucket=TEST_S3_BUCKET)
+    _empty_storage(client)
 
 
 @pytest.fixture(scope="session", autouse=True)

@@ -52,8 +52,11 @@ class Settings(BaseSettings):
     S3_ACCESS_KEY: str = "rustfsadmin"
     S3_SECRET_KEY: str = "rustfsadmin"
     S3_BUCKET: str = "smartagri-media"
+    S3_PUBLIC_ENDPOINT_URL: str = ""
     S3_PRESIGN_UPLOAD_SECONDS: int = 600
     S3_PRESIGN_READ_SECONDS: int = 600
+    S3_MULTIPART_THRESHOLD_BYTES: int = 8388608
+    S3_MULTIPART_PART_BYTES: int = 8388608
 
     MAX_IMAGE_BYTES: int = 3145728
     MAX_VIDEO_BYTES: int = 20971520
@@ -110,6 +113,7 @@ class Settings(BaseSettings):
     SUBSCRIPTION_RENEWAL_REMINDER_DAYS: int = 3
 
     DATA_EXPORT_URL_SECONDS: int = 86400
+    IDEMPOTENCY_TTL_SECONDS: int = 86400
     RATE_LIMIT_LOGIN_PER_MINUTE: int = 10
     RATE_LIMIT_DEFAULT_PER_MINUTE: int = 120
 

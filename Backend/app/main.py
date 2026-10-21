@@ -8,6 +8,7 @@ from app.api.router import api_router
 from app.api.v1.system import router as system_router
 from app.core.config import settings
 from app.core.errors import register_error_handlers
+from app.core.idempotency import IdempotencyReplay, idempotency_replay_handler
 from app.core.logging import get_logger, setup_logging
 from app.core.middleware import (
     RateLimitMiddleware,
@@ -52,6 +53,7 @@ def create_application() -> FastAPI:
     app.add_middleware(RequestIDMiddleware)
 
     register_error_handlers(app)
+    app.add_exception_handler(IdempotencyReplay, idempotency_replay_handler)
 
     app.include_router(system_router)
     app.include_router(api_router, prefix=settings.API_PREFIX)

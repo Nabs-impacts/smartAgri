@@ -14,6 +14,7 @@ from app.core.errors import (
     UnauthorizedException,
     ValidationException,
 )
+from app.core.logging import get_logger
 from app.core.security import hash_password, verify_password
 from app.db.models.billing import Payment, Plan, Subscription, UsageRecord
 from app.db.models.farming import CropCycle, Farm, FarmActivity, Harvest, Plot
@@ -44,6 +45,8 @@ from app.schemas.user import (
 )
 from app.services.audit_service import audit_service
 from app.services.subscription_service import subscription_service
+
+logger = get_logger("user_service")
 
 _QUOTA_METRIC_MAP = {
     "diagnostics_per_month": "diagnostic",
@@ -814,6 +817,17 @@ class UserService:
             meta={"phone": anonymized_phone},
         )
         await session.commit()
+
+        try:
+            from app.workers.tasks_media import purge_user_media
+
+            purge_user_media.delay(str(user.id))
+        except Exception as exc:
+            logger.warning(
+                "purge_user_media_enqueue_failed",
+                user_id=str(user.id),
+                error=str(exc),
+            )
 
 
 user_service = UserService()

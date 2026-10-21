@@ -7,3 +7,5 @@ celery = Celery(
     broker=settings.CELERY_BROKER_URL,
     backend=settings.CELERY_RESULT_BACKEND,
 )
+
+celery.autodiscover_tasks(["app.workers"], related_name="tasks_media", force=True)
