@@ -1,0 +1,16 @@
+{
+  "@@locale": "fr",
+  "appName": "SmartAgri",
+  "loginTitle": "Connexion",
+  "phoneLabel": "Numéro de téléphone",
+  "passwordLabel": "Mot de passe",
+  "rememberMe": "Se souvenir de moi",
+  "forgotPassword": "Mot de passe oublié",
+  "signIn": "Se connecter",
+  "errorNetwork": "Impossible de joindre le serveur. Vérifiez votre connexion internet.",
+  "errorGeneric": "Une erreur est survenue. Veuillez réessayer.",
+  "retry": "Réessayer",
+  "navHome": "Accueil",
+  "navSearch": "Recherche",
+  "navProfile": "Profil"
+}
