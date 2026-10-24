@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smartagri/core/network/auth_interceptor.dart';
@@ -192,4 +194,112 @@ void main() {
     expect(refreshCalls, 0);
     expect(adapter.requests.single.authorization, isNull);
   });
+
+  test('logout receives the access token', () async {
+    final FakeTokenStorage storage = FakeTokenStorage();
+    final TokenStore store = TokenStore(storage: storage);
+    await store.save('old-access', 'old-refresh', 3600, remember: true);
+    final SessionEvents events = SessionEvents();
+    addTearDown(events.dispose);
+
+    final FakeHttpAdapter adapter = FakeHttpAdapter((
+      RequestOptions options,
+    ) async {
+      return jsonResponse(200, <String, dynamic>{'message': 'ok'});
+    });
+    final Dio refreshDio = buildDio(adapter);
+    final Dio api = buildDio(adapter);
+    api.interceptors.add(
+      AuthInterceptor(
+        dio: api,
+        refreshDio: refreshDio,
+        tokenStore: store,
+        events: events,
+      ),
+    );
+
+    await api.post<dynamic>(
+      '/auth/logout',
+      data: <String, dynamic>{'refresh_token': 'old-refresh'},
+    );
+
+    expect(adapter.requests.single.path, '/auth/logout');
+    expect(adapter.requests.single.authorization, 'Bearer old-access');
+  });
+
+  test(
+    'replays a stale request with the current token after a refresh',
+    () async {
+      final FakeTokenStorage storage = FakeTokenStorage();
+      final TokenStore store = TokenStore(storage: storage);
+      await store.save('old-access', 'old-refresh', 3600, remember: true);
+      final SessionEvents events = SessionEvents();
+      addTearDown(events.dispose);
+      int refreshCalls = 0;
+      final Completer<void> staleReceived = Completer<void>();
+
+      final FakeHttpAdapter adapter = FakeHttpAdapter((
+        RequestOptions options,
+      ) async {
+        if (options.path == '/auth/refresh') {
+          refreshCalls++;
+          return jsonResponse(200, <String, dynamic>{
+            'access_token': 'new-access',
+            'refresh_token': 'new-refresh',
+            'expires_in': 3600,
+          });
+        }
+        if (options.path == '/stale') {
+          if (options.headers['Authorization'] == 'Bearer new-access') {
+            return jsonResponse(200, <String, dynamic>{'ok': true});
+          }
+          if (!staleReceived.isCompleted) {
+            staleReceived.complete();
+          }
+          for (int index = 0; index < 200; index++) {
+            final AuthTokens? current = await store.read();
+            if (current?.accessToken == 'new-access') {
+              return errorResponse(401, 'UNAUTHORIZED', 'Jeton expiré.');
+            }
+            await Future<void>.delayed(const Duration(milliseconds: 5));
+          }
+          return errorResponse(401, 'UNAUTHORIZED', 'Jeton expiré.');
+        }
+        if (options.headers['Authorization'] == 'Bearer old-access') {
+          return errorResponse(401, 'UNAUTHORIZED', 'Jeton expiré.');
+        }
+        return jsonResponse(200, <String, dynamic>{'ok': true});
+      });
+      final Dio refreshDio = buildDio(adapter);
+      final Dio api = buildDio(adapter);
+      api.interceptors.add(
+        AuthInterceptor(
+          dio: api,
+          refreshDio: refreshDio,
+          tokenStore: store,
+          events: events,
+        ),
+      );
+
+      final Completer<Response<dynamic>> staleResult =
+          Completer<Response<dynamic>>();
+      api
+          .get<dynamic>('/stale')
+          .then(staleResult.complete, onError: staleResult.completeError);
+      await staleReceived.future;
+      final Future<Response<dynamic>> trigger = api.get<dynamic>('/trigger');
+      final List<Response<dynamic>> responses = await Future.wait(
+        <Future<Response<dynamic>>>[staleResult.future, trigger],
+      );
+
+      expect(responses, hasLength(2));
+      expect(refreshCalls, 1);
+      final List<RequestSnapshot> staleRequests = adapter.requests
+          .where((RequestSnapshot request) => request.path == '/stale')
+          .toList();
+      expect(staleRequests, hasLength(2));
+      expect(staleRequests.first.authorization, 'Bearer old-access');
+      expect(staleRequests.last.authorization, 'Bearer new-access');
+    },
+  );
 }

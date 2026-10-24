@@ -13,6 +13,15 @@ class AuthInterceptor extends Interceptor {
 
   static const String _retryKey = 'auth_retried';
 
+  static const Set<String> _publicPaths = <String>{
+    '/auth/register',
+    '/auth/otp/request',
+    '/auth/otp/verify',
+    '/auth/login',
+    '/auth/refresh',
+    '/auth/password/reset',
+  };
+
   final Dio dio;
   final Dio refreshDio;
   final TokenStore tokenStore;
@@ -24,7 +33,7 @@ class AuthInterceptor extends Interceptor {
     RequestOptions options,
     RequestInterceptorHandler handler,
   ) async {
-    if (!_isAuthRoute(options.path)) {
+    if (!_isPublicRoute(options.path)) {
       final AuthTokens? tokens = await tokenStore.read();
       if (tokens != null) {
         options.headers['Authorization'] = 'Bearer ${tokens.accessToken}';
@@ -41,7 +50,7 @@ class AuthInterceptor extends Interceptor {
     final RequestOptions options = err.requestOptions;
     final bool canRetry =
         err.response?.statusCode == 401 &&
-        !_isAuthRoute(options.path) &&
+        !_isPublicRoute(options.path) &&
         options.extra[_retryKey] != true;
     if (!canRetry) {
       handler.next(err);
@@ -49,6 +58,19 @@ class AuthInterceptor extends Interceptor {
     }
 
     try {
+      final AuthTokens? current = await tokenStore.read();
+      final String? sent = options.headers['Authorization'] as String?;
+      final String? expected = current == null
+          ? null
+          : 'Bearer ${current.accessToken}';
+      if (expected != null && sent != expected) {
+        options.extra = <String, dynamic>{...options.extra, _retryKey: true};
+        options.headers['Authorization'] = expected;
+        final Response<dynamic> response = await dio.fetch<dynamic>(options);
+        handler.resolve(response);
+        return;
+      }
+
       final AuthTokens? tokens = await _refreshTokens();
       if (tokens == null) {
         handler.next(err);
@@ -123,8 +145,8 @@ class AuthInterceptor extends Interceptor {
     }
   }
 
-  bool _isAuthRoute(String path) {
+  bool _isPublicRoute(String path) {
     final String resolved = Uri.tryParse(path)?.path ?? path;
-    return resolved.contains('/auth/');
+    return _publicPaths.contains(resolved);
   }
 }

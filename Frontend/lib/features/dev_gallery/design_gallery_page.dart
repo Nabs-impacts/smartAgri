@@ -4,10 +4,13 @@ import '../../core/i18n/app_language.dart';
 import '../../design_system/components/app_bottom_nav.dart';
 import '../../design_system/components/app_button.dart';
 import '../../design_system/components/app_card.dart';
+import '../../design_system/components/app_checkbox_tile.dart';
+import '../../design_system/components/app_error_banner.dart';
 import '../../design_system/components/app_icon_button.dart';
 import '../../design_system/components/app_logo.dart';
 import '../../design_system/components/app_progress_bar.dart';
 import '../../design_system/components/app_search_field.dart';
+import '../../design_system/components/app_text_button.dart';
 import '../../design_system/components/app_text_field.dart';
 import '../../design_system/components/info_text.dart';
 import '../../design_system/components/info_tile.dart';
@@ -24,6 +27,7 @@ class DesignGalleryPage extends StatefulWidget {
 class _DesignGalleryPageState extends State<DesignGalleryPage> {
   int _navIndex = 0;
   AppLanguage _language = AppLanguage.fr;
+  bool _checked = true;
 
   @override
   Widget build(BuildContext context) {
@@ -73,6 +77,30 @@ class _DesignGalleryPageState extends State<DesignGalleryPage> {
                   ),
                   const AppButton(label: 'Désactivé', onPressed: null),
                 ],
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              const _SectionTitle('Cases et boutons texte'),
+              AppCheckboxTile(
+                label: 'Se souvenir de moi',
+                value: _checked,
+                onChanged: (bool value) => setState(() => _checked = value),
+              ),
+              Wrap(
+                spacing: AppSpacing.md,
+                runSpacing: AppSpacing.md,
+                children: <Widget>[
+                  AppTextButton(
+                    label: 'Mot de passe oublié',
+                    variant: AppTextButtonVariant.muted,
+                    onPressed: () {},
+                  ),
+                  AppTextButton(label: 'Créer un compte', onPressed: () {}),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              const _SectionTitle('Bandeau d’erreur'),
+              const AppErrorBanner(
+                message: 'Une erreur est survenue. Veuillez réessayer.',
               ),
               const SizedBox(height: AppSpacing.xl),
               const _SectionTitle('Champs'),

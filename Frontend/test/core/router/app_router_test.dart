@@ -9,6 +9,8 @@ import 'package:smartagri/core/session/session_controller.dart';
 import 'package:smartagri/core/session/session_state.dart';
 import 'package:smartagri/design_system/components/app_bottom_nav.dart';
 import 'package:smartagri/design_system/theme.dart';
+import 'package:smartagri/features/auth/presentation/login_page.dart';
+import 'package:smartagri/features/dev_gallery/design_gallery_page.dart';
 
 class FixedSessionController extends SessionController {
   FixedSessionController(this.fixedState);
@@ -19,18 +21,34 @@ class FixedSessionController extends SessionController {
   SessionState build() => fixedState;
 }
 
-Future<GoRouter> pumpRouter(WidgetTester tester, SessionState state) async {
+class TestSessionController extends SessionController {
+  @override
+  SessionState build() => SessionState.unknown;
+
+  void update(SessionState value) => state = value;
+}
+
+Future<ProviderContainer> buildContainer(
+  SessionController controller, {
+  String? startRoute,
+}) async {
   SharedPreferences.setMockInitialValues(<String, Object>{});
   final SharedPreferences preferences = await SharedPreferences.getInstance();
   final ProviderContainer container = ProviderContainer(
     overrides: [
       sharedPreferencesProvider.overrideWithValue(preferences),
-      sessionControllerProvider.overrideWith(
-        () => FixedSessionController(state),
-      ),
+      sessionControllerProvider.overrideWith(() => controller),
+      if (startRoute != null) startRouteProvider.overrideWithValue(startRoute),
     ],
   );
   addTearDown(container.dispose);
+  return container;
+}
+
+Future<GoRouter> pumpContainer(
+  WidgetTester tester,
+  ProviderContainer container,
+) async {
   final GoRouter router = container.read(routerProvider);
   await tester.pumpWidget(
     UncontrolledProviderScope(
@@ -38,16 +56,46 @@ Future<GoRouter> pumpRouter(WidgetTester tester, SessionState state) async {
       child: MaterialApp.router(theme: AppTheme.light, routerConfig: router),
     ),
   );
-  await tester.pumpAndSettle();
+  await tester.pump();
+  await tester.pump(const Duration(milliseconds: 300));
   return router;
 }
 
+Future<GoRouter> pumpRouter(
+  WidgetTester tester,
+  SessionState state, {
+  String? startRoute,
+}) async {
+  final ProviderContainer container = await buildContainer(
+    FixedSessionController(state),
+    startRoute: startRoute,
+  );
+  return pumpContainer(tester, container);
+}
+
 void main() {
+  testWidgets('the router instance survives session changes', (
+    WidgetTester tester,
+  ) async {
+    final TestSessionController controller = TestSessionController();
+    final ProviderContainer container = await buildContainer(controller);
+    final GoRouter router = await pumpContainer(tester, container);
+
+    controller.update(SessionState.authenticated);
+    await tester.pumpAndSettle();
+    controller.update(SessionState.unauthenticated);
+    await tester.pumpAndSettle();
+    controller.update(SessionState.authenticated);
+    await tester.pumpAndSettle();
+
+    expect(identical(container.read(routerProvider), router), isTrue);
+  });
+
   testWidgets('unknown session stays on splash', (WidgetTester tester) async {
     await pumpRouter(tester, SessionState.unknown);
 
     expect(find.text('Chargement'), findsOneWidget);
-    expect(find.text('Connexion'), findsNothing);
+    expect(find.byType(LoginPage), findsNothing);
   });
 
   testWidgets('unauthenticated session is redirected to login', (
@@ -58,11 +106,11 @@ void main() {
       SessionState.unauthenticated,
     );
 
-    expect(find.text('Connexion'), findsOneWidget);
+    expect(find.byType(LoginPage), findsOneWidget);
 
     router.go('/home');
     await tester.pumpAndSettle();
-    expect(find.text('Connexion'), findsOneWidget);
+    expect(find.byType(LoginPage), findsOneWidget);
     expect(find.text('Accueil'), findsNothing);
   });
 
@@ -80,6 +128,35 @@ void main() {
     router.go('/login');
     await tester.pumpAndSettle();
     expect(find.text('Accueil'), findsOneWidget);
-    expect(find.text('Connexion'), findsNothing);
+    expect(find.byType(LoginPage), findsNothing);
+  });
+
+  testWidgets('starts on the gallery when the debug start route is set', (
+    WidgetTester tester,
+  ) async {
+    await pumpRouter(tester, SessionState.unknown, startRoute: '/dev/gallery');
+
+    expect(find.byType(DesignGalleryPage), findsOneWidget);
+    expect(find.text('Galerie du design system'), findsOneWidget);
+  });
+
+  testWidgets('the gallery is reachable in every session state', (
+    WidgetTester tester,
+  ) async {
+    for (final SessionState state in SessionState.values) {
+      final ProviderContainer container = await buildContainer(
+        FixedSessionController(state),
+      );
+      final GoRouter router = await pumpContainer(tester, container);
+
+      router.go('/dev/gallery');
+      await tester.pump();
+      await tester.pump(const Duration(milliseconds: 300));
+      expect(
+        find.byType(DesignGalleryPage),
+        findsOneWidget,
+        reason: 'session $state',
+      );
+    }
   });
 }

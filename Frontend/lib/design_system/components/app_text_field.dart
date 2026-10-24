@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 
 import '../tokens.dart';
 
@@ -8,6 +9,7 @@ class AppTextField extends StatefulWidget {
     this.hintText,
     this.obscure = false,
     this.suffixIcon,
+    this.prefixText,
     this.errorText,
     this.keyboardType,
     this.textInputAction,
@@ -18,6 +20,7 @@ class AppTextField extends StatefulWidget {
     this.autofillHints,
     this.focusNode,
     this.maxLines = 1,
+    this.inputFormatters,
     super.key,
   });
 
@@ -25,6 +28,7 @@ class AppTextField extends StatefulWidget {
   final String? hintText;
   final bool obscure;
   final Widget? suffixIcon;
+  final String? prefixText;
   final String? errorText;
   final TextInputType? keyboardType;
   final TextInputAction? textInputAction;
@@ -35,6 +39,7 @@ class AppTextField extends StatefulWidget {
   final Iterable<String>? autofillHints;
   final FocusNode? focusNode;
   final int maxLines;
+  final List<TextInputFormatter>? inputFormatters;
 
   @override
   State<AppTextField> createState() => _AppTextFieldState();
@@ -97,6 +102,7 @@ class _AppTextFieldState extends State<AppTextField> {
           onFieldSubmitted: widget.onSubmitted,
           autofillHints: widget.autofillHints,
           maxLines: widget.maxLines,
+          inputFormatters: widget.inputFormatters,
           cursorColor: AppColors.primary,
           style: AppTextStyles.body,
           decoration: InputDecoration(
@@ -104,6 +110,8 @@ class _AppTextFieldState extends State<AppTextField> {
             fillColor: AppColors.inputFill,
             hintText: widget.hintText,
             hintStyle: AppTextStyles.body.copyWith(color: AppColors.muted),
+            prefixText: widget.prefixText,
+            prefixStyle: AppTextStyles.body.copyWith(color: AppColors.muted),
             errorText: widget.errorText,
             errorStyle: AppTextStyles.caption.copyWith(color: AppColors.danger),
             contentPadding: const EdgeInsets.symmetric(

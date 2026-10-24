@@ -2,25 +2,35 @@ import 'package:flutter/foundation.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/auth/presentation/forgot_password_page.dart';
+import '../../features/auth/presentation/login_page.dart';
 import '../../features/common/placeholder_page.dart';
 import '../../features/dev_gallery/design_gallery_page.dart';
 import '../../features/home/home_shell.dart';
+import '../config/app_config.dart';
 import '../session/session_controller.dart';
 import '../session/session_state.dart';
 
+final Provider<String> startRouteProvider = Provider<String>(
+  (Ref ref) => AppConfig.startRoute,
+);
+
 final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
-  final SessionState session = ref.watch(sessionControllerProvider);
+  final ValueNotifier<int> refresh = ValueNotifier<int>(0);
+  ref.listen<SessionState>(sessionControllerProvider, (_, _) {
+    refresh.value++;
+  });
+  ref.onDispose(refresh.dispose);
+
   return GoRouter(
-    initialLocation: '/splash',
+    initialLocation: kDebugMode ? ref.read(startRouteProvider) : '/splash',
+    refreshListenable: refresh,
     routes: <RouteBase>[
       GoRoute(
         path: '/splash',
         builder: (_, _) => const PlaceholderPage(title: 'Chargement'),
       ),
-      GoRoute(
-        path: '/login',
-        builder: (_, _) => const PlaceholderPage(title: 'Connexion'),
-      ),
+      GoRoute(path: '/login', builder: (_, _) => const LoginPage()),
       GoRoute(
         path: '/register',
         builder: (_, _) => const PlaceholderPage(title: 'Inscription'),
@@ -31,7 +41,7 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
       ),
       GoRoute(
         path: '/forgot-password',
-        builder: (_, _) => const PlaceholderPage(title: 'Mot de passe oublié'),
+        builder: (_, _) => const ForgotPasswordPage(),
       ),
       GoRoute(path: '/home', builder: (_, _) => const HomeShell()),
       if (kDebugMode)
@@ -42,6 +52,10 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
     ],
     redirect: (_, GoRouterState state) {
       final String path = state.uri.path;
+      if (kDebugMode && path == '/dev/gallery') {
+        return null;
+      }
+      final SessionState session = ref.read(sessionControllerProvider);
       if (session == SessionState.unknown) {
         return path == '/splash' ? null : '/splash';
       }
@@ -51,7 +65,6 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
           '/register',
           '/otp',
           '/forgot-password',
-          '/dev/gallery',
         };
         return allowed.contains(path) ? null : '/login';
       }

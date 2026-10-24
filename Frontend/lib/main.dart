@@ -1,13 +1,16 @@
+import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import 'core/config/app_config.dart';
 import 'core/i18n/app_localizations.dart';
 import 'core/i18n/language_controller.dart';
 import 'core/router/app_router.dart';
 import 'design_system/theme.dart';
 
 Future<void> main() async {
+  AppConfig.validate(isRelease: kReleaseMode, url: AppConfig.apiBaseUrl);
   WidgetsFlutterBinding.ensureInitialized();
   final SharedPreferences preferences = await SharedPreferences.getInstance();
   runApp(
