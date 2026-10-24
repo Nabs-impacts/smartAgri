@@ -15,7 +15,12 @@ import 'package:smartagri/core/storage/token_store.dart';
 import 'package:smartagri/design_system/theme.dart';
 import 'package:smartagri/features/auth/data/auth_repository.dart';
 import 'package:smartagri/features/auth/domain/user_profile.dart';
+import 'package:smartagri/features/catalog/data/catalog_repository.dart';
+import 'package:smartagri/features/catalog/domain/admin_area.dart';
+import 'package:smartagri/features/farms/data/farms_repository.dart';
 import 'package:smartagri/features/profile/data/me_repository.dart';
+
+import 'farms/fake_farms_repository.dart';
 
 class FixedSessionController extends SessionController {
   FixedSessionController(this.fixedState);
@@ -34,6 +39,20 @@ class FixedStaleController extends MeStaleController {
   @override
   bool build() => initial;
 }
+
+class FixedAdminAreasController extends AdminAreasController {
+  FixedAdminAreasController(this.areas);
+
+  final List<AdminArea> areas;
+
+  @override
+  Future<List<AdminArea>> build() async => areas;
+}
+
+const List<AdminArea> sampleAdminAreas = <AdminArea>[
+  AdminArea(id: 1, level: 'region', name: 'Niamey', code: 'NER-NIAMEY'),
+  AdminArea(id: 2, level: 'region', name: 'Dosso', code: 'NER-DOSSO'),
+];
 
 class FakeMeRepository extends MeRepository {
   FakeMeRepository(this.data) : super(dio: Dio());
@@ -137,18 +156,28 @@ Future<ProviderContainer> buildTestContainer({
   SessionState session = SessionState.authenticated,
   AuthRepository? authRepository,
   bool stale = false,
+  Map<String, Object> initialPreferences = const <String, Object>{},
+  List<AdminArea> adminAreas = sampleAdminAreas,
+  FarmsRepository? farmsRepository,
+  SessionController? sessionController,
 }) async {
-  SharedPreferences.setMockInitialValues(<String, Object>{});
+  SharedPreferences.setMockInitialValues(initialPreferences);
   final SharedPreferences preferences = await SharedPreferences.getInstance();
   final ProviderContainer container = ProviderContainer(
     overrides: [
       sharedPreferencesProvider.overrideWithValue(preferences),
       sessionControllerProvider.overrideWith(
-        () => FixedSessionController(session),
+        () => sessionController ?? FixedSessionController(session),
       ),
       meRepositoryProvider.overrideWithValue(meRepository),
       authRepositoryProvider.overrideWithValue(
         authRepository ?? RecordingAuthRepository(),
+      ),
+      farmsRepositoryProvider.overrideWithValue(
+        farmsRepository ?? FakeFarmsRepository(),
+      ),
+      adminAreasProvider.overrideWith(
+        () => FixedAdminAreasController(adminAreas),
       ),
       if (stale) meStaleProvider.overrideWith(() => FixedStaleController(true)),
     ],

@@ -10,84 +10,10 @@ import '../../../core/network/network_providers.dart';
 import '../../../core/session/session_controller.dart';
 import '../../../core/session/session_state.dart';
 import '../../auth/domain/user_profile.dart';
+import '../domain/me_data.dart';
+import 'me_cache.dart';
 
-class Quota {
-  const Quota({
-    required this.metric,
-    required this.limit,
-    required this.used,
-    required this.remaining,
-  });
-
-  final String metric;
-  final int limit;
-  final int used;
-  final int remaining;
-
-  bool get isUnlimited => limit < 0;
-
-  factory Quota.fromJson(Map<String, dynamic> json) {
-    return Quota(
-      metric: json['metric'] as String? ?? '',
-      limit: (json['limit'] as num?)?.toInt() ?? -1,
-      used: (json['used'] as num?)?.toInt() ?? 0,
-      remaining: (json['remaining'] as num?)?.toInt() ?? 0,
-    );
-  }
-}
-
-class MePlan {
-  const MePlan({
-    required this.code,
-    required this.name,
-    required this.audience,
-    required this.billingModel,
-  });
-
-  final String code;
-  final String name;
-  final String audience;
-  final String billingModel;
-
-  factory MePlan.fromJson(Map<String, dynamic> json) {
-    return MePlan(
-      code: json['code'] as String? ?? '',
-      name: json['name'] as String? ?? '',
-      audience: json['audience'] as String? ?? '',
-      billingModel: json['billing_model'] as String? ?? '',
-    );
-  }
-}
-
-class MeData {
-  const MeData({required this.user, required this.quotas, this.plan});
-
-  final UserProfile user;
-  final List<Quota> quotas;
-  final MePlan? plan;
-
-  factory MeData.fromJson(Map<String, dynamic> json) {
-    final Object? user = json['user'];
-    final Object? rawQuotas = json['quotas'];
-    final Object? rawPlan = json['effective_plan'];
-    return MeData(
-      user: UserProfile.fromJson(
-        user is Map ? Map<String, dynamic>.from(user) : <String, dynamic>{},
-      ),
-      quotas: rawQuotas is List
-          ? rawQuotas
-                .whereType<Map>()
-                .map(
-                  (Map item) => Quota.fromJson(Map<String, dynamic>.from(item)),
-                )
-                .toList()
-          : <Quota>[],
-      plan: rawPlan is Map
-          ? MePlan.fromJson(Map<String, dynamic>.from(rawPlan))
-          : null,
-    );
-  }
-}
+export '../domain/me_data.dart';
 
 class MeRepository {
   MeRepository({required this.dio});
@@ -135,6 +61,8 @@ class MeStaleController extends Notifier<bool> {
 }
 
 class MeController extends AsyncNotifier<MeData?> {
+  String? _knownUserId;
+
   @override
   Future<MeData?> build() async {
     final SessionState session = ref.watch(sessionControllerProvider);
@@ -146,27 +74,64 @@ class MeController extends AsyncNotifier<MeData?> {
         unawaited(updateLanguage(next));
       }
     });
+    final MeCache cache = ref.read(meCacheProvider);
     if (session != SessionState.authenticated) {
+      await cache.clear();
+      _knownUserId = null;
       return null;
     }
-    return _fetch();
+    final MeData? cached = await cache.read(userId: _knownUserId);
+    if (cached != null) {
+      _knownUserId = cached.user.id;
+      unawaited(_refreshInBackground(cache));
+      return cached;
+    }
+    final MeData data = await _fetch();
+    await cache.write(data);
+    _knownUserId = data.user.id;
+    return data;
   }
 
   Future<MeData> _fetch() {
     return ref.read(meRepositoryProvider).getMe();
   }
 
+  Future<void> _refreshInBackground(MeCache cache) async {
+    try {
+      final MeData data = await _fetch();
+      await cache.write(data);
+      _knownUserId = data.user.id;
+      if (ref.mounted) {
+        ref.read(meStaleProvider.notifier).set(false);
+        state = AsyncData<MeData?>(data);
+      }
+    } catch (_) {
+      if (ref.mounted) {
+        ref.read(meStaleProvider.notifier).set(true);
+      }
+    }
+  }
+
   Future<void> refresh() async {
     if (ref.read(sessionControllerProvider) != SessionState.authenticated) {
       return;
     }
+    final MeCache cache = ref.read(meCacheProvider);
     if (state.value == null) {
       state = const AsyncLoading<MeData?>();
-      state = await AsyncValue.guard<MeData?>(_fetch);
+      final AsyncValue<MeData> result = await AsyncValue.guard<MeData>(_fetch);
+      if (result.hasValue) {
+        await cache.write(result.requireValue);
+        _knownUserId = result.requireValue.user.id;
+        ref.read(meStaleProvider.notifier).set(false);
+      }
+      state = result;
       return;
     }
     try {
       final MeData data = await _fetch();
+      await cache.write(data);
+      _knownUserId = data.user.id;
       if (ref.mounted) {
         ref.read(meStaleProvider.notifier).set(false);
         state = AsyncData<MeData?>(data);

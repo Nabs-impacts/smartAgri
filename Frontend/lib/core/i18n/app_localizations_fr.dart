@@ -222,4 +222,149 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get profileCachedData => 'Données en cache';
+
+  @override
+  String get homeFarmsTitle => 'Mes exploitations';
+
+  @override
+  String get homeFarmsSeeAll => 'Tout voir';
+
+  @override
+  String get homeFarmsEmpty => 'Ajoutez votre première exploitation';
+
+  @override
+  String get farmsTitle => 'Mes exploitations';
+
+  @override
+  String get farmsEmpty => 'Aucune exploitation pour le moment.';
+
+  @override
+  String get farmAdd => 'Ajouter une exploitation';
+
+  @override
+  String get farmCreateTitle => 'Nouvelle exploitation';
+
+  @override
+  String get farmEditTitle => 'Modifier l\'exploitation';
+
+  @override
+  String get farmNameLabel => 'Nom de l\'exploitation';
+
+  @override
+  String get farmVillageLabel => 'Village';
+
+  @override
+  String get farmRegionLabel => 'Région';
+
+  @override
+  String get farmRegionNone => 'Aucune région';
+
+  @override
+  String get farmNameLength =>
+      'Le nom doit contenir entre 2 et 120 caractères.';
+
+  @override
+  String get farmSave => 'Enregistrer';
+
+  @override
+  String get farmEdit => 'Modifier';
+
+  @override
+  String get farmDelete => 'Supprimer';
+
+  @override
+  String get farmDeleteTitle => 'Supprimer l\'exploitation ?';
+
+  @override
+  String get farmDeleteMessage =>
+      'Cette action supprimera aussi toutes les parcelles associées.';
+
+  @override
+  String get farmDetailsTitle => 'Exploitation';
+
+  @override
+  String get farmNotFound => 'Exploitation introuvable.';
+
+  @override
+  String get plotAdd => 'Ajouter une parcelle';
+
+  @override
+  String get plotsTitle => 'Parcelles';
+
+  @override
+  String get plotsEmpty => 'Aucune parcelle pour le moment.';
+
+  @override
+  String get plotCreateTitle => 'Nouvelle parcelle';
+
+  @override
+  String get plotEditTitle => 'Modifier la parcelle';
+
+  @override
+  String get plotNameLabel => 'Nom de la parcelle';
+
+  @override
+  String get plotNameLength =>
+      'Le nom doit contenir entre 2 et 120 caractères.';
+
+  @override
+  String get plotAreaLabel => 'Surface (hectares)';
+
+  @override
+  String get plotAreaHint => 'Ex. 2,5';
+
+  @override
+  String get plotAreaInvalid =>
+      'La surface doit être supérieure à 0 et au plus 10000.';
+
+  @override
+  String get plotSoilLabel => 'Type de sol';
+
+  @override
+  String get plotIrrigationLabel => 'Irrigation';
+
+  @override
+  String get plotMapComingSoon =>
+      'Le tracé de la parcelle sur la carte arrivera plus tard';
+
+  @override
+  String get plotDeleteTitle => 'Supprimer la parcelle ?';
+
+  @override
+  String get plotDeleteMessage =>
+      'Voulez-vous vraiment supprimer cette parcelle ?';
+
+  @override
+  String get plotDetailsTitle => 'Parcelle';
+
+  @override
+  String get plotNotFound => 'Parcelle introuvable.';
+
+  @override
+  String get plotCyclesTitle => 'Cycles de culture';
+
+  @override
+  String get plotDiagnosticsTitle => 'Diagnostics';
+
+  @override
+  String get comingSoon => 'Disponible prochainement';
+
+  @override
+  String get cancel => 'Annuler';
+
+  @override
+  String get errorTimeout =>
+      'Le serveur met trop de temps à répondre. Réessayez.';
+
+  @override
+  String get errorNotFound => 'L\'élément demandé est introuvable.';
+
+  @override
+  String get errorConflict =>
+      'Cette action entre en conflit avec des données existantes.';
+
+  @override
+  String errorQuotaExceeded(String limit) {
+    return 'Vous avez atteint la limite de votre formule ($limit parcelles).';
+  }
 }

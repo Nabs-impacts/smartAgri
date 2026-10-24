@@ -10,11 +10,14 @@ import 'package:smartagri/core/session/session_state.dart';
 import 'package:smartagri/design_system/components/app_bottom_nav.dart';
 import 'package:smartagri/design_system/theme.dart';
 import 'package:smartagri/features/auth/presentation/login_page.dart';
+import 'package:smartagri/features/catalog/data/catalog_repository.dart';
 import 'package:smartagri/features/dev_gallery/design_gallery_page.dart';
+import 'package:smartagri/features/farms/data/farms_repository.dart';
 import 'package:smartagri/features/home/home_page.dart';
 import 'package:smartagri/features/profile/data/me_repository.dart';
 
 import '../../features/app_test_utils.dart';
+import '../../features/farms/fake_farms_repository.dart';
 
 class FixedSessionController extends SessionController {
   FixedSessionController(this.fixedState);
@@ -43,6 +46,10 @@ Future<ProviderContainer> buildContainer(
       sharedPreferencesProvider.overrideWithValue(preferences),
       sessionControllerProvider.overrideWith(() => controller),
       meRepositoryProvider.overrideWithValue(FakeMeRepository(sampleMeData())),
+      farmsRepositoryProvider.overrideWithValue(FakeFarmsRepository()),
+      adminAreasProvider.overrideWith(
+        () => FixedAdminAreasController(sampleAdminAreas),
+      ),
       if (startRoute != null) startRouteProvider.overrideWithValue(startRoute),
     ],
   );

@@ -4,12 +4,14 @@ import '../../core/i18n/app_language.dart';
 import '../../design_system/components/app_bottom_nav.dart';
 import '../../design_system/components/app_button.dart';
 import '../../design_system/components/app_card.dart';
+import '../../design_system/components/app_choice_chips.dart';
 import '../../design_system/components/app_checkbox_tile.dart';
 import '../../design_system/components/app_error_banner.dart';
 import '../../design_system/components/app_icon_button.dart';
 import '../../design_system/components/app_logo.dart';
 import '../../design_system/components/app_progress_bar.dart';
 import '../../design_system/components/app_search_field.dart';
+import '../../design_system/components/app_select_field.dart';
 import '../../design_system/components/app_text_button.dart';
 import '../../design_system/components/app_text_field.dart';
 import '../../design_system/components/info_text.dart';
@@ -28,6 +30,8 @@ class _DesignGalleryPageState extends State<DesignGalleryPage> {
   int _navIndex = 0;
   AppLanguage _language = AppLanguage.fr;
   bool _checked = true;
+  String? _region = 'niamey';
+  String _soil = 'loam';
 
   @override
   Widget build(BuildContext context) {
@@ -114,6 +118,38 @@ class _DesignGalleryPageState extends State<DesignGalleryPage> {
               ),
               const SizedBox(height: AppSpacing.md),
               const AppSearchField(),
+              const SizedBox(height: AppSpacing.md),
+              AppSelectField<String>(
+                hintText: 'Région',
+                options: const <AppSelectOption<String>>[
+                  AppSelectOption<String>(value: 'niamey', label: 'Niamey'),
+                  AppSelectOption<String>(value: 'dosso', label: 'Dosso'),
+                  AppSelectOption<String>(value: 'maradi', label: 'Maradi'),
+                ],
+                value: _region,
+                allowEmpty: true,
+                emptyLabel: 'Aucune région',
+                onChanged: (String? value) => setState(() => _region = value),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              const AppSelectField<String>(
+                hintText: 'Champ en erreur',
+                options: <AppSelectOption<String>>[],
+                value: null,
+                onChanged: null,
+                errorText: 'Ce champ est obligatoire.',
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              const _SectionTitle('Pastilles de choix'),
+              AppChoiceChips<String>(
+                options: const <AppChoiceOption<String>>[
+                  AppChoiceOption<String>(value: 'sandy', label: 'Sableux'),
+                  AppChoiceOption<String>(value: 'loam', label: 'Limoneux'),
+                  AppChoiceOption<String>(value: 'clay', label: 'Argileux'),
+                ],
+                value: _soil,
+                onChanged: (String value) => setState(() => _soil = value),
+              ),
               const SizedBox(height: AppSpacing.xl),
               const _SectionTitle('Progression'),
               const AppProgressBar(value: 0.25),

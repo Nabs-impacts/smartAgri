@@ -21,6 +21,7 @@ class FakeHttpAdapter implements HttpClientAdapter {
       RequestSnapshot(
         method: options.method,
         path: options.path,
+        queryParameters: Map<String, dynamic>.of(options.queryParameters),
         authorization: options.headers['Authorization'] as String?,
         data: options.data,
       ),
@@ -36,12 +37,14 @@ class RequestSnapshot {
   const RequestSnapshot({
     required this.method,
     required this.path,
+    required this.queryParameters,
     required this.authorization,
     required this.data,
   });
 
   final String method;
   final String path;
+  final Map<String, dynamic> queryParameters;
   final String? authorization;
   final Object? data;
 }

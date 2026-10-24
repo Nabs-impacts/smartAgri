@@ -8,6 +8,11 @@ import '../../features/auth/presentation/login_page.dart';
 import '../../features/common/placeholder_page.dart';
 import '../../features/dev_gallery/design_gallery_page.dart';
 import '../../features/diagnostic/diagnostic_page.dart';
+import '../../features/farms/presentation/farm_detail_page.dart';
+import '../../features/farms/presentation/farm_form_page.dart';
+import '../../features/farms/presentation/farms_page.dart';
+import '../../features/farms/presentation/plot_detail_page.dart';
+import '../../features/farms/presentation/plot_form_page.dart';
 import '../../features/home/home_page.dart';
 import '../../features/home/home_shell.dart';
 import '../../features/profile/profile_page.dart';
@@ -71,6 +76,33 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
             ],
           ),
         ],
+      ),
+      GoRoute(path: '/farms', builder: (_, _) => const FarmsPage()),
+      GoRoute(path: '/farms/new', builder: (_, _) => const FarmFormPage()),
+      GoRoute(
+        path: '/farms/:farmId/edit',
+        builder: (_, GoRouterState state) =>
+            FarmFormPage(farmId: state.pathParameters['farmId']),
+      ),
+      GoRoute(
+        path: '/farms/:farmId/plots/new',
+        builder: (_, GoRouterState state) =>
+            PlotFormPage(farmId: state.pathParameters['farmId']),
+      ),
+      GoRoute(
+        path: '/farms/:farmId',
+        builder: (_, GoRouterState state) =>
+            FarmDetailPage(farmId: state.pathParameters['farmId'] ?? ''),
+      ),
+      GoRoute(
+        path: '/plots/:plotId/edit',
+        builder: (_, GoRouterState state) =>
+            PlotFormPage(plotId: state.pathParameters['plotId']),
+      ),
+      GoRoute(
+        path: '/plots/:plotId',
+        builder: (_, GoRouterState state) =>
+            PlotDetailPage(plotId: state.pathParameters['plotId'] ?? ''),
       ),
       GoRoute(path: '/diagnostic', builder: (_, _) => const DiagnosticPage()),
       if (kDebugMode)

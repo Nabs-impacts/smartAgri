@@ -489,6 +489,276 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Données en cache'**
   String get profileCachedData;
+
+  /// No description provided for @homeFarmsTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mes exploitations'**
+  String get homeFarmsTitle;
+
+  /// No description provided for @homeFarmsSeeAll.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tout voir'**
+  String get homeFarmsSeeAll;
+
+  /// No description provided for @homeFarmsEmpty.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajoutez votre première exploitation'**
+  String get homeFarmsEmpty;
+
+  /// No description provided for @farmsTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mes exploitations'**
+  String get farmsTitle;
+
+  /// No description provided for @farmsEmpty.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune exploitation pour le moment.'**
+  String get farmsEmpty;
+
+  /// No description provided for @farmAdd.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter une exploitation'**
+  String get farmAdd;
+
+  /// No description provided for @farmCreateTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouvelle exploitation'**
+  String get farmCreateTitle;
+
+  /// No description provided for @farmEditTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifier l\'exploitation'**
+  String get farmEditTitle;
+
+  /// No description provided for @farmNameLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom de l\'exploitation'**
+  String get farmNameLabel;
+
+  /// No description provided for @farmVillageLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Village'**
+  String get farmVillageLabel;
+
+  /// No description provided for @farmRegionLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Région'**
+  String get farmRegionLabel;
+
+  /// No description provided for @farmRegionNone.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune région'**
+  String get farmRegionNone;
+
+  /// No description provided for @farmNameLength.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le nom doit contenir entre 2 et 120 caractères.'**
+  String get farmNameLength;
+
+  /// No description provided for @farmSave.
+  ///
+  /// In fr, this message translates to:
+  /// **'Enregistrer'**
+  String get farmSave;
+
+  /// No description provided for @farmEdit.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifier'**
+  String get farmEdit;
+
+  /// No description provided for @farmDelete.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer'**
+  String get farmDelete;
+
+  /// No description provided for @farmDeleteTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer l\'exploitation ?'**
+  String get farmDeleteTitle;
+
+  /// No description provided for @farmDeleteMessage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette action supprimera aussi toutes les parcelles associées.'**
+  String get farmDeleteMessage;
+
+  /// No description provided for @farmDetailsTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Exploitation'**
+  String get farmDetailsTitle;
+
+  /// No description provided for @farmNotFound.
+  ///
+  /// In fr, this message translates to:
+  /// **'Exploitation introuvable.'**
+  String get farmNotFound;
+
+  /// No description provided for @plotAdd.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter une parcelle'**
+  String get plotAdd;
+
+  /// No description provided for @plotsTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Parcelles'**
+  String get plotsTitle;
+
+  /// No description provided for @plotsEmpty.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune parcelle pour le moment.'**
+  String get plotsEmpty;
+
+  /// No description provided for @plotCreateTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouvelle parcelle'**
+  String get plotCreateTitle;
+
+  /// No description provided for @plotEditTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifier la parcelle'**
+  String get plotEditTitle;
+
+  /// No description provided for @plotNameLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom de la parcelle'**
+  String get plotNameLabel;
+
+  /// No description provided for @plotNameLength.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le nom doit contenir entre 2 et 120 caractères.'**
+  String get plotNameLength;
+
+  /// No description provided for @plotAreaLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Surface (hectares)'**
+  String get plotAreaLabel;
+
+  /// No description provided for @plotAreaHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ex. 2,5'**
+  String get plotAreaHint;
+
+  /// No description provided for @plotAreaInvalid.
+  ///
+  /// In fr, this message translates to:
+  /// **'La surface doit être supérieure à 0 et au plus 10000.'**
+  String get plotAreaInvalid;
+
+  /// No description provided for @plotSoilLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Type de sol'**
+  String get plotSoilLabel;
+
+  /// No description provided for @plotIrrigationLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Irrigation'**
+  String get plotIrrigationLabel;
+
+  /// No description provided for @plotMapComingSoon.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le tracé de la parcelle sur la carte arrivera plus tard'**
+  String get plotMapComingSoon;
+
+  /// No description provided for @plotDeleteTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer la parcelle ?'**
+  String get plotDeleteTitle;
+
+  /// No description provided for @plotDeleteMessage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Voulez-vous vraiment supprimer cette parcelle ?'**
+  String get plotDeleteMessage;
+
+  /// No description provided for @plotDetailsTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Parcelle'**
+  String get plotDetailsTitle;
+
+  /// No description provided for @plotNotFound.
+  ///
+  /// In fr, this message translates to:
+  /// **'Parcelle introuvable.'**
+  String get plotNotFound;
+
+  /// No description provided for @plotCyclesTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cycles de culture'**
+  String get plotCyclesTitle;
+
+  /// No description provided for @plotDiagnosticsTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Diagnostics'**
+  String get plotDiagnosticsTitle;
+
+  /// No description provided for @comingSoon.
+  ///
+  /// In fr, this message translates to:
+  /// **'Disponible prochainement'**
+  String get comingSoon;
+
+  /// No description provided for @cancel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Annuler'**
+  String get cancel;
+
+  /// No description provided for @errorTimeout.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le serveur met trop de temps à répondre. Réessayez.'**
+  String get errorTimeout;
+
+  /// No description provided for @errorNotFound.
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'élément demandé est introuvable.'**
+  String get errorNotFound;
+
+  /// No description provided for @errorConflict.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette action entre en conflit avec des données existantes.'**
+  String get errorConflict;
+
+  /// No description provided for @errorQuotaExceeded.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous avez atteint la limite de votre formule ({limit} parcelles).'**
+  String errorQuotaExceeded(String limit);
 }
 
 class _AppLocalizationsDelegate
