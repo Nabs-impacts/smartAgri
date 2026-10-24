@@ -19,6 +19,7 @@ class FakeHttpAdapter implements HttpClientAdapter {
   ) {
     requests.add(
       RequestSnapshot(
+        method: options.method,
         path: options.path,
         authorization: options.headers['Authorization'] as String?,
         data: options.data,
@@ -33,11 +34,13 @@ class FakeHttpAdapter implements HttpClientAdapter {
 
 class RequestSnapshot {
   const RequestSnapshot({
+    required this.method,
     required this.path,
     required this.authorization,
     required this.data,
   });
 
+  final String method;
   final String path;
   final String? authorization;
   final Object? data;

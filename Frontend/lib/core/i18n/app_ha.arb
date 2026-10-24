@@ -41,5 +41,49 @@
   "retry": "Réessayer",
   "navHome": "Accueil",
   "navSearch": "Recherche",
-  "navProfile": "Profil"
+  "navProfile": "Profil",
+  "homeGreeting": "Bonjour",
+  "homeWeatherRain": "Risque de pluie ({percent}%)",
+  "@homeWeatherRain": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
+  },
+  "homeWeatherWind": "Vent {speed}km/h",
+  "@homeWeatherWind": {
+    "placeholders": {
+      "speed": {
+        "type": "String"
+      }
+    }
+  },
+  "homeWeatherSoilGood": "Sol propice",
+  "homeWeatherSoilDry": "Sol sec",
+  "homeWeatherSoilWet": "Sol humide",
+  "homeDemoData": "Données de démonstration",
+  "homeNewDiagnostic": "Faire un diagnostic",
+  "diagnosticComingSoon": "Le diagnostic arrive à l'étape suivante",
+  "searchComingSoon": "Bientôt disponible",
+  "profileLanguage": "Langue",
+  "profileUsage": "Mon utilisation",
+  "profileQuotaPlots": "parcelles",
+  "profileQuotaDiagnostics": "diagnostics ce mois-ci",
+  "profileQuotaStorage": "stockage en Mo",
+  "profileQuotaLlm": "messages de l'assistant",
+  "profileQuotaVideo": "analyses vidéo",
+  "profileQuotaUnknown": "Utilisation ({metric})",
+  "@profileQuotaUnknown": {
+    "placeholders": {
+      "metric": {
+        "type": "String"
+      }
+    }
+  },
+  "profileUnlimited": "Illimité",
+  "profileLogout": "Se déconnecter",
+  "profileLogoutMessage": "Voulez-vous vraiment vous déconnecter ?",
+  "profileLogoutCancel": "Annuler",
+  "profileCachedData": "Données en cache"
 }

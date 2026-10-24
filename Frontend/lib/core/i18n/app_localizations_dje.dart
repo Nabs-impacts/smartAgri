@@ -147,4 +147,79 @@ class AppLocalizationsDje extends AppLocalizations {
 
   @override
   String get navProfile => 'Profil';
+
+  @override
+  String get homeGreeting => 'Bonjour';
+
+  @override
+  String homeWeatherRain(String percent) {
+    return 'Risque de pluie ($percent%)';
+  }
+
+  @override
+  String homeWeatherWind(String speed) {
+    return 'Vent ${speed}km/h';
+  }
+
+  @override
+  String get homeWeatherSoilGood => 'Sol propice';
+
+  @override
+  String get homeWeatherSoilDry => 'Sol sec';
+
+  @override
+  String get homeWeatherSoilWet => 'Sol humide';
+
+  @override
+  String get homeDemoData => 'Données de démonstration';
+
+  @override
+  String get homeNewDiagnostic => 'Faire un diagnostic';
+
+  @override
+  String get diagnosticComingSoon => 'Le diagnostic arrive à l\'étape suivante';
+
+  @override
+  String get searchComingSoon => 'Bientôt disponible';
+
+  @override
+  String get profileLanguage => 'Langue';
+
+  @override
+  String get profileUsage => 'Mon utilisation';
+
+  @override
+  String get profileQuotaPlots => 'parcelles';
+
+  @override
+  String get profileQuotaDiagnostics => 'diagnostics ce mois-ci';
+
+  @override
+  String get profileQuotaStorage => 'stockage en Mo';
+
+  @override
+  String get profileQuotaLlm => 'messages de l\'assistant';
+
+  @override
+  String get profileQuotaVideo => 'analyses vidéo';
+
+  @override
+  String profileQuotaUnknown(String metric) {
+    return 'Utilisation ($metric)';
+  }
+
+  @override
+  String get profileUnlimited => 'Illimité';
+
+  @override
+  String get profileLogout => 'Se déconnecter';
+
+  @override
+  String get profileLogoutMessage => 'Voulez-vous vraiment vous déconnecter ?';
+
+  @override
+  String get profileLogoutCancel => 'Annuler';
+
+  @override
+  String get profileCachedData => 'Données en cache';
 }

@@ -1,4 +1,5 @@
 import 'package:flutter/foundation.dart';
+import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
@@ -6,7 +7,11 @@ import '../../features/auth/presentation/forgot_password_page.dart';
 import '../../features/auth/presentation/login_page.dart';
 import '../../features/common/placeholder_page.dart';
 import '../../features/dev_gallery/design_gallery_page.dart';
+import '../../features/diagnostic/diagnostic_page.dart';
+import '../../features/home/home_page.dart';
 import '../../features/home/home_shell.dart';
+import '../../features/profile/profile_page.dart';
+import '../../features/search/search_page.dart';
 import '../config/app_config.dart';
 import '../session/session_controller.dart';
 import '../session/session_state.dart';
@@ -43,7 +48,31 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
         path: '/forgot-password',
         builder: (_, _) => const ForgotPasswordPage(),
       ),
-      GoRoute(path: '/home', builder: (_, _) => const HomeShell()),
+      StatefulShellRoute.indexedStack(
+        builder: (
+          BuildContext context,
+          GoRouterState state,
+          StatefulNavigationShell navigationShell,
+        ) => HomeShell(navigationShell: navigationShell),
+        branches: <StatefulShellBranch>[
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(path: '/home', builder: (_, _) => const HomePage()),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(path: '/search', builder: (_, _) => const SearchPage()),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(path: '/profile', builder: (_, _) => const ProfilePage()),
+            ],
+          ),
+        ],
+      ),
+      GoRoute(path: '/diagnostic', builder: (_, _) => const DiagnosticPage()),
       if (kDebugMode)
         GoRoute(
           path: '/dev/gallery',

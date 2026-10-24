@@ -351,6 +351,144 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Profil'**
   String get navProfile;
+
+  /// No description provided for @homeGreeting.
+  ///
+  /// In fr, this message translates to:
+  /// **'Bonjour'**
+  String get homeGreeting;
+
+  /// No description provided for @homeWeatherRain.
+  ///
+  /// In fr, this message translates to:
+  /// **'Risque de pluie ({percent}%)'**
+  String homeWeatherRain(String percent);
+
+  /// No description provided for @homeWeatherWind.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vent {speed}km/h'**
+  String homeWeatherWind(String speed);
+
+  /// No description provided for @homeWeatherSoilGood.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sol propice'**
+  String get homeWeatherSoilGood;
+
+  /// No description provided for @homeWeatherSoilDry.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sol sec'**
+  String get homeWeatherSoilDry;
+
+  /// No description provided for @homeWeatherSoilWet.
+  ///
+  /// In fr, this message translates to:
+  /// **'Sol humide'**
+  String get homeWeatherSoilWet;
+
+  /// No description provided for @homeDemoData.
+  ///
+  /// In fr, this message translates to:
+  /// **'Données de démonstration'**
+  String get homeDemoData;
+
+  /// No description provided for @homeNewDiagnostic.
+  ///
+  /// In fr, this message translates to:
+  /// **'Faire un diagnostic'**
+  String get homeNewDiagnostic;
+
+  /// No description provided for @diagnosticComingSoon.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le diagnostic arrive à l\'étape suivante'**
+  String get diagnosticComingSoon;
+
+  /// No description provided for @searchComingSoon.
+  ///
+  /// In fr, this message translates to:
+  /// **'Bientôt disponible'**
+  String get searchComingSoon;
+
+  /// No description provided for @profileLanguage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Langue'**
+  String get profileLanguage;
+
+  /// No description provided for @profileUsage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mon utilisation'**
+  String get profileUsage;
+
+  /// No description provided for @profileQuotaPlots.
+  ///
+  /// In fr, this message translates to:
+  /// **'parcelles'**
+  String get profileQuotaPlots;
+
+  /// No description provided for @profileQuotaDiagnostics.
+  ///
+  /// In fr, this message translates to:
+  /// **'diagnostics ce mois-ci'**
+  String get profileQuotaDiagnostics;
+
+  /// No description provided for @profileQuotaStorage.
+  ///
+  /// In fr, this message translates to:
+  /// **'stockage en Mo'**
+  String get profileQuotaStorage;
+
+  /// No description provided for @profileQuotaLlm.
+  ///
+  /// In fr, this message translates to:
+  /// **'messages de l\'assistant'**
+  String get profileQuotaLlm;
+
+  /// No description provided for @profileQuotaVideo.
+  ///
+  /// In fr, this message translates to:
+  /// **'analyses vidéo'**
+  String get profileQuotaVideo;
+
+  /// No description provided for @profileQuotaUnknown.
+  ///
+  /// In fr, this message translates to:
+  /// **'Utilisation ({metric})'**
+  String profileQuotaUnknown(String metric);
+
+  /// No description provided for @profileUnlimited.
+  ///
+  /// In fr, this message translates to:
+  /// **'Illimité'**
+  String get profileUnlimited;
+
+  /// No description provided for @profileLogout.
+  ///
+  /// In fr, this message translates to:
+  /// **'Se déconnecter'**
+  String get profileLogout;
+
+  /// No description provided for @profileLogoutMessage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Voulez-vous vraiment vous déconnecter ?'**
+  String get profileLogoutMessage;
+
+  /// No description provided for @profileLogoutCancel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Annuler'**
+  String get profileLogoutCancel;
+
+  /// No description provided for @profileCachedData.
+  ///
+  /// In fr, this message translates to:
+  /// **'Données en cache'**
+  String get profileCachedData;
 }
 
 class _AppLocalizationsDelegate

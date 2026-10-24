@@ -11,6 +11,10 @@ import 'package:smartagri/design_system/components/app_bottom_nav.dart';
 import 'package:smartagri/design_system/theme.dart';
 import 'package:smartagri/features/auth/presentation/login_page.dart';
 import 'package:smartagri/features/dev_gallery/design_gallery_page.dart';
+import 'package:smartagri/features/home/home_page.dart';
+import 'package:smartagri/features/profile/data/me_repository.dart';
+
+import '../../features/app_test_utils.dart';
 
 class FixedSessionController extends SessionController {
   FixedSessionController(this.fixedState);
@@ -38,6 +42,7 @@ Future<ProviderContainer> buildContainer(
     overrides: [
       sharedPreferencesProvider.overrideWithValue(preferences),
       sessionControllerProvider.overrideWith(() => controller),
+      meRepositoryProvider.overrideWithValue(FakeMeRepository(sampleMeData())),
       if (startRoute != null) startRouteProvider.overrideWithValue(startRoute),
     ],
   );
@@ -111,7 +116,7 @@ void main() {
     router.go('/home');
     await tester.pumpAndSettle();
     expect(find.byType(LoginPage), findsOneWidget);
-    expect(find.text('Accueil'), findsNothing);
+    expect(find.byType(HomePage), findsNothing);
   });
 
   testWidgets('authenticated session is redirected to home', (
@@ -122,12 +127,12 @@ void main() {
       SessionState.authenticated,
     );
 
-    expect(find.text('Accueil'), findsOneWidget);
+    expect(find.byType(HomePage), findsOneWidget);
     expect(find.byType(AppBottomNav), findsOneWidget);
 
     router.go('/login');
     await tester.pumpAndSettle();
-    expect(find.text('Accueil'), findsOneWidget);
+    expect(find.byType(HomePage), findsOneWidget);
     expect(find.byType(LoginPage), findsNothing);
   });
 

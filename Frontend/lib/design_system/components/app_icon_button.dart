@@ -2,7 +2,14 @@ import 'package:flutter/material.dart';
 
 import '../tokens.dart';
 
-enum AppIconButtonVariant { square, primary, accentBrown, tertiary, danger }
+enum AppIconButtonVariant {
+  square,
+  primary,
+  accentBrown,
+  tertiary,
+  danger,
+  dangerOutline,
+}
 
 class AppIconButton extends StatelessWidget {
   const AppIconButton({
@@ -29,12 +36,26 @@ class AppIconButton extends StatelessWidget {
         return AppColors.tertiary;
       case AppIconButtonVariant.danger:
         return AppColors.danger;
+      case AppIconButtonVariant.dangerOutline:
+        return AppColors.transparent;
     }
+  }
+
+  Color get _foreground {
+    if (variant == AppIconButtonVariant.dangerOutline) {
+      return AppColors.danger;
+    }
+    return AppColors.white;
   }
 
   ShapeBorder get _shape {
     if (variant == AppIconButtonVariant.square) {
       return const RoundedRectangleBorder(borderRadius: AppRadii.smallBorder);
+    }
+    if (variant == AppIconButtonVariant.dangerOutline) {
+      return const CircleBorder(
+        side: BorderSide(color: AppColors.danger, width: AppSizes.border),
+      );
     }
     return const CircleBorder();
   }
@@ -60,7 +81,7 @@ class AppIconButton extends StatelessWidget {
               child: SizedBox(
                 width: AppSizes.iconButton,
                 height: AppSizes.iconButton,
-                child: Icon(icon, color: AppColors.white, size: AppSizes.icon),
+                child: Icon(icon, color: _foreground, size: AppSizes.icon),
               ),
             ),
           ),
