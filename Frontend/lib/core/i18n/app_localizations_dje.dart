@@ -563,4 +563,104 @@ class AppLocalizationsDje extends AppLocalizations {
 
   @override
   String get profileDiagnostics => 'Mes diagnostics';
+
+  @override
+  String get adminNavOverview => 'Tableau de bord';
+
+  @override
+  String get adminNavYields => 'Rendements';
+
+  @override
+  String get adminOverviewTitle => 'Tableau de bord';
+
+  @override
+  String get adminActiveUsers => 'Utilisateurs actifs (30 jours)';
+
+  @override
+  String get adminDiagnostics => 'Diagnostics (30 jours)';
+
+  @override
+  String get adminTrackedArea => 'Surface suivie';
+
+  @override
+  String adminHectares(String value) {
+    return '$value ha';
+  }
+
+  @override
+  String get adminAdoption => 'Adoption par région';
+
+  @override
+  String adminUsersPlots(String users, String plots) {
+    return '$users utilisateurs · $plots parcelles';
+  }
+
+  @override
+  String get adminMaskedRegion => 'Données masquées (moins de 5 utilisateurs)';
+
+  @override
+  String get adminPrivacyTitle => 'Protection des données';
+
+  @override
+  String get adminPrivacyBody =>
+      'Les valeurs concernant moins de 5 cycles ou moins de 3 agriculteurs sont masquées automatiquement. Aucune donnée individuelle n\'est jamais affichée.';
+
+  @override
+  String get adminAccessDenied => 'Accès réservé à l\'administration.';
+
+  @override
+  String get adminYieldsTitle => 'Rendements';
+
+  @override
+  String get adminFilterCrop => 'Culture';
+
+  @override
+  String get adminFilterRegion => 'Région';
+
+  @override
+  String get adminFilterSeason => 'Saison';
+
+  @override
+  String get adminFilterYear => 'Année';
+
+  @override
+  String get adminFilterAll => 'Toutes';
+
+  @override
+  String get adminSeasonRainy => 'Saison des pluies';
+
+  @override
+  String get adminSeasonDry => 'Saison sèche';
+
+  @override
+  String adminYieldTitle(String crop, String region) {
+    return '$crop · $region';
+  }
+
+  @override
+  String adminYieldSeason(String season, String year) {
+    return '$season $year';
+  }
+
+  @override
+  String adminYieldUnit(String value) {
+    return '$value kg/ha';
+  }
+
+  @override
+  String adminYieldMinMax(String min, String max) {
+    return 'min $min · max $max kg/ha';
+  }
+
+  @override
+  String adminYieldCyclesFarmers(String cycles, String farmers) {
+    return '$cycles cycles · $farmers agriculteurs';
+  }
+
+  @override
+  String get adminYieldMasked =>
+      'Données masquées : échantillon trop petit pour protéger les agriculteurs';
+
+  @override
+  String get adminYieldEmpty => 'Aucune donnée pour ces filtres';
 }

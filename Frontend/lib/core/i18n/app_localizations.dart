@@ -1131,6 +1131,174 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Mes diagnostics'**
   String get profileDiagnostics;
+
+  /// No description provided for @adminNavOverview.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tableau de bord'**
+  String get adminNavOverview;
+
+  /// No description provided for @adminNavYields.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rendements'**
+  String get adminNavYields;
+
+  /// No description provided for @adminOverviewTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tableau de bord'**
+  String get adminOverviewTitle;
+
+  /// No description provided for @adminActiveUsers.
+  ///
+  /// In fr, this message translates to:
+  /// **'Utilisateurs actifs (30 jours)'**
+  String get adminActiveUsers;
+
+  /// No description provided for @adminDiagnostics.
+  ///
+  /// In fr, this message translates to:
+  /// **'Diagnostics (30 jours)'**
+  String get adminDiagnostics;
+
+  /// No description provided for @adminTrackedArea.
+  ///
+  /// In fr, this message translates to:
+  /// **'Surface suivie'**
+  String get adminTrackedArea;
+
+  /// No description provided for @adminHectares.
+  ///
+  /// In fr, this message translates to:
+  /// **'{value} ha'**
+  String adminHectares(String value);
+
+  /// No description provided for @adminAdoption.
+  ///
+  /// In fr, this message translates to:
+  /// **'Adoption par région'**
+  String get adminAdoption;
+
+  /// No description provided for @adminUsersPlots.
+  ///
+  /// In fr, this message translates to:
+  /// **'{users} utilisateurs · {plots} parcelles'**
+  String adminUsersPlots(String users, String plots);
+
+  /// No description provided for @adminMaskedRegion.
+  ///
+  /// In fr, this message translates to:
+  /// **'Données masquées (moins de 5 utilisateurs)'**
+  String get adminMaskedRegion;
+
+  /// No description provided for @adminPrivacyTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Protection des données'**
+  String get adminPrivacyTitle;
+
+  /// No description provided for @adminPrivacyBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Les valeurs concernant moins de 5 cycles ou moins de 3 agriculteurs sont masquées automatiquement. Aucune donnée individuelle n\'est jamais affichée.'**
+  String get adminPrivacyBody;
+
+  /// No description provided for @adminAccessDenied.
+  ///
+  /// In fr, this message translates to:
+  /// **'Accès réservé à l\'administration.'**
+  String get adminAccessDenied;
+
+  /// No description provided for @adminYieldsTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rendements'**
+  String get adminYieldsTitle;
+
+  /// No description provided for @adminFilterCrop.
+  ///
+  /// In fr, this message translates to:
+  /// **'Culture'**
+  String get adminFilterCrop;
+
+  /// No description provided for @adminFilterRegion.
+  ///
+  /// In fr, this message translates to:
+  /// **'Région'**
+  String get adminFilterRegion;
+
+  /// No description provided for @adminFilterSeason.
+  ///
+  /// In fr, this message translates to:
+  /// **'Saison'**
+  String get adminFilterSeason;
+
+  /// No description provided for @adminFilterYear.
+  ///
+  /// In fr, this message translates to:
+  /// **'Année'**
+  String get adminFilterYear;
+
+  /// No description provided for @adminFilterAll.
+  ///
+  /// In fr, this message translates to:
+  /// **'Toutes'**
+  String get adminFilterAll;
+
+  /// No description provided for @adminSeasonRainy.
+  ///
+  /// In fr, this message translates to:
+  /// **'Saison des pluies'**
+  String get adminSeasonRainy;
+
+  /// No description provided for @adminSeasonDry.
+  ///
+  /// In fr, this message translates to:
+  /// **'Saison sèche'**
+  String get adminSeasonDry;
+
+  /// No description provided for @adminYieldTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'{crop} · {region}'**
+  String adminYieldTitle(String crop, String region);
+
+  /// No description provided for @adminYieldSeason.
+  ///
+  /// In fr, this message translates to:
+  /// **'{season} {year}'**
+  String adminYieldSeason(String season, String year);
+
+  /// No description provided for @adminYieldUnit.
+  ///
+  /// In fr, this message translates to:
+  /// **'{value} kg/ha'**
+  String adminYieldUnit(String value);
+
+  /// No description provided for @adminYieldMinMax.
+  ///
+  /// In fr, this message translates to:
+  /// **'min {min} · max {max} kg/ha'**
+  String adminYieldMinMax(String min, String max);
+
+  /// No description provided for @adminYieldCyclesFarmers.
+  ///
+  /// In fr, this message translates to:
+  /// **'{cycles} cycles · {farmers} agriculteurs'**
+  String adminYieldCyclesFarmers(String cycles, String farmers);
+
+  /// No description provided for @adminYieldMasked.
+  ///
+  /// In fr, this message translates to:
+  /// **'Données masquées : échantillon trop petit pour protéger les agriculteurs'**
+  String get adminYieldMasked;
+
+  /// No description provided for @adminYieldEmpty.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune donnée pour ces filtres'**
+  String get adminYieldEmpty;
 }
 
 class _AppLocalizationsDelegate

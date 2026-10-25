@@ -206,5 +206,97 @@
         "type": "String"
       }
     }
-  }
+  },
+  "adminNavOverview": "Tableau de bord",
+  "adminNavYields": "Rendements",
+  "adminOverviewTitle": "Tableau de bord",
+  "adminActiveUsers": "Utilisateurs actifs (30 jours)",
+  "adminDiagnostics": "Diagnostics (30 jours)",
+  "adminTrackedArea": "Surface suivie",
+  "adminHectares": "{value} ha",
+  "@adminHectares": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "adminAdoption": "Adoption par région",
+  "adminUsersPlots": "{users} utilisateurs · {plots} parcelles",
+  "@adminUsersPlots": {
+    "placeholders": {
+      "users": {
+        "type": "String"
+      },
+      "plots": {
+        "type": "String"
+      }
+    }
+  },
+  "adminMaskedRegion": "Données masquées (moins de 5 utilisateurs)",
+  "adminPrivacyTitle": "Protection des données",
+  "adminPrivacyBody": "Les valeurs concernant moins de 5 cycles ou moins de 3 agriculteurs sont masquées automatiquement. Aucune donnée individuelle n'est jamais affichée.",
+  "adminAccessDenied": "Accès réservé à l'administration.",
+  "adminYieldsTitle": "Rendements",
+  "adminFilterCrop": "Culture",
+  "adminFilterRegion": "Région",
+  "adminFilterSeason": "Saison",
+  "adminFilterYear": "Année",
+  "adminFilterAll": "Toutes",
+  "adminSeasonRainy": "Saison des pluies",
+  "adminSeasonDry": "Saison sèche",
+  "adminYieldTitle": "{crop} · {region}",
+  "@adminYieldTitle": {
+    "placeholders": {
+      "crop": {
+        "type": "String"
+      },
+      "region": {
+        "type": "String"
+      }
+    }
+  },
+  "adminYieldSeason": "{season} {year}",
+  "@adminYieldSeason": {
+    "placeholders": {
+      "season": {
+        "type": "String"
+      },
+      "year": {
+        "type": "String"
+      }
+    }
+  },
+  "adminYieldUnit": "{value} kg/ha",
+  "@adminYieldUnit": {
+    "placeholders": {
+      "value": {
+        "type": "String"
+      }
+    }
+  },
+  "adminYieldMinMax": "min {min} · max {max} kg/ha",
+  "@adminYieldMinMax": {
+    "placeholders": {
+      "min": {
+        "type": "String"
+      },
+      "max": {
+        "type": "String"
+      }
+    }
+  },
+  "adminYieldCyclesFarmers": "{cycles} cycles · {farmers} agriculteurs",
+  "@adminYieldCyclesFarmers": {
+    "placeholders": {
+      "cycles": {
+        "type": "String"
+      },
+      "farmers": {
+        "type": "String"
+      }
+    }
+  },
+  "adminYieldMasked": "Données masquées : échantillon trop petit pour protéger les agriculteurs",
+  "adminYieldEmpty": "Aucune donnée pour ces filtres"
 }

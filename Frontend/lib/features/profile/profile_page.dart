@@ -61,38 +61,40 @@ class ProfilePage extends ConsumerWidget {
                 ],
                 const SizedBox(height: AppSpacing.xl),
                 _languageSection(ref, strings),
-                const SizedBox(height: AppSpacing.xl),
-                _usageSection(strings, data.quotas),
-                const SizedBox(height: AppSpacing.xl),
-                InkWell(
-                  key: const Key('profile_diagnostics'),
-                  borderRadius: AppRadii.cardBorder,
-                  onTap: () => context.go('/diagnostics'),
-                  child: AppCard(
-                    padding: const EdgeInsets.all(AppSpacing.md),
-                    child: Row(
-                      children: <Widget>[
-                        const Icon(
-                          Icons.eco_outlined,
-                          color: AppColors.primary,
-                          size: AppSizes.icon,
-                        ),
-                        const SizedBox(width: AppSpacing.md),
-                        Expanded(
-                          child: Text(
-                            strings.profileDiagnostics,
-                            style: AppTextStyles.label,
+                if (!data.user.isAdmin) ...<Widget>[
+                  const SizedBox(height: AppSpacing.xl),
+                  _usageSection(strings, data.quotas),
+                  const SizedBox(height: AppSpacing.xl),
+                  InkWell(
+                    key: const Key('profile_diagnostics'),
+                    borderRadius: AppRadii.cardBorder,
+                    onTap: () => context.go('/diagnostics'),
+                    child: AppCard(
+                      padding: const EdgeInsets.all(AppSpacing.md),
+                      child: Row(
+                        children: <Widget>[
+                          const Icon(
+                            Icons.eco_outlined,
+                            color: AppColors.primary,
+                            size: AppSizes.icon,
                           ),
-                        ),
-                        const Icon(
-                          Icons.chevron_right,
-                          color: AppColors.muted,
-                          size: AppSizes.icon,
-                        ),
-                      ],
+                          const SizedBox(width: AppSpacing.md),
+                          Expanded(
+                            child: Text(
+                              strings.profileDiagnostics,
+                              style: AppTextStyles.label,
+                            ),
+                          ),
+                          const Icon(
+                            Icons.chevron_right,
+                            color: AppColors.muted,
+                            size: AppSizes.icon,
+                          ),
+                        ],
+                      ),
                     ),
                   ),
-                ),
+                ],
                 const SizedBox(height: AppSpacing.lg),
                 SizedBox(
                   width: double.infinity,

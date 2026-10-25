@@ -15,6 +15,8 @@ class UserProfile {
   final String? email;
   final String? language;
 
+  bool get isAdmin => role == 'gov_admin' || role == 'super_admin';
+
   factory UserProfile.fromJson(Map<String, dynamic> json) {
     return UserProfile(
       id: json['id'] as String,

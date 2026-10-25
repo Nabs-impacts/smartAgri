@@ -15,9 +15,11 @@ import 'package:smartagri/core/session/session_state.dart';
 import 'package:smartagri/core/storage/token_store.dart';
 import 'package:smartagri/design_system/theme.dart';
 import 'package:smartagri/features/auth/data/auth_repository.dart';
+import 'package:smartagri/features/admin/data/stats_repository.dart';
 import 'package:smartagri/features/auth/domain/user_profile.dart';
 import 'package:smartagri/features/catalog/data/catalog_repository.dart';
 import 'package:smartagri/features/catalog/domain/admin_area.dart';
+import 'package:smartagri/features/catalog/domain/crop.dart';
 import 'package:smartagri/features/diagnostics/data/diagnostics_repository.dart';
 import 'package:smartagri/features/farms/data/farms_repository.dart';
 import 'package:smartagri/features/profile/data/me_repository.dart';
@@ -55,6 +57,34 @@ class FixedAdminAreasController extends AdminAreasController {
 const List<AdminArea> sampleAdminAreas = <AdminArea>[
   AdminArea(id: 1, level: 'region', name: 'Niamey', code: 'NER-NIAMEY'),
   AdminArea(id: 2, level: 'region', name: 'Dosso', code: 'NER-DOSSO'),
+];
+
+class FixedCropsController extends CropsController {
+  FixedCropsController(this.crops);
+
+  final List<Crop> crops;
+
+  @override
+  Future<List<Crop>> build() async => crops;
+}
+
+const List<Crop> sampleCrops = <Crop>[
+  Crop(
+    id: 1,
+    code: 'MIL',
+    nameFr: 'Mil',
+    nameHa: 'Gero',
+    nameDje: 'Haini',
+    category: 'cereal',
+  ),
+  Crop(
+    id: 2,
+    code: 'SOR',
+    nameFr: 'Sorgho',
+    nameHa: 'Dawa',
+    nameDje: 'Dawa',
+    category: 'cereal',
+  ),
 ];
 
 class FakeMeRepository extends MeRepository {
@@ -125,6 +155,7 @@ class _MemoryTokenStorage implements TokenStorage {
 MeData sampleMeData({
   String fullName = 'Amina Diallo',
   String phone = '+22790203040',
+  String role = 'farmer',
   List<Quota>? quotas,
 }) {
   return MeData(
@@ -132,7 +163,7 @@ MeData sampleMeData({
       id: 'user-id',
       phone: phone,
       fullName: fullName,
-      role: 'farmer',
+      role: role,
       language: 'fr',
     ),
     quotas:
@@ -161,6 +192,8 @@ Future<ProviderContainer> buildTestContainer({
   bool stale = false,
   Map<String, Object> initialPreferences = const <String, Object>{},
   List<AdminArea> adminAreas = sampleAdminAreas,
+  List<Crop>? crops,
+  StatsRepository? statsRepository,
   FarmsRepository? farmsRepository,
   DiagnosticsRepository? diagnosticsRepository,
   SessionController? sessionController,
@@ -187,6 +220,10 @@ Future<ProviderContainer> buildTestContainer({
       adminAreasProvider.overrideWith(
         () => FixedAdminAreasController(adminAreas),
       ),
+      if (crops != null)
+        cropsProvider.overrideWith(() => FixedCropsController(crops)),
+      if (statsRepository != null)
+        statsRepositoryProvider.overrideWithValue(statsRepository),
       if (stale) meStaleProvider.overrideWith(() => FixedStaleController(true)),
     ],
   );

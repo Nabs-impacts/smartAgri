@@ -3,6 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
+import '../../features/admin/presentation/admin_overview_page.dart';
+import '../../features/admin/presentation/admin_shell.dart';
+import '../../features/admin/presentation/admin_yields_page.dart';
 import '../../features/auth/presentation/forgot_password_page.dart';
 import '../../features/auth/presentation/login_page.dart';
 import '../../features/common/placeholder_page.dart';
@@ -17,6 +20,7 @@ import '../../features/farms/presentation/plot_detail_page.dart';
 import '../../features/farms/presentation/plot_form_page.dart';
 import '../../features/home/home_page.dart';
 import '../../features/home/home_shell.dart';
+import '../../features/profile/data/me_repository.dart';
 import '../../features/profile/profile_page.dart';
 import '../../features/search/search_page.dart';
 import '../config/app_config.dart';
@@ -29,10 +33,29 @@ final Provider<String> startRouteProvider = Provider<String>(
 
 final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
   final ValueNotifier<int> refresh = ValueNotifier<int>(0);
-  ref.listen<SessionState>(sessionControllerProvider, (_, _) {
-    refresh.value++;
+  bool disposed = false;
+  void scheduleRefresh() {
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (!disposed) {
+        refresh.value++;
+      }
+    });
+  }
+
+  ref.listen<SessionState>(
+    sessionControllerProvider,
+    (_, _) => scheduleRefresh(),
+  );
+  ref.listen<AsyncValue<MeData?>>(meProvider, (_, AsyncValue<MeData?> next) {
+    if (next.isLoading && !next.hasValue) {
+      return;
+    }
+    scheduleRefresh();
   });
-  ref.onDispose(refresh.dispose);
+  ref.onDispose(() {
+    disposed = true;
+    refresh.dispose();
+  });
 
   return GoRouter(
     initialLocation: kDebugMode ? ref.read(startRouteProvider) : '/splash',
@@ -79,6 +102,40 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
           ),
         ],
       ),
+      StatefulShellRoute.indexedStack(
+        builder: (
+          BuildContext context,
+          GoRouterState state,
+          StatefulNavigationShell navigationShell,
+        ) => AdminShell(navigationShell: navigationShell),
+        branches: <StatefulShellBranch>[
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: '/admin/overview',
+                builder: (_, _) => const AdminOverviewPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: '/admin/yields',
+                builder: (_, _) => const AdminYieldsPage(),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: '/admin/profile',
+                builder: (_, _) => const ProfilePage(),
+              ),
+            ],
+          ),
+        ],
+      ),
+      GoRoute(path: '/admin', redirect: (_, _) => '/admin/overview'),
       GoRoute(path: '/farms', builder: (_, _) => const FarmsPage()),
       GoRoute(path: '/farms/new', builder: (_, _) => const FarmFormPage()),
       GoRoute(
@@ -150,6 +207,31 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
         '/splash',
         '/register',
       };
+      final AsyncValue<MeData?> me = ref.read(meProvider);
+      final bool profileLoaded = me.hasValue && me.value != null;
+      final bool isAdmin = profileLoaded && me.value!.user.isAdmin;
+      final bool isAdminRoute = path == '/admin' || path.startsWith('/admin/');
+      if (!profileLoaded) {
+        if (authenticatedRedirects.contains(path)) {
+          return '/home';
+        }
+        return null;
+      }
+      if (isAdmin) {
+        const Set<String> adminRedirects = <String>{
+          '/login',
+          '/splash',
+          '/register',
+          '/home',
+          '/search',
+          '/profile',
+          '/admin',
+        };
+        return adminRedirects.contains(path) ? '/admin/overview' : null;
+      }
+      if (isAdminRoute) {
+        return '/home';
+      }
       return authenticatedRedirects.contains(path) ? '/home' : null;
     },
   );

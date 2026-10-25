@@ -1,3 +1,5 @@
+import 'dart:async';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
@@ -9,6 +11,9 @@ import 'package:smartagri/core/session/session_controller.dart';
 import 'package:smartagri/core/session/session_state.dart';
 import 'package:smartagri/design_system/components/app_bottom_nav.dart';
 import 'package:smartagri/design_system/theme.dart';
+import 'package:smartagri/features/admin/data/stats_repository.dart';
+import 'package:smartagri/features/admin/presentation/admin_overview_page.dart';
+import 'package:smartagri/features/admin/presentation/admin_yields_page.dart';
 import 'package:smartagri/features/auth/presentation/login_page.dart';
 import 'package:smartagri/features/catalog/data/catalog_repository.dart';
 import 'package:smartagri/features/dev_gallery/design_gallery_page.dart';
@@ -18,6 +23,7 @@ import 'package:smartagri/features/farms/data/farms_repository.dart';
 import 'package:smartagri/features/home/home_page.dart';
 import 'package:smartagri/features/profile/data/me_repository.dart';
 
+import '../../features/admin/fake_stats_repository.dart';
 import '../../features/app_test_utils.dart';
 import '../../features/diagnostics/fake_diagnostics_repository.dart';
 import '../../features/farms/fake_farms_repository.dart';
@@ -41,6 +47,7 @@ class TestSessionController extends SessionController {
 Future<ProviderContainer> buildContainer(
   SessionController controller, {
   String? startRoute,
+  MeRepository? meRepository,
 }) async {
   SharedPreferences.setMockInitialValues(<String, Object>{});
   final SharedPreferences preferences = await SharedPreferences.getInstance();
@@ -48,7 +55,10 @@ Future<ProviderContainer> buildContainer(
     overrides: [
       sharedPreferencesProvider.overrideWithValue(preferences),
       sessionControllerProvider.overrideWith(() => controller),
-      meRepositoryProvider.overrideWithValue(FakeMeRepository(sampleMeData())),
+      meRepositoryProvider.overrideWithValue(
+        meRepository ?? FakeMeRepository(sampleMeData()),
+      ),
+      statsRepositoryProvider.overrideWithValue(FakeStatsRepository()),
       farmsRepositoryProvider.overrideWithValue(FakeFarmsRepository()),
       diagnosticsRepositoryProvider.overrideWithValue(
         FakeDiagnosticsRepository(),
@@ -192,5 +202,97 @@ void main() {
         reason: 'session $state',
       );
     }
+  });
+
+  testWidgets('an administrator is redirected to the admin overview', (
+    WidgetTester tester,
+  ) async {
+    final FakeMeRepository me = FakeMeRepository(
+      sampleMeData(role: 'gov_admin'),
+    );
+    final ProviderContainer container = await buildContainer(
+      FixedSessionController(SessionState.authenticated),
+      meRepository: me,
+      startRoute: '/home',
+    );
+    final GoRouter router = await pumpContainer(tester, container);
+    await tester.pumpAndSettle();
+
+    expect(router.state.uri.path, '/admin/overview');
+    expect(find.byType(AdminOverviewPage), findsOneWidget);
+    final AppBottomNav nav = tester.widget<AppBottomNav>(
+      find.byType(AppBottomNav),
+    );
+    expect(nav.items.map((AppNavItem item) => item.label), <String>[
+      'Tableau de bord',
+      'Rendements',
+      'Profil',
+    ]);
+
+    await tester.tap(find.byKey(const Key('app_bottom_nav_1')));
+    await tester.pumpAndSettle();
+    expect(find.byType(AdminYieldsPage), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('app_bottom_nav_2')));
+    await tester.pumpAndSettle();
+    expect(find.text('Mon utilisation'), findsNothing);
+    expect(find.text('Mes diagnostics'), findsNothing);
+  });
+
+  testWidgets('the login redirect sends an administrator to the overview', (
+    WidgetTester tester,
+  ) async {
+    final ProviderContainer container = await buildContainer(
+      FixedSessionController(SessionState.authenticated),
+      meRepository: FakeMeRepository(sampleMeData(role: 'super_admin')),
+      startRoute: '/login',
+    );
+    final GoRouter router = await pumpContainer(tester, container);
+    await tester.pumpAndSettle();
+
+    expect(router.state.uri.path, '/admin/overview');
+    expect(find.byType(AdminOverviewPage), findsOneWidget);
+    expect(find.byType(LoginPage), findsNothing);
+  });
+
+  testWidgets('a farmer is redirected away from the admin routes', (
+    WidgetTester tester,
+  ) async {
+    final ProviderContainer container = await buildContainer(
+      FixedSessionController(SessionState.authenticated),
+      startRoute: '/home',
+    );
+    final GoRouter router = await pumpContainer(tester, container);
+    await tester.pumpAndSettle();
+
+    router.go('/admin/yields');
+    await tester.pumpAndSettle();
+
+    expect(router.state.uri.path, '/home');
+    expect(find.byType(HomePage), findsOneWidget);
+    expect(find.byType(AdminYieldsPage), findsNothing);
+  });
+
+  testWidgets('waits for the profile before redirecting an administrator', (
+    WidgetTester tester,
+  ) async {
+    final FakeMeRepository me = FakeMeRepository(
+      sampleMeData(role: 'gov_admin'),
+    )..completer = Completer<MeData>();
+    final ProviderContainer container = await buildContainer(
+      FixedSessionController(SessionState.authenticated),
+      meRepository: me,
+      startRoute: '/home',
+    );
+    final GoRouter router = await pumpContainer(tester, container);
+
+    expect(router.state.uri.path, '/home');
+    expect(find.byType(AdminOverviewPage), findsNothing);
+
+    me.completer!.complete(sampleMeData(role: 'gov_admin'));
+    await tester.pumpAndSettle();
+
+    expect(router.state.uri.path, '/admin/overview');
+    expect(find.byType(AdminOverviewPage), findsOneWidget);
   });
 }
