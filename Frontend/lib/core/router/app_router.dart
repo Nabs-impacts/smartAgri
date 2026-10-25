@@ -8,6 +8,7 @@ import '../../features/auth/presentation/login_page.dart';
 import '../../features/common/placeholder_page.dart';
 import '../../features/dev_gallery/design_gallery_page.dart';
 import '../../features/diagnostics/presentation/diagnostic_new_page.dart';
+import '../../features/diagnostics/presentation/diagnostics_history_page.dart';
 import '../../features/diagnostics/presentation/diagnostic_result_page.dart';
 import '../../features/farms/presentation/farm_detail_page.dart';
 import '../../features/farms/presentation/farm_form_page.dart';
@@ -104,6 +105,10 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
         path: '/plots/:plotId',
         builder: (_, GoRouterState state) =>
             PlotDetailPage(plotId: state.pathParameters['plotId'] ?? ''),
+      ),
+      GoRoute(
+        path: '/diagnostics',
+        builder: (_, _) => const DiagnosticsHistoryPage(),
       ),
       GoRoute(path: '/diagnostic', redirect: (_, _) => '/diagnostic/new'),
       GoRoute(

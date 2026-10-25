@@ -13,6 +13,9 @@ void main() {
 
     expect(storage.interceptors, isEmpty);
     expect(storage.options.baseUrl, isEmpty);
+    expect(storage.options.connectTimeout, const Duration(seconds: 15));
+    expect(storage.options.receiveTimeout, const Duration(seconds: 30));
+    expect(storage.options.sendTimeout, const Duration(seconds: 60));
   });
 
   test('refresh client has no interceptor', () {

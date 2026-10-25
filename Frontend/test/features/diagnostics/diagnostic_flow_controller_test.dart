@@ -5,9 +5,11 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smartagri/core/media/image_compressor.dart';
 import 'package:smartagri/core/network/api_exception.dart';
+import 'package:smartagri/features/diagnostics/data/diagnostics_history_provider.dart';
 import 'package:smartagri/features/diagnostics/data/diagnostics_repository.dart';
 import 'package:smartagri/features/diagnostics/domain/diagnostic.dart';
 import 'package:smartagri/features/diagnostics/domain/diagnostic_status.dart';
+import 'package:smartagri/features/diagnostics/domain/diagnostic_summary.dart';
 import 'package:smartagri/features/diagnostics/presentation/diagnostic_flow_controller.dart';
 import 'package:smartagri/features/media/data/media_repository.dart';
 import 'package:smartagri/features/media/data/media_uploader.dart';
@@ -72,11 +74,23 @@ class FakeDiagnosticsRepository extends DiagnosticsRepository {
   int failures;
   bool quotaFailure;
   int createCalls = 0;
+  int listCalls = 0;
   String? lastId;
   String? lastIdempotencyKey;
   List<String>? lastMediaIds;
   int? lastCropId;
   String? lastPlotId;
+
+  @override
+  Future<DiagnosticsPage> list({
+    String? cursor,
+    int limit = 20,
+    String? plotId,
+    DiagnosticStatus? status,
+  }) async {
+    listCalls++;
+    return const DiagnosticsPage(items: <DiagnosticSummary>[]);
+  }
 
   @override
   Future<Diagnostic> create({
@@ -180,6 +194,27 @@ void main() {
     expect(repository.lastCropId, 3);
     expect(repository.lastPlotId, 'plot-1');
     expect(container.read(diagnosticFlowProvider).created, isNotNull);
+  });
+
+  test('invalidates the history after creating a diagnostic', () async {
+    final FakeDiagnosticsRepository repository = FakeDiagnosticsRepository();
+    final ProviderContainer container = buildContainer(
+      compressor: FakeCompressor(),
+      uploader: FakeUploader(),
+      repository: repository,
+    );
+    await container.read(diagnosticsHistoryProvider.future);
+    final int before = repository.listCalls;
+    final DiagnosticFlowController flow = container.read(
+      diagnosticFlowProvider.notifier,
+    );
+
+    await flow.addPhoto(Uint8List.fromList(<int>[1, 2, 3]));
+    await flow.submit();
+    await container.read(diagnosticsHistoryProvider.future);
+
+    expect(container.read(diagnosticFlowProvider).created, isNotNull);
+    expect(repository.listCalls, before + 1);
   });
 
   test('retries the creation without uploading again', () async {

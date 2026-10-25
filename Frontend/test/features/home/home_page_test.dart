@@ -5,10 +5,13 @@ import 'package:go_router/go_router.dart';
 import 'package:smartagri/core/i18n/app_language.dart';
 import 'package:smartagri/core/i18n/language_controller.dart';
 import 'package:smartagri/core/network/api_exception.dart';
+import 'package:smartagri/features/diagnostics/domain/diagnostic_summary.dart';
+import 'package:smartagri/features/diagnostics/presentation/diagnostic_row.dart';
 import 'package:smartagri/features/farms/domain/farm.dart';
 import 'package:smartagri/features/home/home_page.dart';
 
 import '../app_test_utils.dart';
+import '../diagnostics/fake_diagnostics_repository.dart';
 import '../farms/fake_farms_repository.dart';
 
 GoRouter buildRouter() {
@@ -36,6 +39,14 @@ GoRouter buildRouter() {
         path: '/farms/:farmId',
         builder: (_, _) => const Scaffold(body: Text('route exploitation')),
       ),
+      GoRoute(
+        path: '/diagnostics',
+        builder: (_, _) => const Scaffold(body: Text('route diagnostics')),
+      ),
+      GoRoute(
+        path: '/diagnostic/:diagnosticId',
+        builder: (_, _) => const Scaffold(body: Text('route résultat')),
+      ),
     ],
   );
 }
@@ -43,11 +54,17 @@ GoRouter buildRouter() {
 Future<(ProviderContainer, FakeMeRepository)> pumpHome(
   WidgetTester tester, {
   FakeFarmsRepository? farms,
+  FakeDiagnosticsRepository? diagnostics,
 }) async {
+  tester.view.physicalSize = const Size(800, 2000);
+  tester.view.devicePixelRatio = 1;
+  addTearDown(tester.view.resetPhysicalSize);
+  addTearDown(tester.view.resetDevicePixelRatio);
   final FakeMeRepository repository = FakeMeRepository(sampleMeData());
   final ProviderContainer container = await buildTestContainer(
     meRepository: repository,
     farmsRepository: farms,
+    diagnosticsRepository: diagnostics,
   );
   await tester.pumpWidget(testRouterApp(container, buildRouter()));
   await tester.pumpAndSettle();
@@ -143,6 +160,102 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.text('route exploitations'), findsOneWidget);
+  });
+
+  testWidgets('shows the empty latest diagnostics section', (
+    WidgetTester tester,
+  ) async {
+    await pumpHome(tester);
+
+    expect(find.text('Derniers diagnostics'), findsOneWidget);
+    expect(find.text('Vos diagnostics apparaîtront ici'), findsOneWidget);
+    expect(find.byType(DiagnosticRow), findsNothing);
+  });
+
+  testWidgets('shows a single latest diagnostic', (WidgetTester tester) async {
+    await pumpHome(
+      tester,
+      diagnostics: FakeDiagnosticsRepository(
+        items: <DiagnosticSummary>[
+          sampleSummary(id: 'diag-1', labelName: 'Mildiou'),
+        ],
+      ),
+    );
+
+    expect(find.byType(DiagnosticRow), findsOneWidget);
+    expect(find.text('Mildiou'), findsOneWidget);
+  });
+
+  testWidgets('shows at most three latest diagnostics', (
+    WidgetTester tester,
+  ) async {
+    await pumpHome(
+      tester,
+      diagnostics: FakeDiagnosticsRepository(
+        items: <DiagnosticSummary>[
+          sampleSummary(id: 'diag-1', labelName: 'Analyse 1'),
+          sampleSummary(id: 'diag-2', labelName: 'Analyse 2'),
+          sampleSummary(id: 'diag-3', labelName: 'Analyse 3'),
+          sampleSummary(id: 'diag-4', labelName: 'Analyse 4'),
+        ],
+      ),
+    );
+
+    expect(find.byType(DiagnosticRow), findsNWidgets(3));
+    expect(find.text('Analyse 1'), findsOneWidget);
+    expect(find.text('Analyse 2'), findsOneWidget);
+    expect(find.text('Analyse 3'), findsOneWidget);
+    expect(find.text('Analyse 4'), findsNothing);
+  });
+
+  testWidgets('opens the full diagnostics history from the section', (
+    WidgetTester tester,
+  ) async {
+    await pumpHome(tester);
+
+    await tester.tap(find.byKey(const Key('home_diagnostics_see_all')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('route diagnostics'), findsOneWidget);
+  });
+
+  testWidgets('shows the latest diagnostics error and retries', (
+    WidgetTester tester,
+  ) async {
+    final FakeDiagnosticsRepository diagnostics = FakeDiagnosticsRepository()
+      ..listError = ApiException.network();
+    await pumpHome(tester, diagnostics: diagnostics);
+
+    expect(find.byKey(const Key('home_diagnostics_retry')), findsOneWidget);
+
+    diagnostics.listError = null;
+    diagnostics.items = <DiagnosticSummary>[
+      sampleSummary(id: 'diag-1', labelName: 'Mildiou'),
+    ];
+    await tester.tap(find.byKey(const Key('home_diagnostics_retry')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Mildiou'), findsOneWidget);
+  });
+
+  testWidgets('the pull-to-refresh reloads the diagnostics history', (
+    WidgetTester tester,
+  ) async {
+    final FakeDiagnosticsRepository diagnostics = FakeDiagnosticsRepository();
+    await pumpHome(tester, diagnostics: diagnostics);
+    final int before = diagnostics.listCalls;
+
+    diagnostics.items = <DiagnosticSummary>[
+      sampleSummary(id: 'diag-1', labelName: 'Mildiou'),
+    ];
+    final RefreshIndicator refresh = tester.widget<RefreshIndicator>(
+      find.byType(RefreshIndicator),
+    );
+    await refresh.onRefresh();
+    await tester.pumpAndSettle();
+
+    expect(diagnostics.listCalls, greaterThan(before));
+    expect(find.text('Mildiou'), findsOneWidget);
   });
 
   testWidgets('shows the farms error and retries', (WidgetTester tester) async {

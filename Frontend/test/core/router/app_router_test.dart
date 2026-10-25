@@ -12,12 +12,14 @@ import 'package:smartagri/design_system/theme.dart';
 import 'package:smartagri/features/auth/presentation/login_page.dart';
 import 'package:smartagri/features/catalog/data/catalog_repository.dart';
 import 'package:smartagri/features/dev_gallery/design_gallery_page.dart';
+import 'package:smartagri/features/diagnostics/data/diagnostics_repository.dart';
 import 'package:smartagri/features/diagnostics/presentation/diagnostic_new_page.dart';
 import 'package:smartagri/features/farms/data/farms_repository.dart';
 import 'package:smartagri/features/home/home_page.dart';
 import 'package:smartagri/features/profile/data/me_repository.dart';
 
 import '../../features/app_test_utils.dart';
+import '../../features/diagnostics/fake_diagnostics_repository.dart';
 import '../../features/farms/fake_farms_repository.dart';
 
 class FixedSessionController extends SessionController {
@@ -48,6 +50,9 @@ Future<ProviderContainer> buildContainer(
       sessionControllerProvider.overrideWith(() => controller),
       meRepositoryProvider.overrideWithValue(FakeMeRepository(sampleMeData())),
       farmsRepositoryProvider.overrideWithValue(FakeFarmsRepository()),
+      diagnosticsRepositoryProvider.overrideWithValue(
+        FakeDiagnosticsRepository(),
+      ),
       adminAreasProvider.overrideWith(
         () => FixedAdminAreasController(sampleAdminAreas),
       ),

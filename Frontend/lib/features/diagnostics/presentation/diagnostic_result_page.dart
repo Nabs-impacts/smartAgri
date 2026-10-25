@@ -16,6 +16,7 @@ import '../../../design_system/components/app_progress_bar.dart';
 import '../../../design_system/components/app_status_chip.dart';
 import '../../../design_system/tokens.dart';
 import '../data/diagnostic_watcher.dart';
+import '../data/diagnostics_history_provider.dart';
 import '../data/diagnostics_repository.dart';
 import '../domain/diagnostic.dart';
 import '../domain/diagnostic_media.dart';
@@ -206,6 +207,7 @@ class _DiagnosticResultPageState extends ConsumerState<DiagnosticResultPage> {
     }
     try {
       await ref.read(diagnosticsRepositoryProvider).delete(widget.diagnosticId);
+      ref.invalidate(diagnosticsHistoryProvider);
       if (mounted) {
         context.go('/home');
       }

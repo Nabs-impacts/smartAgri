@@ -50,6 +50,7 @@ final Provider<Dio> storageClientProvider = Provider<Dio>((Ref ref) {
     BaseOptions(
       connectTimeout: const Duration(seconds: 15),
       receiveTimeout: const Duration(seconds: 30),
+      sendTimeout: const Duration(seconds: 60),
     ),
   );
   dio.interceptors.removeImplyContentTypeInterceptor();

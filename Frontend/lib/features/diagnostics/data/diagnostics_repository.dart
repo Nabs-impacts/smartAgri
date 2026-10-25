@@ -4,11 +4,35 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/network_providers.dart';
 import '../domain/diagnostic.dart';
+import '../domain/diagnostic_status.dart';
+import '../domain/diagnostic_summary.dart';
 
 class DiagnosticsRepository {
   DiagnosticsRepository({required this.dio});
 
   final Dio dio;
+
+  Future<DiagnosticsPage> list({
+    String? cursor,
+    int limit = 20,
+    String? plotId,
+    DiagnosticStatus? status,
+  }) async {
+    try {
+      final Response<dynamic> response = await dio.get<dynamic>(
+        '/diagnostics',
+        queryParameters: <String, dynamic>{
+          'limit': limit,
+          'cursor': ?cursor,
+          'plot_id': ?plotId,
+          'status': ?status?.apiValue,
+        },
+      );
+      return DiagnosticsPage.fromJson(_asMap(response.data));
+    } on DioException catch (error) {
+      throw ApiException.fromDioException(error);
+    }
+  }
 
   Future<Diagnostic> create({
     required String id,

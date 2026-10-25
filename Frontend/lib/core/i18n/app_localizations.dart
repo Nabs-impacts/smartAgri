@@ -1053,6 +1053,84 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Prévention'**
   String get diagnosticStepPrevention;
+
+  /// No description provided for @diagnosticsHistoryTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mes diagnostics'**
+  String get diagnosticsHistoryTitle;
+
+  /// No description provided for @diagnosticsHistorySeeAll.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tout voir'**
+  String get diagnosticsHistorySeeAll;
+
+  /// No description provided for @diagnosticsHistoryEmpty.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun diagnostic pour l\'instant'**
+  String get diagnosticsHistoryEmpty;
+
+  /// No description provided for @diagnosticsHistoryNew.
+  ///
+  /// In fr, this message translates to:
+  /// **'Faire un diagnostic'**
+  String get diagnosticsHistoryNew;
+
+  /// No description provided for @diagnosticsHistoryUntitled.
+  ///
+  /// In fr, this message translates to:
+  /// **'Analyse en cours…'**
+  String get diagnosticsHistoryUntitled;
+
+  /// No description provided for @diagnosticsLatestTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Derniers diagnostics'**
+  String get diagnosticsLatestTitle;
+
+  /// No description provided for @diagnosticsLatestEmpty.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vos diagnostics apparaîtront ici'**
+  String get diagnosticsLatestEmpty;
+
+  /// No description provided for @diagnosticsHistoryDelete.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer'**
+  String get diagnosticsHistoryDelete;
+
+  /// No description provided for @diagnosticStatusDone.
+  ///
+  /// In fr, this message translates to:
+  /// **'Terminé'**
+  String get diagnosticStatusDone;
+
+  /// No description provided for @diagnosticStatusNeedsReview.
+  ///
+  /// In fr, this message translates to:
+  /// **'À vérifier'**
+  String get diagnosticStatusNeedsReview;
+
+  /// No description provided for @diagnosticStatusFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Échec'**
+  String get diagnosticStatusFailed;
+
+  /// No description provided for @diagnosticStatusInProgress.
+  ///
+  /// In fr, this message translates to:
+  /// **'En cours'**
+  String get diagnosticStatusInProgress;
+
+  /// No description provided for @profileDiagnostics.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mes diagnostics'**
+  String get profileDiagnostics;
 }
 
 class _AppLocalizationsDelegate

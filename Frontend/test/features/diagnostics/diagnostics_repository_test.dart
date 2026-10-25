@@ -3,6 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:smartagri/core/network/api_exception.dart';
 import 'package:smartagri/features/diagnostics/data/diagnostics_repository.dart';
 import 'package:smartagri/features/diagnostics/domain/diagnostic.dart';
+import 'package:smartagri/features/diagnostics/domain/diagnostic_status.dart';
+import 'package:smartagri/features/diagnostics/domain/diagnostic_summary.dart';
 
 import '../../core/network/recording_adapter.dart';
 import 'diagnostic_models_test.dart';
@@ -12,7 +14,100 @@ Dio buildDio(RecordingAdapter adapter) {
     ..httpClientAdapter = adapter;
 }
 
+Map<String, dynamic> summaryJson({
+  String id = 'diag-1',
+  String status = 'done',
+  String? severity = 'high',
+  Object? confidence = '0.92',
+}) {
+  return <String, dynamic>{
+    'id': id,
+    'status': status,
+    'error': null,
+    'confidence': confidence,
+    'severity': severity,
+    'crop_id': 3,
+    'plot_id': 'plot-1',
+    'crop_cycle_id': null,
+    'source': 'server',
+    'user_note': null,
+    'location': null,
+    'created_at': '2026-10-24T10:00:00Z',
+    'updated_at': '2026-10-24T10:00:05Z',
+    'completed_at': '2026-10-24T10:00:05Z',
+  };
+}
+
 void main() {
+  test('lists diagnostics with the backend pagination parameters', () async {
+    final RecordingAdapter adapter = RecordingAdapter(
+      (RequestOptions options, RecordedRequest request) async =>
+          body(200, <String, dynamic>{
+            'items': <Map<String, dynamic>>[
+              summaryJson(),
+              summaryJson(
+                id: 'diag-2',
+                status: 'needs_review',
+                severity: 'medium',
+                confidence: 0.7,
+              ),
+            ],
+            'next_cursor': 'cursor-2',
+          }),
+    );
+    final DiagnosticsRepository repository = DiagnosticsRepository(
+      dio: buildDio(adapter),
+    );
+
+    final DiagnosticsPage page = await repository.list(
+      cursor: 'cursor-1',
+      limit: 5,
+      plotId: 'plot-1',
+      status: DiagnosticStatus.needsReview,
+    );
+
+    final RecordedRequest request = adapter.requests.single;
+    expect(request.method, 'GET');
+    expect(request.path, '/diagnostics');
+    expect(request.queryParameters, <String, dynamic>{
+      'limit': 5,
+      'cursor': 'cursor-1',
+      'plot_id': 'plot-1',
+      'status': 'needs_review',
+    });
+    expect(page.items, hasLength(2));
+    expect(page.items.first.id, 'diag-1');
+    expect(page.items.first.status, DiagnosticStatus.done);
+    expect(page.items.first.severity?.name, 'high');
+    expect(page.items.first.confidence, 0.92);
+    expect(page.items.first.plotId, 'plot-1');
+    expect(page.items.first.labelName, isNull);
+    expect(page.items.first.thumbnailUrl, isNull);
+    expect(page.items.last.status, DiagnosticStatus.needsReview);
+    expect(page.nextCursor, 'cursor-2');
+  });
+
+  test('lists the first page with the default limit', () async {
+    final RecordingAdapter adapter = RecordingAdapter(
+      (RequestOptions options, RecordedRequest request) async =>
+          body(200, <String, dynamic>{
+            'items': <Map<String, dynamic>>[],
+            'next_cursor': null,
+          }),
+    );
+    final DiagnosticsRepository repository = DiagnosticsRepository(
+      dio: buildDio(adapter),
+    );
+
+    final DiagnosticsPage page = await repository.list();
+
+    expect(adapter.requests.single.queryParameters, <String, dynamic>{
+      'limit': 20,
+    });
+    expect(page.items, isEmpty);
+    expect(page.nextCursor, isNull);
+  });
+
   test('creates a diagnostic with the exact idempotent body', () async {
     final RecordingAdapter adapter = RecordingAdapter(
       (RequestOptions options, RecordedRequest request) async =>

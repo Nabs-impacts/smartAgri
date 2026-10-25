@@ -1,6 +1,7 @@
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/config/app_config.dart';
@@ -12,6 +13,7 @@ import 'design_system/theme.dart';
 Future<void> main() async {
   AppConfig.validate(isRelease: kReleaseMode, url: AppConfig.apiBaseUrl);
   WidgetsFlutterBinding.ensureInitialized();
+  await initializeDateFormatting('fr');
   final SharedPreferences preferences = await SharedPreferences.getInstance();
   runApp(
     ProviderScope(

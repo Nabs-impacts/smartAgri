@@ -5,6 +5,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smartagri/core/i18n/app_language.dart';
 import 'package:smartagri/core/i18n/language_controller.dart';
@@ -17,9 +18,11 @@ import 'package:smartagri/features/auth/data/auth_repository.dart';
 import 'package:smartagri/features/auth/domain/user_profile.dart';
 import 'package:smartagri/features/catalog/data/catalog_repository.dart';
 import 'package:smartagri/features/catalog/domain/admin_area.dart';
+import 'package:smartagri/features/diagnostics/data/diagnostics_repository.dart';
 import 'package:smartagri/features/farms/data/farms_repository.dart';
 import 'package:smartagri/features/profile/data/me_repository.dart';
 
+import 'diagnostics/fake_diagnostics_repository.dart';
 import 'farms/fake_farms_repository.dart';
 
 class FixedSessionController extends SessionController {
@@ -159,8 +162,10 @@ Future<ProviderContainer> buildTestContainer({
   Map<String, Object> initialPreferences = const <String, Object>{},
   List<AdminArea> adminAreas = sampleAdminAreas,
   FarmsRepository? farmsRepository,
+  DiagnosticsRepository? diagnosticsRepository,
   SessionController? sessionController,
 }) async {
+  await initializeDateFormatting('fr');
   SharedPreferences.setMockInitialValues(initialPreferences);
   final SharedPreferences preferences = await SharedPreferences.getInstance();
   final ProviderContainer container = ProviderContainer(
@@ -175,6 +180,9 @@ Future<ProviderContainer> buildTestContainer({
       ),
       farmsRepositoryProvider.overrideWithValue(
         farmsRepository ?? FakeFarmsRepository(),
+      ),
+      diagnosticsRepositoryProvider.overrideWithValue(
+        diagnosticsRepository ?? FakeDiagnosticsRepository(),
       ),
       adminAreasProvider.overrideWith(
         () => FixedAdminAreasController(adminAreas),

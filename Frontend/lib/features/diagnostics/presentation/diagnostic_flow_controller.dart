@@ -7,6 +7,7 @@ import 'package:uuid/uuid.dart';
 import '../../../core/media/image_compressor.dart';
 import '../../../core/network/api_exception.dart';
 import '../../media/data/media_uploader.dart';
+import '../data/diagnostics_history_provider.dart';
 import '../data/diagnostics_repository.dart';
 import '../domain/diagnostic.dart';
 
@@ -334,6 +335,7 @@ class DiagnosticFlowController extends Notifier<DiagnosticFlowState> {
           );
       if (ref.mounted) {
         state = state.copyWith(submitting: false, created: diagnostic);
+        ref.invalidate(diagnosticsHistoryProvider);
       }
     } on ApiException catch (error) {
       if (ref.mounted) {

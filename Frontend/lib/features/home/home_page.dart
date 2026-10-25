@@ -19,6 +19,9 @@ import '../../design_system/tokens.dart';
 import '../auth/domain/user_profile.dart';
 import '../catalog/data/catalog_repository.dart';
 import '../catalog/domain/admin_area.dart';
+import '../diagnostics/data/diagnostics_history_provider.dart';
+import '../diagnostics/domain/diagnostic_summary.dart';
+import '../diagnostics/presentation/diagnostic_row.dart';
 import '../farms/data/farms_providers.dart';
 import '../farms/domain/farm.dart';
 import '../farms/presentation/farm_display.dart';
@@ -37,6 +40,9 @@ class HomePage extends ConsumerWidget {
     final UserProfile? user = ref.watch(currentUserProvider);
     final Weather weather = ref.watch(weatherProvider);
     final AsyncValue<List<Farm>> farms = ref.watch(farmsProvider);
+    final AsyncValue<DiagnosticsHistoryState> diagnostics = ref.watch(
+      diagnosticsHistoryProvider,
+    );
     final List<AdminArea> areas =
         ref.watch(adminAreasProvider).value ?? <AdminArea>[];
     final String firstName = _firstName(user?.fullName);
@@ -46,7 +52,7 @@ class HomePage extends ConsumerWidget {
       backgroundColor: AppColors.background,
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () => ref.read(meProvider.notifier).refresh(),
+          onRefresh: () => _refresh(ref),
           child: ListView(
             key: const Key('home_scroll'),
             physics: const AlwaysScrollableScrollPhysics(),
@@ -160,6 +166,8 @@ class HomePage extends ConsumerWidget {
               const SizedBox(height: AppSpacing.xl),
               _farmsSection(context, ref, strings, farms, areas),
               const SizedBox(height: AppSpacing.xl),
+              _diagnosticsSection(context, ref, strings, diagnostics),
+              const SizedBox(height: AppSpacing.xl),
               SizedBox(
                 width: double.infinity,
                 child: AppButton(
@@ -172,6 +180,91 @@ class HomePage extends ConsumerWidget {
           ),
         ),
       ),
+    );
+  }
+
+  Future<void> _refresh(WidgetRef ref) async {
+    await Future.wait(<Future<void>>[
+      ref.read(meProvider.notifier).refresh(),
+      ref.read(diagnosticsHistoryProvider.notifier).refresh(),
+    ]);
+  }
+
+  Widget _diagnosticsSection(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations strings,
+    AsyncValue<DiagnosticsHistoryState> diagnostics,
+  ) {
+    final List<DiagnosticSummary> items =
+        diagnostics.value?.items ?? const <DiagnosticSummary>[];
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Row(
+          children: <Widget>[
+            Expanded(
+              child: Text(
+                strings.diagnosticsLatestTitle,
+                style: AppTextStyles.title,
+              ),
+            ),
+            AppTextButton(
+              key: const Key('home_diagnostics_see_all'),
+              label: strings.diagnosticsHistorySeeAll,
+              onPressed: () => context.go('/diagnostics'),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.md),
+        if (diagnostics.isLoading && diagnostics.value == null)
+          const AppCard(
+            child: SizedBox(
+              height: 48,
+              child: Center(
+                child: CircularProgressIndicator(color: AppColors.primary),
+              ),
+            ),
+          )
+        else if (diagnostics.hasError && diagnostics.value == null)
+          AppCard(
+            child: Column(
+              children: <Widget>[
+                Text(
+                  diagnostics.error is ApiException
+                      ? apiErrorMessage(
+                          diagnostics.error! as ApiException,
+                          strings,
+                        )
+                      : strings.errorGeneric,
+                  style: AppTextStyles.body,
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: AppSpacing.sm),
+                AppTextButton(
+                  key: const Key('home_diagnostics_retry'),
+                  label: strings.retry,
+                  onPressed: () =>
+                      ref.read(diagnosticsHistoryProvider.notifier).refresh(),
+                ),
+              ],
+            ),
+          )
+        else if (items.isEmpty)
+          AppCard(
+            child: Text(
+              strings.diagnosticsLatestEmpty,
+              key: const Key('home_diagnostics_empty'),
+              style: AppTextStyles.body,
+              textAlign: TextAlign.center,
+            ),
+          )
+        else
+          for (final DiagnosticSummary summary in items.take(3)) ...<Widget>[
+            DiagnosticRow(summary: summary),
+            const SizedBox(height: AppSpacing.md),
+          ],
+      ],
     );
   }
 

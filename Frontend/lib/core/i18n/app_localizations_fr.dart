@@ -524,4 +524,43 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get diagnosticStepPrevention => 'Prévention';
+
+  @override
+  String get diagnosticsHistoryTitle => 'Mes diagnostics';
+
+  @override
+  String get diagnosticsHistorySeeAll => 'Tout voir';
+
+  @override
+  String get diagnosticsHistoryEmpty => 'Aucun diagnostic pour l\'instant';
+
+  @override
+  String get diagnosticsHistoryNew => 'Faire un diagnostic';
+
+  @override
+  String get diagnosticsHistoryUntitled => 'Analyse en cours…';
+
+  @override
+  String get diagnosticsLatestTitle => 'Derniers diagnostics';
+
+  @override
+  String get diagnosticsLatestEmpty => 'Vos diagnostics apparaîtront ici';
+
+  @override
+  String get diagnosticsHistoryDelete => 'Supprimer';
+
+  @override
+  String get diagnosticStatusDone => 'Terminé';
+
+  @override
+  String get diagnosticStatusNeedsReview => 'À vérifier';
+
+  @override
+  String get diagnosticStatusFailed => 'Échec';
+
+  @override
+  String get diagnosticStatusInProgress => 'En cours';
+
+  @override
+  String get profileDiagnostics => 'Mes diagnostics';
 }

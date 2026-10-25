@@ -14,12 +14,14 @@ class RecordedRequest {
     required this.path,
     required this.headers,
     required this.data,
+    required this.queryParameters,
   });
 
   final String method;
   final String path;
   final Map<String, dynamic> headers;
   final Object? data;
+  final Map<String, dynamic> queryParameters;
 }
 
 class RecordingAdapter implements HttpClientAdapter {
@@ -39,6 +41,7 @@ class RecordingAdapter implements HttpClientAdapter {
       path: options.path,
       headers: Map<String, dynamic>.of(options.headers),
       data: options.data,
+      queryParameters: Map<String, dynamic>.of(options.queryParameters),
     );
     requests.add(request);
     return handler(options, request);

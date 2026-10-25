@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:go_router/go_router.dart';
 import 'package:smartagri/core/network/api_exception.dart';
 import 'package:smartagri/design_system/components/app_progress_bar.dart';
 import 'package:smartagri/design_system/tokens.dart';
@@ -129,6 +130,32 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(auth.logoutCalls, 0);
+  });
+
+  testWidgets('the diagnostics row opens the history page', (
+    WidgetTester tester,
+  ) async {
+    final ProviderContainer container = await buildTestContainer(
+      meRepository: FakeMeRepository(sampleMeData()),
+    );
+    final GoRouter router = GoRouter(
+      initialLocation: '/profile',
+      routes: <RouteBase>[
+        GoRoute(path: '/profile', builder: (_, _) => const ProfilePage()),
+        GoRoute(
+          path: '/diagnostics',
+          builder: (_, _) => const Scaffold(body: Text('route diagnostics')),
+        ),
+      ],
+    );
+    await tester.pumpWidget(testRouterApp(container, router));
+    await tester.pumpAndSettle();
+
+    expect(find.text('Mes diagnostics'), findsOneWidget);
+    await tester.tap(find.byKey(const Key('profile_diagnostics')));
+    await tester.pumpAndSettle();
+
+    expect(find.text('route diagnostics'), findsOneWidget);
   });
 
   testWidgets('shows the error state and retries', (WidgetTester tester) async {

@@ -187,6 +187,19 @@
   "diagnosticStepBiological": "Lutte biologique",
   "diagnosticStepChemical": "Traitement",
   "diagnosticStepPrevention": "Prévention",
+  "diagnosticsHistoryTitle": "Mes diagnostics",
+  "diagnosticsHistorySeeAll": "Tout voir",
+  "diagnosticsHistoryEmpty": "Aucun diagnostic pour l'instant",
+  "diagnosticsHistoryNew": "Faire un diagnostic",
+  "diagnosticsHistoryUntitled": "Analyse en cours…",
+  "diagnosticsLatestTitle": "Derniers diagnostics",
+  "diagnosticsLatestEmpty": "Vos diagnostics apparaîtront ici",
+  "diagnosticsHistoryDelete": "Supprimer",
+  "diagnosticStatusDone": "Terminé",
+  "diagnosticStatusNeedsReview": "À vérifier",
+  "diagnosticStatusFailed": "Échec",
+  "diagnosticStatusInProgress": "En cours",
+  "profileDiagnostics": "Mes diagnostics",
   "@diagnosticConfidence": {
     "placeholders": {
       "percent": {
