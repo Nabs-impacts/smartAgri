@@ -7,7 +7,8 @@ import '../../features/auth/presentation/forgot_password_page.dart';
 import '../../features/auth/presentation/login_page.dart';
 import '../../features/common/placeholder_page.dart';
 import '../../features/dev_gallery/design_gallery_page.dart';
-import '../../features/diagnostic/diagnostic_page.dart';
+import '../../features/diagnostics/presentation/diagnostic_new_page.dart';
+import '../../features/diagnostics/presentation/diagnostic_result_page.dart';
 import '../../features/farms/presentation/farm_detail_page.dart';
 import '../../features/farms/presentation/farm_form_page.dart';
 import '../../features/farms/presentation/farms_page.dart';
@@ -104,7 +105,17 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
         builder: (_, GoRouterState state) =>
             PlotDetailPage(plotId: state.pathParameters['plotId'] ?? ''),
       ),
-      GoRoute(path: '/diagnostic', builder: (_, _) => const DiagnosticPage()),
+      GoRoute(path: '/diagnostic', redirect: (_, _) => '/diagnostic/new'),
+      GoRoute(
+        path: '/diagnostic/new',
+        builder: (_, _) => const DiagnosticNewPage(),
+      ),
+      GoRoute(
+        path: '/diagnostic/:diagnosticId',
+        builder: (_, GoRouterState state) => DiagnosticResultPage(
+          diagnosticId: state.pathParameters['diagnosticId'] ?? '',
+        ),
+      ),
       if (kDebugMode)
         GoRoute(
           path: '/dev/gallery',

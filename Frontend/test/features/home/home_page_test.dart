@@ -21,7 +21,7 @@ GoRouter buildRouter() {
         builder: (_, _) => const Scaffold(body: Text('route profil')),
       ),
       GoRoute(
-        path: '/diagnostic',
+        path: '/diagnostic/new',
         builder: (_, _) => const Scaffold(body: Text('route diagnostic')),
       ),
       GoRoute(

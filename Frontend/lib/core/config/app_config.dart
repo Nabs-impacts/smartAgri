@@ -13,6 +13,11 @@ abstract final class AppConfig {
 
   static const String consentVersion = '1.0';
 
+  static const bool diagnosticDemoBanner = bool.fromEnvironment(
+    'DIAGNOSTIC_DEMO',
+    defaultValue: true,
+  );
+
   static void validate({required bool isRelease, required String url}) {
     if (isRelease &&
         (url == defaultApiBaseUrl || !url.startsWith('https://'))) {

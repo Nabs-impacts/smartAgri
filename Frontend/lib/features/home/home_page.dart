@@ -165,7 +165,7 @@ class HomePage extends ConsumerWidget {
                 child: AppButton(
                   key: const Key('home_diagnostic'),
                   label: strings.homeNewDiagnostic,
-                  onPressed: () => context.go('/diagnostic'),
+                  onPressed: () => context.go('/diagnostic/new'),
                 ),
               ),
             ],

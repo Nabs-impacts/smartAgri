@@ -367,4 +367,161 @@ class AppLocalizationsHa extends AppLocalizations {
   String errorQuotaExceeded(String limit) {
     return 'Vous avez atteint la limite de votre formule ($limit parcelles).';
   }
+
+  @override
+  String get diagnosticNewTitle => 'Nouveau diagnostic';
+
+  @override
+  String get diagnosticTipsTitle => 'Conseils pour une bonne photo';
+
+  @override
+  String get diagnosticTipClose =>
+      'Photographiez de près une feuille ou un fruit touché';
+
+  @override
+  String get diagnosticTipLight => 'Préférez la lumière du jour, sans ombre';
+
+  @override
+  String get diagnosticTipOnePlant =>
+      'Une seule plante par photo, jusqu\'à 3 photos';
+
+  @override
+  String get diagnosticCropLabel => 'Culture (facultatif)';
+
+  @override
+  String get diagnosticPlotLabel => 'Parcelle (facultatif)';
+
+  @override
+  String get diagnosticPhotosTitle => 'Photos';
+
+  @override
+  String get diagnosticTakePhoto => 'Prendre une photo';
+
+  @override
+  String get diagnosticChooseGallery => 'Choisir dans la galerie';
+
+  @override
+  String get diagnosticAnalyze => 'Analyser';
+
+  @override
+  String get diagnosticPhotoUnsupported =>
+      'Format d\'image non pris en charge.';
+
+  @override
+  String get diagnosticPhotoError => 'Impossible de traiter cette photo.';
+
+  @override
+  String get diagnosticPhotoDelete => 'Supprimer la photo';
+
+  @override
+  String get diagnosticPhotoAdd => 'Ajouter une photo';
+
+  @override
+  String get diagnosticQuotaReached =>
+      'Vous avez atteint la limite de diagnostics de ce mois';
+
+  @override
+  String get diagnosticUploading => 'Envoi des photos…';
+
+  @override
+  String get diagnosticExitTitle => 'Quitter l\'envoi ?';
+
+  @override
+  String get diagnosticExitMessage =>
+      'L\'envoi est en cours. Voulez-vous vraiment quitter ?';
+
+  @override
+  String get diagnosticExitConfirm => 'Quitter';
+
+  @override
+  String get diagnosticResultTitle => 'Résultat du diagnostic';
+
+  @override
+  String get diagnosticDemoBanner =>
+      'Résultat de démonstration : l\'analyse est simulée.';
+
+  @override
+  String get diagnosticProcessing => 'Analyse en cours…';
+
+  @override
+  String get diagnosticProcessingHint => 'Cela prend quelques secondes';
+
+  @override
+  String get diagnosticOtherPossibilities => 'Autres possibilités';
+
+  @override
+  String get diagnosticAdvice => 'Conseils';
+
+  @override
+  String get diagnosticTechnician =>
+      'Consultez un technicien agricole avant tout traitement.';
+
+  @override
+  String get diagnosticHealthy => 'Culture saine';
+
+  @override
+  String get diagnosticExpertReview => 'Un expert vérifie ce résultat';
+
+  @override
+  String get diagnosticProvisional => 'Prédictions provisoires';
+
+  @override
+  String get diagnosticFailed => 'L\'analyse a échoué.';
+
+  @override
+  String get diagnosticNewDiagnostic => 'Nouveau diagnostic';
+
+  @override
+  String get diagnosticTimeout => 'L\'analyse prend plus de temps que prévu';
+
+  @override
+  String get diagnosticRefresh => 'Actualiser';
+
+  @override
+  String get diagnosticFeedbackQuestion => 'Ce conseil vous a-t-il aidé ?';
+
+  @override
+  String get diagnosticFeedbackYes => 'Oui';
+
+  @override
+  String get diagnosticFeedbackNo => 'Non';
+
+  @override
+  String get diagnosticFeedbackThanks => 'Merci pour votre retour.';
+
+  @override
+  String get diagnosticDelete => 'Supprimer ce diagnostic';
+
+  @override
+  String get diagnosticDeleteTitle => 'Supprimer le diagnostic ?';
+
+  @override
+  String get diagnosticDeleteMessage =>
+      'Voulez-vous vraiment supprimer ce diagnostic ?';
+
+  @override
+  String get diagnosticSeverityLow => 'Faible';
+
+  @override
+  String get diagnosticSeverityMedium => 'Moyenne';
+
+  @override
+  String get diagnosticSeverityHigh => 'Élevée';
+
+  @override
+  String diagnosticConfidence(String percent) {
+    return 'Confiance $percent %';
+  }
+
+  @override
+  String get diagnosticStepCultural => 'Pratiques culturales';
+
+  @override
+  String get diagnosticStepBiological => 'Lutte biologique';
+
+  @override
+  String get diagnosticStepChemical => 'Traitement';
+
+  @override
+  String get diagnosticStepPrevention => 'Prévention';
 }

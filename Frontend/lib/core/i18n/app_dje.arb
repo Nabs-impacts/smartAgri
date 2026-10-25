@@ -137,5 +137,61 @@
         "type": "String"
       }
     }
+  },
+  "diagnosticNewTitle": "Nouveau diagnostic",
+  "diagnosticTipsTitle": "Conseils pour une bonne photo",
+  "diagnosticTipClose": "Photographiez de près une feuille ou un fruit touché",
+  "diagnosticTipLight": "Préférez la lumière du jour, sans ombre",
+  "diagnosticTipOnePlant": "Une seule plante par photo, jusqu'à 3 photos",
+  "diagnosticCropLabel": "Culture (facultatif)",
+  "diagnosticPlotLabel": "Parcelle (facultatif)",
+  "diagnosticPhotosTitle": "Photos",
+  "diagnosticTakePhoto": "Prendre une photo",
+  "diagnosticChooseGallery": "Choisir dans la galerie",
+  "diagnosticAnalyze": "Analyser",
+  "diagnosticPhotoUnsupported": "Format d'image non pris en charge.",
+  "diagnosticPhotoError": "Impossible de traiter cette photo.",
+  "diagnosticPhotoDelete": "Supprimer la photo",
+  "diagnosticPhotoAdd": "Ajouter une photo",
+  "diagnosticQuotaReached": "Vous avez atteint la limite de diagnostics de ce mois",
+  "diagnosticUploading": "Envoi des photos…",
+  "diagnosticExitTitle": "Quitter l'envoi ?",
+  "diagnosticExitMessage": "L'envoi est en cours. Voulez-vous vraiment quitter ?",
+  "diagnosticExitConfirm": "Quitter",
+  "diagnosticResultTitle": "Résultat du diagnostic",
+  "diagnosticDemoBanner": "Résultat de démonstration : l'analyse est simulée.",
+  "diagnosticProcessing": "Analyse en cours…",
+  "diagnosticProcessingHint": "Cela prend quelques secondes",
+  "diagnosticOtherPossibilities": "Autres possibilités",
+  "diagnosticAdvice": "Conseils",
+  "diagnosticTechnician": "Consultez un technicien agricole avant tout traitement.",
+  "diagnosticHealthy": "Culture saine",
+  "diagnosticExpertReview": "Un expert vérifie ce résultat",
+  "diagnosticProvisional": "Prédictions provisoires",
+  "diagnosticFailed": "L'analyse a échoué.",
+  "diagnosticNewDiagnostic": "Nouveau diagnostic",
+  "diagnosticTimeout": "L'analyse prend plus de temps que prévu",
+  "diagnosticRefresh": "Actualiser",
+  "diagnosticFeedbackQuestion": "Ce conseil vous a-t-il aidé ?",
+  "diagnosticFeedbackYes": "Oui",
+  "diagnosticFeedbackNo": "Non",
+  "diagnosticFeedbackThanks": "Merci pour votre retour.",
+  "diagnosticDelete": "Supprimer ce diagnostic",
+  "diagnosticDeleteTitle": "Supprimer le diagnostic ?",
+  "diagnosticDeleteMessage": "Voulez-vous vraiment supprimer ce diagnostic ?",
+  "diagnosticSeverityLow": "Faible",
+  "diagnosticSeverityMedium": "Moyenne",
+  "diagnosticSeverityHigh": "Élevée",
+  "diagnosticConfidence": "Confiance {percent} %",
+  "diagnosticStepCultural": "Pratiques culturales",
+  "diagnosticStepBiological": "Lutte biologique",
+  "diagnosticStepChemical": "Traitement",
+  "diagnosticStepPrevention": "Prévention",
+  "@diagnosticConfidence": {
+    "placeholders": {
+      "percent": {
+        "type": "String"
+      }
+    }
   }
 }

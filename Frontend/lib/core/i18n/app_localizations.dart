@@ -759,6 +759,300 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Vous avez atteint la limite de votre formule ({limit} parcelles).'**
   String errorQuotaExceeded(String limit);
+
+  /// No description provided for @diagnosticNewTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau diagnostic'**
+  String get diagnosticNewTitle;
+
+  /// No description provided for @diagnosticTipsTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Conseils pour une bonne photo'**
+  String get diagnosticTipsTitle;
+
+  /// No description provided for @diagnosticTipClose.
+  ///
+  /// In fr, this message translates to:
+  /// **'Photographiez de près une feuille ou un fruit touché'**
+  String get diagnosticTipClose;
+
+  /// No description provided for @diagnosticTipLight.
+  ///
+  /// In fr, this message translates to:
+  /// **'Préférez la lumière du jour, sans ombre'**
+  String get diagnosticTipLight;
+
+  /// No description provided for @diagnosticTipOnePlant.
+  ///
+  /// In fr, this message translates to:
+  /// **'Une seule plante par photo, jusqu\'à 3 photos'**
+  String get diagnosticTipOnePlant;
+
+  /// No description provided for @diagnosticCropLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Culture (facultatif)'**
+  String get diagnosticCropLabel;
+
+  /// No description provided for @diagnosticPlotLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Parcelle (facultatif)'**
+  String get diagnosticPlotLabel;
+
+  /// No description provided for @diagnosticPhotosTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Photos'**
+  String get diagnosticPhotosTitle;
+
+  /// No description provided for @diagnosticTakePhoto.
+  ///
+  /// In fr, this message translates to:
+  /// **'Prendre une photo'**
+  String get diagnosticTakePhoto;
+
+  /// No description provided for @diagnosticChooseGallery.
+  ///
+  /// In fr, this message translates to:
+  /// **'Choisir dans la galerie'**
+  String get diagnosticChooseGallery;
+
+  /// No description provided for @diagnosticAnalyze.
+  ///
+  /// In fr, this message translates to:
+  /// **'Analyser'**
+  String get diagnosticAnalyze;
+
+  /// No description provided for @diagnosticPhotoUnsupported.
+  ///
+  /// In fr, this message translates to:
+  /// **'Format d\'image non pris en charge.'**
+  String get diagnosticPhotoUnsupported;
+
+  /// No description provided for @diagnosticPhotoError.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de traiter cette photo.'**
+  String get diagnosticPhotoError;
+
+  /// No description provided for @diagnosticPhotoDelete.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer la photo'**
+  String get diagnosticPhotoDelete;
+
+  /// No description provided for @diagnosticPhotoAdd.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter une photo'**
+  String get diagnosticPhotoAdd;
+
+  /// No description provided for @diagnosticQuotaReached.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous avez atteint la limite de diagnostics de ce mois'**
+  String get diagnosticQuotaReached;
+
+  /// No description provided for @diagnosticUploading.
+  ///
+  /// In fr, this message translates to:
+  /// **'Envoi des photos…'**
+  String get diagnosticUploading;
+
+  /// No description provided for @diagnosticExitTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Quitter l\'envoi ?'**
+  String get diagnosticExitTitle;
+
+  /// No description provided for @diagnosticExitMessage.
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'envoi est en cours. Voulez-vous vraiment quitter ?'**
+  String get diagnosticExitMessage;
+
+  /// No description provided for @diagnosticExitConfirm.
+  ///
+  /// In fr, this message translates to:
+  /// **'Quitter'**
+  String get diagnosticExitConfirm;
+
+  /// No description provided for @diagnosticResultTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Résultat du diagnostic'**
+  String get diagnosticResultTitle;
+
+  /// No description provided for @diagnosticDemoBanner.
+  ///
+  /// In fr, this message translates to:
+  /// **'Résultat de démonstration : l\'analyse est simulée.'**
+  String get diagnosticDemoBanner;
+
+  /// No description provided for @diagnosticProcessing.
+  ///
+  /// In fr, this message translates to:
+  /// **'Analyse en cours…'**
+  String get diagnosticProcessing;
+
+  /// No description provided for @diagnosticProcessingHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cela prend quelques secondes'**
+  String get diagnosticProcessingHint;
+
+  /// No description provided for @diagnosticOtherPossibilities.
+  ///
+  /// In fr, this message translates to:
+  /// **'Autres possibilités'**
+  String get diagnosticOtherPossibilities;
+
+  /// No description provided for @diagnosticAdvice.
+  ///
+  /// In fr, this message translates to:
+  /// **'Conseils'**
+  String get diagnosticAdvice;
+
+  /// No description provided for @diagnosticTechnician.
+  ///
+  /// In fr, this message translates to:
+  /// **'Consultez un technicien agricole avant tout traitement.'**
+  String get diagnosticTechnician;
+
+  /// No description provided for @diagnosticHealthy.
+  ///
+  /// In fr, this message translates to:
+  /// **'Culture saine'**
+  String get diagnosticHealthy;
+
+  /// No description provided for @diagnosticExpertReview.
+  ///
+  /// In fr, this message translates to:
+  /// **'Un expert vérifie ce résultat'**
+  String get diagnosticExpertReview;
+
+  /// No description provided for @diagnosticProvisional.
+  ///
+  /// In fr, this message translates to:
+  /// **'Prédictions provisoires'**
+  String get diagnosticProvisional;
+
+  /// No description provided for @diagnosticFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'analyse a échoué.'**
+  String get diagnosticFailed;
+
+  /// No description provided for @diagnosticNewDiagnostic.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau diagnostic'**
+  String get diagnosticNewDiagnostic;
+
+  /// No description provided for @diagnosticTimeout.
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'analyse prend plus de temps que prévu'**
+  String get diagnosticTimeout;
+
+  /// No description provided for @diagnosticRefresh.
+  ///
+  /// In fr, this message translates to:
+  /// **'Actualiser'**
+  String get diagnosticRefresh;
+
+  /// No description provided for @diagnosticFeedbackQuestion.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce conseil vous a-t-il aidé ?'**
+  String get diagnosticFeedbackQuestion;
+
+  /// No description provided for @diagnosticFeedbackYes.
+  ///
+  /// In fr, this message translates to:
+  /// **'Oui'**
+  String get diagnosticFeedbackYes;
+
+  /// No description provided for @diagnosticFeedbackNo.
+  ///
+  /// In fr, this message translates to:
+  /// **'Non'**
+  String get diagnosticFeedbackNo;
+
+  /// No description provided for @diagnosticFeedbackThanks.
+  ///
+  /// In fr, this message translates to:
+  /// **'Merci pour votre retour.'**
+  String get diagnosticFeedbackThanks;
+
+  /// No description provided for @diagnosticDelete.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer ce diagnostic'**
+  String get diagnosticDelete;
+
+  /// No description provided for @diagnosticDeleteTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer le diagnostic ?'**
+  String get diagnosticDeleteTitle;
+
+  /// No description provided for @diagnosticDeleteMessage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Voulez-vous vraiment supprimer ce diagnostic ?'**
+  String get diagnosticDeleteMessage;
+
+  /// No description provided for @diagnosticSeverityLow.
+  ///
+  /// In fr, this message translates to:
+  /// **'Faible'**
+  String get diagnosticSeverityLow;
+
+  /// No description provided for @diagnosticSeverityMedium.
+  ///
+  /// In fr, this message translates to:
+  /// **'Moyenne'**
+  String get diagnosticSeverityMedium;
+
+  /// No description provided for @diagnosticSeverityHigh.
+  ///
+  /// In fr, this message translates to:
+  /// **'Élevée'**
+  String get diagnosticSeverityHigh;
+
+  /// No description provided for @diagnosticConfidence.
+  ///
+  /// In fr, this message translates to:
+  /// **'Confiance {percent} %'**
+  String diagnosticConfidence(String percent);
+
+  /// No description provided for @diagnosticStepCultural.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pratiques culturales'**
+  String get diagnosticStepCultural;
+
+  /// No description provided for @diagnosticStepBiological.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lutte biologique'**
+  String get diagnosticStepBiological;
+
+  /// No description provided for @diagnosticStepChemical.
+  ///
+  /// In fr, this message translates to:
+  /// **'Traitement'**
+  String get diagnosticStepChemical;
+
+  /// No description provided for @diagnosticStepPrevention.
+  ///
+  /// In fr, this message translates to:
+  /// **'Prévention'**
+  String get diagnosticStepPrevention;
 }
 
 class _AppLocalizationsDelegate

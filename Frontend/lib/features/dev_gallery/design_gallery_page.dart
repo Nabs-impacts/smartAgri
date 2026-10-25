@@ -9,9 +9,11 @@ import '../../design_system/components/app_checkbox_tile.dart';
 import '../../design_system/components/app_error_banner.dart';
 import '../../design_system/components/app_icon_button.dart';
 import '../../design_system/components/app_logo.dart';
+import '../../design_system/components/app_photo_tile.dart';
 import '../../design_system/components/app_progress_bar.dart';
 import '../../design_system/components/app_search_field.dart';
 import '../../design_system/components/app_select_field.dart';
+import '../../design_system/components/app_status_chip.dart';
 import '../../design_system/components/app_text_button.dart';
 import '../../design_system/components/app_text_field.dart';
 import '../../design_system/components/info_text.dart';
@@ -151,6 +153,40 @@ class _DesignGalleryPageState extends State<DesignGalleryPage> {
                 onChanged: (String value) => setState(() => _soil = value),
               ),
               const SizedBox(height: AppSpacing.xl),
+              const _SectionTitle('Photos'),
+              Wrap(
+                spacing: AppSpacing.md,
+                runSpacing: AppSpacing.md,
+                children: <Widget>[
+                  AppPhotoTile(
+                    image: const AssetImage('assets/icons/app_icon.png'),
+                    onDelete: () {},
+                  ),
+                  const AppPhotoTile(onAdd: _noop),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.xl),
+              const _SectionTitle('Pastilles de statut'),
+              Wrap(
+                spacing: AppSpacing.md,
+                runSpacing: AppSpacing.md,
+                children: const <Widget>[
+                  AppStatusChip(
+                    label: 'Succès',
+                    variant: AppStatusChipVariant.success,
+                  ),
+                  AppStatusChip(
+                    label: 'Attention',
+                    variant: AppStatusChipVariant.warning,
+                  ),
+                  AppStatusChip(
+                    label: 'Danger',
+                    variant: AppStatusChipVariant.danger,
+                  ),
+                  AppStatusChip(label: 'Neutre'),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.xl),
               const _SectionTitle('Progression'),
               const AppProgressBar(value: 0.25),
               const SizedBox(height: AppSpacing.md),
@@ -253,6 +289,8 @@ class _DesignGalleryPageState extends State<DesignGalleryPage> {
     );
   }
 }
+
+void _noop() {}
 
 class _SectionTitle extends StatelessWidget {
   const _SectionTitle(this.title);

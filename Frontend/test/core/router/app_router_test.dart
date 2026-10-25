@@ -12,6 +12,7 @@ import 'package:smartagri/design_system/theme.dart';
 import 'package:smartagri/features/auth/presentation/login_page.dart';
 import 'package:smartagri/features/catalog/data/catalog_repository.dart';
 import 'package:smartagri/features/dev_gallery/design_gallery_page.dart';
+import 'package:smartagri/features/diagnostics/presentation/diagnostic_new_page.dart';
 import 'package:smartagri/features/farms/data/farms_repository.dart';
 import 'package:smartagri/features/home/home_page.dart';
 import 'package:smartagri/features/profile/data/me_repository.dart';
@@ -141,6 +142,22 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(HomePage), findsOneWidget);
     expect(find.byType(LoginPage), findsNothing);
+  });
+
+  testWidgets('the diagnostic route redirects to the new diagnosis page', (
+    WidgetTester tester,
+  ) async {
+    final GoRouter router = await pumpRouter(
+      tester,
+      SessionState.authenticated,
+    );
+
+    router.go('/diagnostic');
+    await tester.pump();
+    await tester.pump(const Duration(milliseconds: 300));
+
+    expect(router.state.uri.path, '/diagnostic/new');
+    expect(find.byType(DiagnosticNewPage), findsOneWidget);
   });
 
   testWidgets('starts on the gallery when the debug start route is set', (
