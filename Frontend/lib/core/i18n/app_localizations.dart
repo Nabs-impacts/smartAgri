@@ -1299,6 +1299,156 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Aucune donnée pour ces filtres'**
   String get adminYieldEmpty;
+
+  /// No description provided for @registerTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Créer un compte'**
+  String get registerTitle;
+
+  /// No description provided for @fullNameLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom complet'**
+  String get fullNameLabel;
+
+  /// No description provided for @fullNameLength.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le nom complet doit contenir entre 2 et 120 caractères.'**
+  String get fullNameLength;
+
+  /// No description provided for @passwordLength.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le mot de passe doit contenir entre 8 et 128 caractères.'**
+  String get passwordLength;
+
+  /// No description provided for @registerTermsConsent.
+  ///
+  /// In fr, this message translates to:
+  /// **'J\'accepte les conditions d\'utilisation'**
+  String get registerTermsConsent;
+
+  /// No description provided for @registerPrivacyConsent.
+  ///
+  /// In fr, this message translates to:
+  /// **'J\'accepte la politique de confidentialité'**
+  String get registerPrivacyConsent;
+
+  /// No description provided for @registerDataSharingConsent.
+  ///
+  /// In fr, this message translates to:
+  /// **'J\'accepte de partager mes données agricoles anonymisées avec l\'administration pour orienter les politiques agricoles'**
+  String get registerDataSharingConsent;
+
+  /// No description provided for @registerResearchConsent.
+  ///
+  /// In fr, this message translates to:
+  /// **'J\'autorise l\'utilisation de mes photos pour améliorer l\'intelligence artificielle'**
+  String get registerResearchConsent;
+
+  /// No description provided for @readAction.
+  ///
+  /// In fr, this message translates to:
+  /// **'Lire'**
+  String get readAction;
+
+  /// No description provided for @registerSubmit.
+  ///
+  /// In fr, this message translates to:
+  /// **'Créer mon compte'**
+  String get registerSubmit;
+
+  /// No description provided for @registerAlreadyAccount.
+  ///
+  /// In fr, this message translates to:
+  /// **'J\'ai déjà un compte'**
+  String get registerAlreadyAccount;
+
+  /// No description provided for @legalTermsTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Conditions d\'utilisation'**
+  String get legalTermsTitle;
+
+  /// No description provided for @legalPrivacyTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Politique de confidentialité'**
+  String get legalPrivacyTitle;
+
+  /// No description provided for @legalProvisionalBanner.
+  ///
+  /// In fr, this message translates to:
+  /// **'Texte provisoire : le document juridique définitif sera publié avant le lancement.'**
+  String get legalProvisionalBanner;
+
+  /// No description provided for @legalTermsParagraph1.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ces conditions décrivent les règles d\'utilisation de SmartAgri. Le document définitif précisera les droits et les obligations de chaque utilisateur.'**
+  String get legalTermsParagraph1;
+
+  /// No description provided for @legalTermsParagraph2.
+  ///
+  /// In fr, this message translates to:
+  /// **'En utilisant l\'application, vous vous engagez à fournir des informations exactes et à respecter les usages prévus du service.'**
+  String get legalTermsParagraph2;
+
+  /// No description provided for @legalPrivacyParagraph1.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette politique explique quelles données sont collectées et comment elles sont protégées. Le document définitif détaillera les finalités et les durées de conservation.'**
+  String get legalPrivacyParagraph1;
+
+  /// No description provided for @legalPrivacyParagraph2.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vos données personnelles ne sont jamais vendues. Vous pourrez exercer vos droits d\'accès, de rectification et de suppression auprès du support.'**
+  String get legalPrivacyParagraph2;
+
+  /// No description provided for @otpVerifyPhoneTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérifiez votre numéro'**
+  String get otpVerifyPhoneTitle;
+
+  /// No description provided for @otpLoginTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Connexion par SMS'**
+  String get otpLoginTitle;
+
+  /// No description provided for @otpInstructions.
+  ///
+  /// In fr, this message translates to:
+  /// **'Saisissez le code à 6 chiffres envoyé au {phone}.'**
+  String otpInstructions(String phone);
+
+  /// No description provided for @otpValidate.
+  ///
+  /// In fr, this message translates to:
+  /// **'Valider'**
+  String get otpValidate;
+
+  /// No description provided for @back.
+  ///
+  /// In fr, this message translates to:
+  /// **'Retour'**
+  String get back;
+
+  /// No description provided for @loginVerifyPhone.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vérifier mon numéro'**
+  String get loginVerifyPhone;
+
+  /// No description provided for @loginReceiveSmsCode.
+  ///
+  /// In fr, this message translates to:
+  /// **'Recevoir un code par SMS'**
+  String get loginReceiveSmsCode;
 }
 
 class _AppLocalizationsDelegate

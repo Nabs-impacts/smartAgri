@@ -663,4 +663,91 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get adminYieldEmpty => 'Aucune donnée pour ces filtres';
+
+  @override
+  String get registerTitle => 'Créer un compte';
+
+  @override
+  String get fullNameLabel => 'Nom complet';
+
+  @override
+  String get fullNameLength =>
+      'Le nom complet doit contenir entre 2 et 120 caractères.';
+
+  @override
+  String get passwordLength =>
+      'Le mot de passe doit contenir entre 8 et 128 caractères.';
+
+  @override
+  String get registerTermsConsent => 'J\'accepte les conditions d\'utilisation';
+
+  @override
+  String get registerPrivacyConsent =>
+      'J\'accepte la politique de confidentialité';
+
+  @override
+  String get registerDataSharingConsent =>
+      'J\'accepte de partager mes données agricoles anonymisées avec l\'administration pour orienter les politiques agricoles';
+
+  @override
+  String get registerResearchConsent =>
+      'J\'autorise l\'utilisation de mes photos pour améliorer l\'intelligence artificielle';
+
+  @override
+  String get readAction => 'Lire';
+
+  @override
+  String get registerSubmit => 'Créer mon compte';
+
+  @override
+  String get registerAlreadyAccount => 'J\'ai déjà un compte';
+
+  @override
+  String get legalTermsTitle => 'Conditions d\'utilisation';
+
+  @override
+  String get legalPrivacyTitle => 'Politique de confidentialité';
+
+  @override
+  String get legalProvisionalBanner =>
+      'Texte provisoire : le document juridique définitif sera publié avant le lancement.';
+
+  @override
+  String get legalTermsParagraph1 =>
+      'Ces conditions décrivent les règles d\'utilisation de SmartAgri. Le document définitif précisera les droits et les obligations de chaque utilisateur.';
+
+  @override
+  String get legalTermsParagraph2 =>
+      'En utilisant l\'application, vous vous engagez à fournir des informations exactes et à respecter les usages prévus du service.';
+
+  @override
+  String get legalPrivacyParagraph1 =>
+      'Cette politique explique quelles données sont collectées et comment elles sont protégées. Le document définitif détaillera les finalités et les durées de conservation.';
+
+  @override
+  String get legalPrivacyParagraph2 =>
+      'Vos données personnelles ne sont jamais vendues. Vous pourrez exercer vos droits d\'accès, de rectification et de suppression auprès du support.';
+
+  @override
+  String get otpVerifyPhoneTitle => 'Vérifiez votre numéro';
+
+  @override
+  String get otpLoginTitle => 'Connexion par SMS';
+
+  @override
+  String otpInstructions(String phone) {
+    return 'Saisissez le code à 6 chiffres envoyé au $phone.';
+  }
+
+  @override
+  String get otpValidate => 'Valider';
+
+  @override
+  String get back => 'Retour';
+
+  @override
+  String get loginVerifyPhone => 'Vérifier mon numéro';
+
+  @override
+  String get loginReceiveSmsCode => 'Recevoir un code par SMS';
 }

@@ -1,6 +1,19 @@
 import '../../../core/i18n/app_localizations.dart';
 import '../../../core/network/api_exception.dart';
 
+bool isPhoneNotVerifiedError(ApiException exception) {
+  if (exception.code != 'UNAUTHORIZED' && exception.code != 'FORBIDDEN') {
+    return false;
+  }
+  return exception.message.toLowerCase().contains('vérifi');
+}
+
+bool isInvalidCodeError(ApiException exception) {
+  final String message = exception.message.toLowerCase();
+  return message.contains('code') &&
+      (message.contains('invalide') || message.contains('expir'));
+}
+
 String authErrorMessage(ApiException exception, AppLocalizations strings) {
   final String code = exception.code;
   if (code == 'INVALID_PHONE') {

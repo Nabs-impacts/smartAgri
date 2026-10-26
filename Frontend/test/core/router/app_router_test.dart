@@ -21,6 +21,7 @@ import 'package:smartagri/features/diagnostics/data/diagnostics_repository.dart'
 import 'package:smartagri/features/diagnostics/presentation/diagnostic_new_page.dart';
 import 'package:smartagri/features/farms/data/farms_repository.dart';
 import 'package:smartagri/features/home/home_page.dart';
+import 'package:smartagri/features/legal/legal_page.dart';
 import 'package:smartagri/features/profile/data/me_repository.dart';
 
 import '../../features/admin/fake_stats_repository.dart';
@@ -157,6 +158,76 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.byType(HomePage), findsOneWidget);
     expect(find.byType(LoginPage), findsNothing);
+  });
+
+  testWidgets('an authenticated session leaves the OTP page for home', (
+    WidgetTester tester,
+  ) async {
+    await pumpRouter(tester, SessionState.authenticated, startRoute: '/otp');
+    await tester.pumpAndSettle();
+
+    expect(find.byType(HomePage), findsOneWidget);
+  });
+
+  testWidgets('an authenticated session leaves forgot password for home', (
+    WidgetTester tester,
+  ) async {
+    await pumpRouter(
+      tester,
+      SessionState.authenticated,
+      startRoute: '/forgot-password',
+    );
+    await tester.pumpAndSettle();
+
+    expect(find.byType(HomePage), findsOneWidget);
+  });
+
+  testWidgets('an unauthenticated session can open the legal pages', (
+    WidgetTester tester,
+  ) async {
+    final ProviderContainer container = await buildContainer(
+      FixedSessionController(SessionState.unauthenticated),
+      startRoute: '/legal/terms',
+    );
+    final GoRouter router = await pumpContainer(tester, container);
+    await tester.pumpAndSettle();
+
+    expect(router.state.uri.path, '/legal/terms');
+    expect(find.byType(LegalPage), findsOneWidget);
+    expect(find.text('Conditions d\'utilisation'), findsOneWidget);
+  });
+
+  testWidgets('an authenticated session keeps access to the legal pages', (
+    WidgetTester tester,
+  ) async {
+    final ProviderContainer container = await buildContainer(
+      FixedSessionController(SessionState.authenticated),
+      startRoute: '/legal/privacy',
+    );
+    final GoRouter router = await pumpContainer(tester, container);
+    await tester.pumpAndSettle();
+
+    expect(router.state.uri.path, '/legal/privacy');
+    expect(find.byType(LegalPage), findsOneWidget);
+    expect(find.text('Politique de confidentialité'), findsOneWidget);
+  });
+
+  testWidgets('an administrator leaving the OTP page reaches the overview', (
+    WidgetTester tester,
+  ) async {
+    final ProviderContainer container = await buildContainer(
+      FixedSessionController(SessionState.authenticated),
+      meRepository: FakeMeRepository(sampleMeData(role: 'super_admin')),
+      startRoute: '/admin/overview',
+    );
+    final GoRouter router = await pumpContainer(tester, container);
+    await tester.pumpAndSettle();
+
+    router.go('/otp');
+    await tester.pumpAndSettle();
+
+    expect(router.state.uri.path, '/admin/overview');
+    expect(find.byType(AdminOverviewPage), findsOneWidget);
   });
 
   testWidgets('the diagnostic route redirects to the new diagnosis page', (

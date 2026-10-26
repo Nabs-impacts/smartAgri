@@ -2,6 +2,7 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
+import '../../features/auth/data/pending_consents_store.dart';
 import '../storage/token_store.dart';
 import 'session_events.dart';
 import 'session_state.dart';
@@ -13,7 +14,8 @@ class SessionController extends Notifier<SessionState> {
     final SessionEvents events = ref.watch(sessionEventsProvider);
     final StreamSubscription<void> subscription = events.sessionExpired.listen((
       void _,
-    ) {
+    ) async {
+      await ref.read(pendingConsentsStoreProvider).clear();
       if (ref.mounted) {
         state = SessionState.unauthenticated;
       }
@@ -49,6 +51,7 @@ class SessionController extends Notifier<SessionState> {
 
   Future<void> signedOut() async {
     await ref.read(tokenStoreProvider).clear();
+    await ref.read(pendingConsentsStoreProvider).clear();
     if (ref.mounted) {
       state = SessionState.unauthenticated;
     }

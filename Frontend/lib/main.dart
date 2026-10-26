@@ -9,6 +9,7 @@ import 'core/i18n/app_localizations.dart';
 import 'core/i18n/language_controller.dart';
 import 'core/router/app_router.dart';
 import 'design_system/theme.dart';
+import 'features/auth/data/consent_sync_service.dart';
 
 Future<void> main() async {
   AppConfig.validate(isRelease: kReleaseMode, url: AppConfig.apiBaseUrl);
@@ -28,6 +29,7 @@ class SmartAgriApp extends ConsumerWidget {
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {
+    ref.watch(consentSyncStartupProvider);
     return MaterialApp.router(
       onGenerateTitle: (BuildContext context) =>
           AppLocalizations.of(context).appName,

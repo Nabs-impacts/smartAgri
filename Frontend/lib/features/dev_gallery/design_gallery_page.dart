@@ -9,6 +9,7 @@ import '../../design_system/components/app_checkbox_tile.dart';
 import '../../design_system/components/app_error_banner.dart';
 import '../../design_system/components/app_icon_button.dart';
 import '../../design_system/components/app_logo.dart';
+import '../../design_system/components/app_otp_field.dart';
 import '../../design_system/components/app_photo_tile.dart';
 import '../../design_system/components/app_progress_bar.dart';
 import '../../design_system/components/app_search_field.dart';
@@ -141,6 +142,11 @@ class _DesignGalleryPageState extends State<DesignGalleryPage> {
                 onChanged: null,
                 errorText: 'Ce champ est obligatoire.',
               ),
+              const SizedBox(height: AppSpacing.xl),
+              const _SectionTitle('Code à 6 chiffres'),
+              AppOtpField(onChanged: _onOtpChanged),
+              const SizedBox(height: AppSpacing.md),
+              const AppOtpField(error: true),
               const SizedBox(height: AppSpacing.xl),
               const _SectionTitle('Pastilles de choix'),
               AppChoiceChips<String>(
@@ -291,6 +297,8 @@ class _DesignGalleryPageState extends State<DesignGalleryPage> {
 }
 
 void _noop() {}
+
+void _onOtpChanged(String value) {}
 
 class _SectionTitle extends StatelessWidget {
   const _SectionTitle(this.title);

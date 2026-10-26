@@ -298,5 +298,37 @@
     }
   },
   "adminYieldMasked": "Données masquées : échantillon trop petit pour protéger les agriculteurs",
-  "adminYieldEmpty": "Aucune donnée pour ces filtres"
+  "adminYieldEmpty": "Aucune donnée pour ces filtres",
+  "registerTitle": "Créer un compte",
+  "fullNameLabel": "Nom complet",
+  "fullNameLength": "Le nom complet doit contenir entre 2 et 120 caractères.",
+  "passwordLength": "Le mot de passe doit contenir entre 8 et 128 caractères.",
+  "registerTermsConsent": "J'accepte les conditions d'utilisation",
+  "registerPrivacyConsent": "J'accepte la politique de confidentialité",
+  "registerDataSharingConsent": "J'accepte de partager mes données agricoles anonymisées avec l'administration pour orienter les politiques agricoles",
+  "registerResearchConsent": "J'autorise l'utilisation de mes photos pour améliorer l'intelligence artificielle",
+  "readAction": "Lire",
+  "registerSubmit": "Créer mon compte",
+  "registerAlreadyAccount": "J'ai déjà un compte",
+  "legalTermsTitle": "Conditions d'utilisation",
+  "legalPrivacyTitle": "Politique de confidentialité",
+  "legalProvisionalBanner": "Texte provisoire : le document juridique définitif sera publié avant le lancement.",
+  "legalTermsParagraph1": "Ces conditions décrivent les règles d'utilisation de SmartAgri. Le document définitif précisera les droits et les obligations de chaque utilisateur.",
+  "legalTermsParagraph2": "En utilisant l'application, vous vous engagez à fournir des informations exactes et à respecter les usages prévus du service.",
+  "legalPrivacyParagraph1": "Cette politique explique quelles données sont collectées et comment elles sont protégées. Le document définitif détaillera les finalités et les durées de conservation.",
+  "legalPrivacyParagraph2": "Vos données personnelles ne sont jamais vendues. Vous pourrez exercer vos droits d'accès, de rectification et de suppression auprès du support.",
+  "otpVerifyPhoneTitle": "Vérifiez votre numéro",
+  "otpLoginTitle": "Connexion par SMS",
+  "otpInstructions": "Saisissez le code à 6 chiffres envoyé au {phone}.",
+  "@otpInstructions": {
+    "placeholders": {
+      "phone": {
+        "type": "String"
+      }
+    }
+  },
+  "otpValidate": "Valider",
+  "back": "Retour",
+  "loginVerifyPhone": "Vérifier mon numéro",
+  "loginReceiveSmsCode": "Recevoir un code par SMS"
 }

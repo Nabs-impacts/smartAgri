@@ -6,8 +6,11 @@ import 'package:go_router/go_router.dart';
 import '../../features/admin/presentation/admin_overview_page.dart';
 import '../../features/admin/presentation/admin_shell.dart';
 import '../../features/admin/presentation/admin_yields_page.dart';
+import '../../features/auth/domain/otp_args.dart';
 import '../../features/auth/presentation/forgot_password_page.dart';
 import '../../features/auth/presentation/login_page.dart';
+import '../../features/auth/presentation/otp_page.dart';
+import '../../features/auth/presentation/register_page.dart';
 import '../../features/common/placeholder_page.dart';
 import '../../features/dev_gallery/design_gallery_page.dart';
 import '../../features/diagnostics/presentation/diagnostic_new_page.dart';
@@ -20,6 +23,7 @@ import '../../features/farms/presentation/plot_detail_page.dart';
 import '../../features/farms/presentation/plot_form_page.dart';
 import '../../features/home/home_page.dart';
 import '../../features/home/home_shell.dart';
+import '../../features/legal/legal_page.dart';
 import '../../features/profile/data/me_repository.dart';
 import '../../features/profile/profile_page.dart';
 import '../../features/search/search_page.dart';
@@ -66,17 +70,25 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
         builder: (_, _) => const PlaceholderPage(title: 'Chargement'),
       ),
       GoRoute(path: '/login', builder: (_, _) => const LoginPage()),
-      GoRoute(
-        path: '/register',
-        builder: (_, _) => const PlaceholderPage(title: 'Inscription'),
-      ),
+      GoRoute(path: '/register', builder: (_, _) => const RegisterPage()),
       GoRoute(
         path: '/otp',
-        builder: (_, _) => const PlaceholderPage(title: 'Vérification OTP'),
+        redirect: (_, GoRouterState state) =>
+            state.extra is OtpArgs ? null : '/login',
+        builder: (_, GoRouterState state) =>
+            OtpPage(args: state.extra! as OtpArgs),
       ),
       GoRoute(
         path: '/forgot-password',
         builder: (_, _) => const ForgotPasswordPage(),
+      ),
+      GoRoute(
+        path: '/legal/terms',
+        builder: (_, _) => const LegalPage(document: LegalDocument.terms),
+      ),
+      GoRoute(
+        path: '/legal/privacy',
+        builder: (_, _) => const LegalPage(document: LegalDocument.privacy),
       ),
       StatefulShellRoute.indexedStack(
         builder: (
@@ -199,6 +211,8 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
           '/register',
           '/otp',
           '/forgot-password',
+          '/legal/terms',
+          '/legal/privacy',
         };
         return allowed.contains(path) ? null : '/login';
       }
@@ -206,6 +220,8 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
         '/login',
         '/splash',
         '/register',
+        '/otp',
+        '/forgot-password',
       };
       final AsyncValue<MeData?> me = ref.read(meProvider);
       final bool profileLoaded = me.hasValue && me.value != null;
@@ -222,6 +238,8 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
           '/login',
           '/splash',
           '/register',
+          '/otp',
+          '/forgot-password',
           '/home',
           '/search',
           '/profile',

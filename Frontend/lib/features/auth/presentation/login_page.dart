@@ -18,6 +18,8 @@ import '../../../design_system/components/app_text_field.dart';
 import '../../../design_system/components/language_switcher.dart';
 import '../../../design_system/tokens.dart';
 import '../domain/auth_error_messages.dart';
+import '../domain/auth_purpose.dart';
+import '../domain/otp_args.dart';
 import 'login_controller.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
@@ -33,6 +35,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   final TextEditingController _password = TextEditingController();
   bool _rememberMe = true;
   bool _prefilled = false;
+  String? _phoneError;
 
   @override
   void didChangeDependencies() {
@@ -54,6 +57,26 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     _phone.dispose();
     _password.dispose();
     super.dispose();
+  }
+
+  Future<void> _openOtp(AuthPurpose purpose) async {
+    FocusScope.of(context).unfocus();
+    final AppLocalizations strings = ref.read(stringsProvider);
+    if (!NigerPhone.isValid(_phone.text)) {
+      setState(() => _phoneError = strings.phoneInvalid);
+      return;
+    }
+    setState(() => _phoneError = null);
+    final bool sent = await ref
+        .read(loginControllerProvider.notifier)
+        .requestCode(phone: _phone.text, purpose: purpose);
+    if (sent && mounted) {
+      final String phone = NigerPhone.normalize(_phone.text) ?? _phone.text;
+      context.go(
+        '/otp',
+        extra: OtpArgs(phone: phone, purpose: purpose),
+      );
+    }
   }
 
   Future<void> _submit() async {
@@ -137,6 +160,19 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                         key: const Key('login_error'),
                         message: authErrorMessage(state.error!, strings),
                       ),
+                      if (isPhoneNotVerifiedError(state.error!)) ...<Widget>[
+                        const SizedBox(height: AppSpacing.sm),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: AppTextButton(
+                            key: const Key('login_verify_phone'),
+                            label: strings.loginVerifyPhone,
+                            onPressed: state.loading
+                                ? null
+                                : () => _openOtp(AuthPurpose.verifyPhone),
+                          ),
+                        ),
+                      ],
                       const SizedBox(height: AppSpacing.lg),
                     ],
                     Form(
@@ -153,6 +189,12 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             inputFormatters: const <NigerPhoneInputFormatter>[
                               NigerPhoneInputFormatter(),
                             ],
+                            errorText: _phoneError,
+                            onChanged: (_) {
+                              if (_phoneError != null) {
+                                setState(() => _phoneError = null);
+                              }
+                            },
                             suffixIcon: const Icon(
                               Icons.phone_outlined,
                               color: AppColors.muted,
@@ -211,6 +253,17 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                           loading: state.loading,
                           onPressed: state.loading ? null : _submit,
                         ),
+                      ),
+                    ),
+                    const SizedBox(height: AppSpacing.sm),
+                    Center(
+                      child: AppTextButton(
+                        key: const Key('login_sms_code'),
+                        label: strings.loginReceiveSmsCode,
+                        variant: AppTextButtonVariant.muted,
+                        onPressed: state.loading
+                            ? null
+                            : () => _openOtp(AuthPurpose.login),
                       ),
                     ),
                     const SizedBox(height: AppSpacing.sm),
