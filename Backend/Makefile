@@ -28,7 +28,7 @@ seed-demo:
 	docker compose exec -T -e DEMO_PASSWORD api python -m scripts.seed_demo
 
 demo-smoke:
-	docker compose exec -T -e DEMO_PASSWORD -e GOV_PASSWORD -e API_URL=$${API_URL:-http://localhost:8000} api python -m scripts.demo_smoke
+	docker compose exec -T -e DEMO_PASSWORD -e ADMIN_PASSWORD -e API_URL=$${API_URL:-http://localhost:8000} api python -m scripts.demo_smoke
 
 test:
 	docker compose run --rm -T --build api pytest tests

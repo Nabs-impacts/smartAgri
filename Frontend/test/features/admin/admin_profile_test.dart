@@ -10,13 +10,13 @@ void main() {
   ) async {
     final container = await buildTestContainer(
       meRepository: FakeMeRepository(
-        sampleMeData(fullName: 'Moussa Gouverneur', role: 'gov_admin'),
+        sampleMeData(fullName: 'Moussa Administrateur', role: 'gov_admin'),
       ),
     );
     await tester.pumpWidget(testApp(container, const ProfilePage()));
     await tester.pumpAndSettle();
 
-    expect(find.text('Moussa Gouverneur'), findsOneWidget);
+    expect(find.text('Moussa Administrateur'), findsOneWidget);
     expect(find.text('Langue'), findsOneWidget);
     expect(find.text('Mon utilisation'), findsNothing);
     expect(find.text('Mes diagnostics'), findsNothing);

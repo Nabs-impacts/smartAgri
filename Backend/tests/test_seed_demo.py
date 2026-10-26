@@ -82,7 +82,7 @@ async def test_seed_demo_is_idempotent_and_feeds_stats(
 
     admin = User(
         phone="+22797000001",
-        full_name="Gouverneur Démo",
+        full_name="Administrateur Démo",
         role="gov_admin",
         is_active=True,
         phone_verified_at=datetime.now(UTC),

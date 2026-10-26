@@ -13,7 +13,7 @@ from app.core.config import settings
 API_URL = os.environ.get("API_URL", "http://localhost:8000").rstrip("/")
 API_PREFIX = "/api/v1"
 FARMER_PHONE = os.environ.get("DEMO_PHONE", "+22790000001")
-GOV_PHONE = os.environ.get("GOV_PHONE", "+22790000100")
+ADMIN_PHONE = os.environ.get("ADMIN_PHONE", "+22790000100")
 POLL_INTERVAL_SECONDS = 2.0
 POLL_TIMEOUT_SECONDS = 60.0
 
@@ -283,7 +283,7 @@ def _expect_forbidden(
 
 def _run() -> None:
     demo_password = _required_env("DEMO_PASSWORD")
-    gov_password = _required_env("GOV_PASSWORD")
+    admin_password = _required_env("ADMIN_PASSWORD")
 
     with httpx.Client(timeout=30.0) as client:
         print("1/5 Connexion de l'agriculteur de démonstration")
@@ -310,21 +310,37 @@ def _run() -> None:
         )
         _print_diagnostic(diagnostic)
 
-        print("4/5 Statistiques du compte gouverneur")
-        gov_token = _login(client, GOV_PHONE, gov_password)
+        print("4/5 Statistiques du compte super administrateur")
+        admin_token = _login(client, ADMIN_PHONE, admin_password)
+        admin_profile = _request(
+            client, "GET", "/users/me", expected=200, token=admin_token
+        )
+        admin_user = (
+            admin_profile.get("user", {})
+            if isinstance(admin_profile, dict)
+            else {}
+        )
+        admin_role = (
+            admin_user.get("role") if isinstance(admin_user, dict) else None
+        )
+        if admin_role != "super_admin":
+            raise DemoError(
+                "Le compte administrateur de démonstration doit avoir "
+                f"le rôle super_admin, reçu {admin_role}."
+            )
         yields = _request(
             client,
             "GET",
             "/admin/stats/yields",
             expected=200,
-            token=gov_token,
+            token=admin_token,
         )
         overview = _request(
             client,
             "GET",
             "/admin/stats/overview",
             expected=200,
-            token=gov_token,
+            token=admin_token,
         )
         _print_stats(yields, overview)
 
