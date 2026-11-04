@@ -102,7 +102,9 @@ void main() {
       initialExtra: verifyArgs,
       settle: false,
     );
-    await harness.container.read(pendingConsentsStoreProvider).add(choices);
+    await harness.container
+        .read(pendingConsentsStoreProvider)
+        .set('+22790203040', choices);
     await enterOtp(tester, '123456');
 
     await tester.tap(find.byKey(const Key('otp_submit')));
@@ -114,8 +116,8 @@ void main() {
     expect(harness.router.state.uri.path, '/home');
     expect(harness.repository.acceptConsentsCalls, 1);
     expect(
-      harness.container.read(pendingConsentsStoreProvider).read(),
-      isEmpty,
+      await harness.container.read(pendingConsentsStoreProvider).read(),
+      isNull,
     );
   });
 

@@ -183,9 +183,12 @@ void main() {
     expect(args.phone, '+22790203040');
     expect(args.purpose, AuthPurpose.verifyPhone);
 
-    final List<ConsentChoice> stored = harness.container
+    final PendingConsents? pending = await harness.container
         .read(pendingConsentsStoreProvider)
         .read();
+    expect(pending, isNotNull);
+    expect(pending!.phone, '+22790203040');
+    final List<ConsentChoice> stored = pending.choices;
     expect(stored, hasLength(4));
     expect(stored.map((ConsentChoice choice) => choice.type), <ConsentType>[
       ConsentType.terms,

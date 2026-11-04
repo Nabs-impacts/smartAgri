@@ -22,6 +22,8 @@ import 'package:smartagri/features/catalog/domain/admin_area.dart';
 import 'package:smartagri/features/catalog/domain/crop.dart';
 import 'package:smartagri/features/diagnostics/data/diagnostics_repository.dart';
 import 'package:smartagri/features/farms/data/farms_repository.dart';
+import 'package:smartagri/features/privacy/data/data_exporter.dart';
+import 'package:smartagri/features/privacy/data/privacy_repository.dart';
 import 'package:smartagri/features/profile/data/me_repository.dart';
 
 import 'diagnostics/fake_diagnostics_repository.dart';
@@ -196,6 +198,8 @@ Future<ProviderContainer> buildTestContainer({
   StatsRepository? statsRepository,
   FarmsRepository? farmsRepository,
   DiagnosticsRepository? diagnosticsRepository,
+  PrivacyRepository? privacyRepository,
+  DataExporter? dataExporter,
   SessionController? sessionController,
 }) async {
   await initializeDateFormatting('fr');
@@ -224,6 +228,10 @@ Future<ProviderContainer> buildTestContainer({
         cropsProvider.overrideWith(() => FixedCropsController(crops)),
       if (statsRepository != null)
         statsRepositoryProvider.overrideWithValue(statsRepository),
+      if (privacyRepository != null)
+        privacyRepositoryProvider.overrideWithValue(privacyRepository),
+      if (dataExporter != null)
+        dataExporterProvider.overrideWithValue(dataExporter),
       if (stale) meStaleProvider.overrideWith(() => FixedStaleController(true)),
     ],
   );

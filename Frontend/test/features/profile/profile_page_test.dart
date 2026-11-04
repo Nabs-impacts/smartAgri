@@ -1,14 +1,21 @@
+import 'dart:async';
+import 'dart:typed_data';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
+import 'package:mocktail/mocktail.dart';
 import 'package:smartagri/core/network/api_exception.dart';
 import 'package:smartagri/design_system/components/app_progress_bar.dart';
 import 'package:smartagri/design_system/tokens.dart';
+import 'package:smartagri/features/privacy/data/data_exporter.dart';
+import 'package:smartagri/features/privacy/data/privacy_repository.dart';
 import 'package:smartagri/features/profile/data/me_repository.dart';
 import 'package:smartagri/features/profile/profile_page.dart';
 
 import '../app_test_utils.dart';
+import '../privacy/fake_privacy_repository.dart';
 
 List<Quota> quotaFixtures() {
   return const <Quota>[
@@ -40,11 +47,15 @@ Future<void> pumpProfile(
   WidgetTester tester,
   FakeMeRepository repository, {
   RecordingAuthRepository? authRepository,
+  FakePrivacyRepository? privacyRepository,
+  DataExporter? dataExporter,
   bool stale = false,
 }) async {
   final ProviderContainer container = await buildTestContainer(
     meRepository: repository,
     authRepository: authRepository ?? RecordingAuthRepository(),
+    privacyRepository: privacyRepository,
+    dataExporter: dataExporter,
     stale: stale,
   );
   await tester.pumpWidget(testApp(container, const ProfilePage()));
@@ -99,6 +110,12 @@ void main() {
       authRepository: auth,
     );
 
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('profile_logout')),
+      500,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('profile_logout')));
     await tester.pumpAndSettle();
 
@@ -124,6 +141,12 @@ void main() {
       authRepository: auth,
     );
 
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('profile_logout')),
+      500,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('profile_logout')));
     await tester.pumpAndSettle();
     await tester.tap(find.byKey(const Key('profile_logout_cancel')));
@@ -180,5 +203,80 @@ void main() {
 
     expect(find.text('Amina Diallo'), findsOneWidget);
     expect(find.text('Données en cache'), findsOneWidget);
+  });
+
+  testWidgets('shows the privacy section for a farmer', (
+    WidgetTester tester,
+  ) async {
+    await pumpProfile(tester, FakeMeRepository(sampleMeData()));
+
+    expect(find.text('Confidentialité et données'), findsOneWidget);
+    expect(find.text('Mes consentements'), findsOneWidget);
+    expect(find.text('Exporter mes données'), findsOneWidget);
+    expect(find.text('Supprimer mon compte'), findsOneWidget);
+    expect(find.byKey(const Key('profile_privacy_consents')), findsOneWidget);
+    expect(find.byKey(const Key('profile_privacy_export')), findsOneWidget);
+    expect(find.byKey(const Key('profile_privacy_delete')), findsOneWidget);
+  });
+
+  testWidgets('exports the data and confirms the success', (
+    WidgetTester tester,
+  ) async {
+    final FakePrivacyRepository privacy = FakePrivacyRepository();
+    final Completer<DataExport> completer = Completer<DataExport>();
+    when(privacy.exportData).thenAnswer((_) => completer.future);
+    final RecordingDataExporter exporter = RecordingDataExporter();
+    await pumpProfile(
+      tester,
+      FakeMeRepository(sampleMeData()),
+      privacyRepository: privacy,
+      dataExporter: exporter,
+    );
+
+    await tester.tap(find.byKey(const Key('profile_privacy_export')));
+    await tester.pump();
+
+    expect(
+      find.descendant(
+        of: find.byKey(const Key('profile_privacy_export')),
+        matching: find.byType(CircularProgressIndicator),
+      ),
+      findsOneWidget,
+    );
+
+    completer.complete(
+      DataExport(
+        bytes: Uint8List.fromList(<int>[123, 125]),
+        fileName: 'smartagri-donnees-2026-11-04.json',
+      ),
+    );
+    await tester.pumpAndSettle();
+
+    expect(exporter.fileNames, <String>['smartagri-donnees-2026-11-04.json']);
+    expect(exporter.bytes.single, <int>[123, 125]);
+    expect(find.text('Vos données ont été exportées.'), findsOneWidget);
+  });
+
+  testWidgets('shows a readable export error', (WidgetTester tester) async {
+    final FakePrivacyRepository privacy = FakePrivacyRepository();
+    when(privacy.exportData).thenThrow(ApiException.network());
+    final RecordingDataExporter exporter = RecordingDataExporter();
+    await pumpProfile(
+      tester,
+      FakeMeRepository(sampleMeData()),
+      privacyRepository: privacy,
+      dataExporter: exporter,
+    );
+
+    await tester.tap(find.byKey(const Key('profile_privacy_export')));
+    await tester.pumpAndSettle();
+
+    expect(exporter.fileNames, isEmpty);
+    expect(
+      find.text(
+        'Impossible de joindre le serveur. Vérifiez votre connexion internet.',
+      ),
+      findsOneWidget,
+    );
   });
 }

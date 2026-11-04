@@ -6,6 +6,7 @@ import '../../core/i18n/app_language.dart';
 import '../../core/i18n/app_localizations.dart';
 import '../../core/i18n/language_controller.dart';
 import '../../core/i18n/strings_provider.dart';
+import '../../core/network/api_error_messages.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/phone/niger_phone.dart';
 import '../../design_system/components/app_button.dart';
@@ -16,6 +17,8 @@ import '../../design_system/components/language_switcher.dart';
 import '../../design_system/tokens.dart';
 import '../auth/data/auth_repository.dart';
 import '../auth/domain/user_profile.dart';
+import '../privacy/data/data_exporter.dart';
+import '../privacy/data/privacy_repository.dart';
 import 'data/me_repository.dart';
 
 class ProfilePage extends ConsumerWidget {
@@ -94,6 +97,8 @@ class ProfilePage extends ConsumerWidget {
                       ),
                     ),
                   ),
+                  const SizedBox(height: AppSpacing.xl),
+                  _PrivacySection(strings: strings),
                 ],
                 const SizedBox(height: AppSpacing.lg),
                 SizedBox(
@@ -370,5 +375,140 @@ class _QuotaRow extends StatelessWidget {
       return AppColors.secondary;
     }
     return AppColors.danger;
+  }
+}
+
+class _PrivacySection extends ConsumerStatefulWidget {
+  const _PrivacySection({required this.strings});
+
+  final AppLocalizations strings;
+
+  @override
+  ConsumerState<_PrivacySection> createState() => _PrivacySectionState();
+}
+
+class _PrivacySectionState extends ConsumerState<_PrivacySection> {
+  bool _exporting = false;
+
+  Future<void> _export() async {
+    if (_exporting) {
+      return;
+    }
+    final ScaffoldMessengerState messenger = ScaffoldMessenger.of(context);
+    setState(() => _exporting = true);
+    try {
+      final DataExport export = await ref
+          .read(privacyRepositoryProvider)
+          .exportData();
+      await ref
+          .read(dataExporterProvider)
+          .saveOrShare(export.bytes, export.fileName);
+      messenger.showSnackBar(
+        SnackBar(content: Text(widget.strings.privacyExportSuccess)),
+      );
+    } on ApiException catch (error) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(apiErrorMessage(error, widget.strings))),
+      );
+    } catch (_) {
+      messenger.showSnackBar(
+        SnackBar(content: Text(widget.strings.privacyExportError)),
+      );
+    } finally {
+      if (mounted) {
+        setState(() => _exporting = false);
+      }
+    }
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(widget.strings.profilePrivacyTitle, style: AppTextStyles.title),
+        const SizedBox(height: AppSpacing.md),
+        _PrivacyRow(
+          key: const Key('profile_privacy_consents'),
+          icon: Icons.privacy_tip_outlined,
+          label: widget.strings.profilePrivacyConsents,
+          onTap: () => context.push('/privacy/consents'),
+        ),
+        const SizedBox(height: AppSpacing.md),
+        _PrivacyRow(
+          key: const Key('profile_privacy_export'),
+          icon: Icons.download_outlined,
+          label: widget.strings.profilePrivacyExport,
+          onTap: _exporting ? null : _export,
+          trailing: _exporting
+              ? const SizedBox(
+                  width: AppSizes.loadingIndicator,
+                  height: AppSizes.loadingIndicator,
+                  child: CircularProgressIndicator(
+                    strokeWidth: AppSizes.loadingStroke,
+                    color: AppColors.primary,
+                  ),
+                )
+              : null,
+        ),
+        const SizedBox(height: AppSpacing.md),
+        _PrivacyRow(
+          key: const Key('profile_privacy_delete'),
+          icon: Icons.delete_outline,
+          label: widget.strings.profilePrivacyDelete,
+          danger: true,
+          onTap: () => context.push('/privacy/delete'),
+        ),
+      ],
+    );
+  }
+}
+
+class _PrivacyRow extends StatelessWidget {
+  const _PrivacyRow({
+    required this.icon,
+    required this.label,
+    required this.onTap,
+    this.danger = false,
+    this.trailing,
+    super.key,
+  });
+
+  final IconData icon;
+  final String label;
+  final VoidCallback? onTap;
+  final bool danger;
+  final Widget? trailing;
+
+  @override
+  Widget build(BuildContext context) {
+    final Color color = danger ? AppColors.danger : AppColors.primary;
+    return InkWell(
+      borderRadius: AppRadii.cardBorder,
+      onTap: onTap,
+      child: AppCard(
+        padding: const EdgeInsets.all(AppSpacing.md),
+        child: Row(
+          children: <Widget>[
+            Icon(icon, color: color, size: AppSizes.icon),
+            const SizedBox(width: AppSpacing.md),
+            Expanded(
+              child: Text(
+                label,
+                style: AppTextStyles.label.copyWith(
+                  color: danger ? AppColors.danger : AppColors.ink,
+                ),
+              ),
+            ),
+            trailing ??
+                const Icon(
+                  Icons.chevron_right,
+                  color: AppColors.muted,
+                  size: AppSizes.icon,
+                ),
+          ],
+        ),
+      ),
+    );
   }
 }

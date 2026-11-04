@@ -141,12 +141,48 @@ void main() {
     await submitLogin(tester);
 
     expect(find.byType(AppErrorBanner), findsOneWidget);
-    expect(
-      find.text('Numéro de téléphone ou mot de passe incorrect.'),
-      findsOneWidget,
-    );
+    expect(find.text('Identifiants incorrects.'), findsOneWidget);
+    expect(find.text('Numéro pas encore vérifié ?'), findsOneWidget);
+    expect(find.byKey(const Key('login_verify_phone')), findsOneWidget);
     expect(fieldText(tester, 'login_phone_field'), '90 20 30 40');
     expect(fieldText(tester, 'login_password_field'), 'secret123');
+  });
+
+  testWidgets('does not show the verification hint before a failure', (
+    WidgetTester tester,
+  ) async {
+    await pumpAuthApp(tester);
+
+    expect(find.byKey(const Key('login_verify_hint')), findsNothing);
+    expect(find.byKey(const Key('login_verify_phone')), findsNothing);
+  });
+
+  testWidgets('the verification hint requires a valid phone', (
+    WidgetTester tester,
+  ) async {
+    final FakeAuthRepository repository = FakeAuthRepository()
+      ..loginError = const ApiException(
+        code: 'UNAUTHORIZED',
+        message: 'Identifiants incorrects.',
+        statusCode: 401,
+      );
+    final AuthHarness harness = await pumpAuthApp(
+      tester,
+      repository: repository,
+    );
+
+    await fillLogin(tester);
+    await submitLogin(tester);
+    await tester.enterText(fieldByKey('login_phone_field'), '123');
+    await tester.tap(find.byKey(const Key('login_verify_phone')));
+    await tester.pumpAndSettle();
+
+    expect(harness.repository.requestOtpCalls, 0);
+    expect(
+      find.text('Veuillez saisir un numéro de téléphone valide.'),
+      findsOneWidget,
+    );
+    expect(harness.router.state.uri.path, '/login');
   });
 
   testWidgets('the forgot password link opens its route', (

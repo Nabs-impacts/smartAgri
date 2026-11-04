@@ -36,7 +36,9 @@ class OtpController extends Notifier<OtpState> {
       await ref
           .read(sessionControllerProvider.notifier)
           .signedIn(session.tokens, true);
-      unawaited(ref.read(consentSyncServiceProvider).retryPending());
+      unawaited(
+        ref.read(consentSyncServiceProvider).retryPending(session.user.phone),
+      );
       if (ref.mounted) {
         state = const OtpState();
       }

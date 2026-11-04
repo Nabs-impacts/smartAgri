@@ -24,6 +24,8 @@ import '../../features/farms/presentation/plot_form_page.dart';
 import '../../features/home/home_page.dart';
 import '../../features/home/home_shell.dart';
 import '../../features/legal/legal_page.dart';
+import '../../features/privacy/presentation/consents_page.dart';
+import '../../features/privacy/presentation/delete_account_page.dart';
 import '../../features/profile/data/me_repository.dart';
 import '../../features/profile/profile_page.dart';
 import '../../features/search/search_page.dart';
@@ -89,6 +91,14 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
       GoRoute(
         path: '/legal/privacy',
         builder: (_, _) => const LegalPage(document: LegalDocument.privacy),
+      ),
+      GoRoute(
+        path: '/privacy/consents',
+        builder: (_, _) => const ConsentsPage(),
+      ),
+      GoRoute(
+        path: '/privacy/delete',
+        builder: (_, _) => const DeleteAccountPage(),
       ),
       StatefulShellRoute.indexedStack(
         builder: (

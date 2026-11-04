@@ -2,8 +2,8 @@ import 'dart:async';
 
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../../core/session/session_controller.dart';
-import '../../../core/session/session_state.dart';
+import '../../../core/phone/niger_phone.dart';
+import '../../profile/data/me_repository.dart';
 import '../domain/consent_choice.dart';
 import 'auth_repository.dart';
 import 'pending_consents_store.dart';
@@ -16,16 +16,28 @@ class ConsentSyncService {
 
   bool _running = false;
 
-  Future<void> retryPending() async {
+  Future<void> retryPending(String? currentPhone) async {
     if (_running) {
       return;
     }
-    final List<ConsentChoice> choices = store.read();
-    if (choices.isEmpty) {
+    final PendingConsents? pending = await store.read();
+    if (pending == null || pending.choices.isEmpty) {
+      return;
+    }
+    if (currentPhone == null) {
+      return;
+    }
+    final String? normalized = NigerPhone.normalize(currentPhone);
+    if (normalized == null) {
+      return;
+    }
+    if (normalized != pending.phone) {
+      await store.clear();
       return;
     }
     _running = true;
     try {
+      final List<ConsentChoice> choices = pending.choices;
       await repository.acceptConsents(choices);
       await store.clear();
     } catch (_) {
@@ -46,17 +58,14 @@ final Provider<ConsentSyncService> consentSyncServiceProvider =
 final Provider<ConsentSyncService> consentSyncStartupProvider =
     Provider<ConsentSyncService>((Ref ref) {
       final ConsentSyncService service = ref.watch(consentSyncServiceProvider);
-      if (ref.read(sessionControllerProvider) == SessionState.authenticated) {
-        unawaited(service.retryPending());
-      }
-      ref.listen<SessionState>(sessionControllerProvider, (
-        SessionState? previous,
-        SessionState next,
+      ref.listen<AsyncValue<MeData?>>(meProvider, (
+        AsyncValue<MeData?>? previous,
+        AsyncValue<MeData?> next,
       ) {
-        if (previous != SessionState.authenticated &&
-            next == SessionState.authenticated) {
-          unawaited(service.retryPending());
+        final String? phone = next.value?.user.phone;
+        if (phone != null) {
+          unawaited(service.retryPending(phone));
         }
-      });
+      }, fireImmediately: true);
       return service;
     });

@@ -14,6 +14,16 @@ bool isInvalidCodeError(ApiException exception) {
       (message.contains('invalide') || message.contains('expir'));
 }
 
+String loginErrorMessage(ApiException exception, AppLocalizations strings) {
+  if (exception.code == 'RATE_LIMITED' || exception.statusCode == 429) {
+    return strings.authErrorRateLimited;
+  }
+  if (exception.code == 'UNAUTHORIZED' || exception.statusCode == 401) {
+    return strings.authErrorInvalidCredentials;
+  }
+  return authErrorMessage(exception, strings);
+}
+
 String authErrorMessage(ApiException exception, AppLocalizations strings) {
   final String code = exception.code;
   if (code == 'INVALID_PHONE') {

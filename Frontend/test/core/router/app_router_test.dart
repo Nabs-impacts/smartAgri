@@ -22,6 +22,7 @@ import 'package:smartagri/features/diagnostics/presentation/diagnostic_new_page.
 import 'package:smartagri/features/farms/data/farms_repository.dart';
 import 'package:smartagri/features/home/home_page.dart';
 import 'package:smartagri/features/legal/legal_page.dart';
+import 'package:smartagri/features/privacy/presentation/delete_account_page.dart';
 import 'package:smartagri/features/profile/data/me_repository.dart';
 
 import '../../features/admin/fake_stats_repository.dart';
@@ -210,6 +211,35 @@ void main() {
     expect(router.state.uri.path, '/legal/privacy');
     expect(find.byType(LegalPage), findsOneWidget);
     expect(find.text('Politique de confidentialité'), findsOneWidget);
+  });
+
+  testWidgets('an unauthenticated session cannot open the privacy pages', (
+    WidgetTester tester,
+  ) async {
+    final ProviderContainer container = await buildContainer(
+      FixedSessionController(SessionState.unauthenticated),
+      startRoute: '/privacy/consents',
+    );
+    final GoRouter router = await pumpContainer(tester, container);
+    await tester.pumpAndSettle();
+
+    expect(router.state.uri.path, '/login');
+    expect(find.byType(LoginPage), findsOneWidget);
+  });
+
+  testWidgets('an authenticated session can open the delete account page', (
+    WidgetTester tester,
+  ) async {
+    final ProviderContainer container = await buildContainer(
+      FixedSessionController(SessionState.authenticated),
+      startRoute: '/privacy/delete',
+    );
+    final GoRouter router = await pumpContainer(tester, container);
+    await tester.pumpAndSettle();
+
+    expect(router.state.uri.path, '/privacy/delete');
+    expect(find.byType(DeleteAccountPage), findsOneWidget);
+    expect(find.text('Supprimer mon compte'), findsOneWidget);
   });
 
   testWidgets('an administrator leaving the OTP page reaches the overview', (

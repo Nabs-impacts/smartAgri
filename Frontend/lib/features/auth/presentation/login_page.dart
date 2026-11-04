@@ -8,6 +8,7 @@ import '../../../core/i18n/app_language.dart';
 import '../../../core/i18n/app_localizations.dart';
 import '../../../core/i18n/language_controller.dart';
 import '../../../core/i18n/strings_provider.dart';
+import '../../../core/network/api_exception.dart';
 import '../../../core/phone/niger_phone.dart';
 import '../../../design_system/components/app_button.dart';
 import '../../../design_system/components/app_checkbox_tile.dart';
@@ -77,6 +78,13 @@ class _LoginPageState extends ConsumerState<LoginPage> {
         extra: OtpArgs(phone: phone, purpose: purpose),
       );
     }
+  }
+
+  bool _showsVerifyHint(ApiException error) {
+    if (error.code != 'UNAUTHORIZED' && error.statusCode != 401) {
+      return false;
+    }
+    return error.code != 'RATE_LIMITED' && error.statusCode != 429;
   }
 
   Future<void> _submit() async {
@@ -158,10 +166,20 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                     if (state.error != null) ...<Widget>[
                       AppErrorBanner(
                         key: const Key('login_error'),
-                        message: authErrorMessage(state.error!, strings),
+                        message: loginErrorMessage(state.error!, strings),
                       ),
-                      if (isPhoneNotVerifiedError(state.error!)) ...<Widget>[
+                      if (_showsVerifyHint(state.error!)) ...<Widget>[
                         const SizedBox(height: AppSpacing.sm),
+                        Align(
+                          alignment: Alignment.centerLeft,
+                          child: Text(
+                            strings.loginPhoneNotVerifiedHint,
+                            key: const Key('login_verify_hint'),
+                            style: AppTextStyles.body.copyWith(
+                              color: AppColors.muted,
+                            ),
+                          ),
+                        ),
                         Align(
                           alignment: Alignment.centerLeft,
                           child: AppTextButton(

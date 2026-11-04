@@ -36,7 +36,9 @@ class LoginController extends Notifier<LoginState> {
       await ref
           .read(sessionControllerProvider.notifier)
           .signedIn(session.tokens, rememberMe);
-      unawaited(ref.read(consentSyncServiceProvider).retryPending());
+      unawaited(
+        ref.read(consentSyncServiceProvider).retryPending(session.user.phone),
+      );
       if (ref.mounted) {
         state = const LoginState();
       }

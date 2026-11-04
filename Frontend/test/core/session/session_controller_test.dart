@@ -121,12 +121,12 @@ void main() {
     final PendingConsentsStore store = container.read(
       pendingConsentsStoreProvider,
     );
-    await store.add(consentChoices);
-    expect(store.read(), hasLength(2));
+    await store.set('+22790203040', consentChoices);
+    expect(await store.read(), isNotNull);
 
     await container.read(sessionControllerProvider.notifier).signedOut();
 
-    expect(store.read(), isEmpty);
+    expect(await store.read(), isNull);
   });
 
   test('clears pending consents on session expiry', () async {
@@ -138,7 +138,7 @@ void main() {
     final PendingConsentsStore store = container.read(
       pendingConsentsStoreProvider,
     );
-    await store.add(consentChoices);
+    await store.set('+22790203040', consentChoices);
 
     container.read(sessionEventsProvider).emitSessionExpired();
     await pumpEventQueue();
@@ -147,6 +147,6 @@ void main() {
       container.read(sessionControllerProvider),
       SessionState.unauthenticated,
     );
-    expect(store.read(), isEmpty);
+    expect(await store.read(), isNull);
   });
 }

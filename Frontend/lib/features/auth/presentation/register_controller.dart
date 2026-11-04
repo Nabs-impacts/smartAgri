@@ -42,7 +42,7 @@ class RegisterController extends Notifier<RegisterState> {
             language: language,
             password: password,
           );
-      await ref.read(pendingConsentsStoreProvider).add(consents);
+      await ref.read(pendingConsentsStoreProvider).set(phone, consents);
       if (ref.mounted) {
         state = const RegisterState();
       }

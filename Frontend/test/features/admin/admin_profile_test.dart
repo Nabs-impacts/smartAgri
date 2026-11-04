@@ -25,6 +25,10 @@ void main() {
       find.byKey(const Key('profile_quota_diagnostics_per_month')),
       findsNothing,
     );
+    expect(find.text('Confidentialité et données'), findsNothing);
+    expect(find.byKey(const Key('profile_privacy_consents')), findsNothing);
+    expect(find.byKey(const Key('profile_privacy_export')), findsNothing);
+    expect(find.byKey(const Key('profile_privacy_delete')), findsNothing);
     expect(find.text('Se déconnecter'), findsOneWidget);
   });
 }

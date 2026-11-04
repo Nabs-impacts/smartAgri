@@ -259,7 +259,7 @@ abstract class AppLocalizations {
   /// No description provided for @authErrorInvalidCredentials.
   ///
   /// In fr, this message translates to:
-  /// **'Numéro de téléphone ou mot de passe incorrect.'**
+  /// **'Identifiants incorrects.'**
   String get authErrorInvalidCredentials;
 
   /// No description provided for @authErrorPhoneNotVerified.
@@ -1449,6 +1449,156 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Recevoir un code par SMS'**
   String get loginReceiveSmsCode;
+
+  /// No description provided for @loginPhoneNotVerifiedHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Numéro pas encore vérifié ?'**
+  String get loginPhoneNotVerifiedHint;
+
+  /// No description provided for @profilePrivacyTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Confidentialité et données'**
+  String get profilePrivacyTitle;
+
+  /// No description provided for @profilePrivacyConsents.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mes consentements'**
+  String get profilePrivacyConsents;
+
+  /// No description provided for @profilePrivacyExport.
+  ///
+  /// In fr, this message translates to:
+  /// **'Exporter mes données'**
+  String get profilePrivacyExport;
+
+  /// No description provided for @profilePrivacyDelete.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer mon compte'**
+  String get profilePrivacyDelete;
+
+  /// No description provided for @privacyExportSuccess.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vos données ont été exportées.'**
+  String get privacyExportSuccess;
+
+  /// No description provided for @privacyExportError.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible d\'exporter vos données. Veuillez réessayer.'**
+  String get privacyExportError;
+
+  /// No description provided for @privacyConsentsLoadError.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de charger vos consentements.'**
+  String get privacyConsentsLoadError;
+
+  /// No description provided for @privacyConsentUpdateError.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de mettre à jour ce consentement.'**
+  String get privacyConsentUpdateError;
+
+  /// No description provided for @privacyAccepted.
+  ///
+  /// In fr, this message translates to:
+  /// **'Accepté'**
+  String get privacyAccepted;
+
+  /// No description provided for @privacyNotAccepted.
+  ///
+  /// In fr, this message translates to:
+  /// **'Non accepté'**
+  String get privacyNotAccepted;
+
+  /// No description provided for @privacyDataSharingLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Partage de données anonymisées avec l\'administration'**
+  String get privacyDataSharingLabel;
+
+  /// No description provided for @privacyResearchLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Utilisation de mes photos pour la recherche'**
+  String get privacyResearchLabel;
+
+  /// No description provided for @privacyDeleteTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer mon compte'**
+  String get privacyDeleteTitle;
+
+  /// No description provided for @privacyDeleteErasedTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce qui sera effacé'**
+  String get privacyDeleteErasedTitle;
+
+  /// No description provided for @privacyDeleteErasedIdentity.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre nom, votre téléphone et vos notes sont anonymisés'**
+  String get privacyDeleteErasedIdentity;
+
+  /// No description provided for @privacyDeleteErasedMedia.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vos photos et vidéos sont supprimées'**
+  String get privacyDeleteErasedMedia;
+
+  /// No description provided for @privacyDeleteErasedFinal.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette action est définitive'**
+  String get privacyDeleteErasedFinal;
+
+  /// No description provided for @privacyDeleteKeptTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ce qui est conservé de façon anonyme'**
+  String get privacyDeleteKeptTitle;
+
+  /// No description provided for @privacyDeleteKeptStats.
+  ///
+  /// In fr, this message translates to:
+  /// **'Les statistiques de rendement agrégées, sans aucune donnée personnelle'**
+  String get privacyDeleteKeptStats;
+
+  /// No description provided for @privacyDeleteFieldLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tapez SUPPRIMER MON COMPTE pour confirmer'**
+  String get privacyDeleteFieldLabel;
+
+  /// No description provided for @privacyDeleteConfirm.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer définitivement'**
+  String get privacyDeleteConfirm;
+
+  /// No description provided for @privacyDeleteSuccess.
+  ///
+  /// In fr, this message translates to:
+  /// **'Votre compte a été supprimé'**
+  String get privacyDeleteSuccess;
+
+  /// No description provided for @privacyDeleteError.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible de supprimer votre compte. Veuillez réessayer.'**
+  String get privacyDeleteError;
+
+  /// No description provided for @privacyOwnerConflict.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vous êtes le seul propriétaire d\'une organisation qui compte d\'autres membres. Transférez ou supprimez-la avant de supprimer votre compte.'**
+  String get privacyOwnerConflict;
 }
 
 class _AppLocalizationsDelegate

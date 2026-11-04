@@ -4,7 +4,15 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/i18n/language_controller.dart';
+import '../../../core/phone/niger_phone.dart';
 import '../domain/consent_choice.dart';
+
+class PendingConsents {
+  const PendingConsents({required this.phone, required this.choices});
+
+  final String phone;
+  final List<ConsentChoice> choices;
+}
 
 class PendingConsentsStore {
   PendingConsentsStore({required this.preferences});
@@ -13,18 +21,13 @@ class PendingConsentsStore {
 
   final SharedPreferences preferences;
 
-  Future<void> add(List<ConsentChoice> choices) async {
-    final List<ConsentChoice> merged = read();
-    for (final ConsentChoice choice in choices) {
-      merged.removeWhere(
-        (ConsentChoice existing) => existing.type == choice.type,
-      );
-      merged.add(choice);
-    }
+  Future<void> set(String phone, List<ConsentChoice> choices) async {
+    final String normalized = NigerPhone.normalize(phone) ?? phone;
     await preferences.setString(
       storageKey,
-      jsonEncode(
-        merged
+      jsonEncode(<String, dynamic>{
+        'phone': normalized,
+        'choices': choices
             .map(
               (ConsentChoice choice) => <String, dynamic>{
                 'type': choice.type.apiValue,
@@ -32,26 +35,36 @@ class PendingConsentsStore {
               },
             )
             .toList(),
-      ),
+      }),
     );
   }
 
-  List<ConsentChoice> read() {
+  Future<PendingConsents?> read() async {
     final String? raw = preferences.getString(storageKey);
     if (raw == null || raw.isEmpty) {
-      return <ConsentChoice>[];
+      return null;
     }
     try {
       final Object? decoded = jsonDecode(raw);
-      if (decoded is! List) {
-        return <ConsentChoice>[];
+      if (decoded is! Map) {
+        await clear();
+        return null;
       }
-      return decoded
+      final Map<String, dynamic> map = Map<String, dynamic>.from(decoded);
+      final Object? phone = map['phone'];
+      final Object? rawChoices = map['choices'];
+      if (phone is! String || phone.isEmpty || rawChoices is! List) {
+        await clear();
+        return null;
+      }
+      final List<ConsentChoice> choices = rawChoices
           .map(_fromJson)
           .whereType<ConsentChoice>()
           .toList(growable: true);
+      return PendingConsents(phone: phone, choices: choices);
     } on FormatException {
-      return <ConsentChoice>[];
+      await clear();
+      return null;
     }
   }
 

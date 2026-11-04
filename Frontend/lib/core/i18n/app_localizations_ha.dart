@@ -91,8 +91,7 @@ class AppLocalizationsHa extends AppLocalizations {
   String get backToLogin => 'Retour à la connexion';
 
   @override
-  String get authErrorInvalidCredentials =>
-      'Numéro de téléphone ou mot de passe incorrect.';
+  String get authErrorInvalidCredentials => 'Identifiants incorrects.';
 
   @override
   String get authErrorPhoneNotVerified =>
@@ -750,4 +749,89 @@ class AppLocalizationsHa extends AppLocalizations {
 
   @override
   String get loginReceiveSmsCode => 'Recevoir un code par SMS';
+
+  @override
+  String get loginPhoneNotVerifiedHint => 'Numéro pas encore vérifié ?';
+
+  @override
+  String get profilePrivacyTitle => 'Confidentialité et données';
+
+  @override
+  String get profilePrivacyConsents => 'Mes consentements';
+
+  @override
+  String get profilePrivacyExport => 'Exporter mes données';
+
+  @override
+  String get profilePrivacyDelete => 'Supprimer mon compte';
+
+  @override
+  String get privacyExportSuccess => 'Vos données ont été exportées.';
+
+  @override
+  String get privacyExportError =>
+      'Impossible d\'exporter vos données. Veuillez réessayer.';
+
+  @override
+  String get privacyConsentsLoadError =>
+      'Impossible de charger vos consentements.';
+
+  @override
+  String get privacyConsentUpdateError =>
+      'Impossible de mettre à jour ce consentement.';
+
+  @override
+  String get privacyAccepted => 'Accepté';
+
+  @override
+  String get privacyNotAccepted => 'Non accepté';
+
+  @override
+  String get privacyDataSharingLabel =>
+      'Partage de données anonymisées avec l\'administration';
+
+  @override
+  String get privacyResearchLabel =>
+      'Utilisation de mes photos pour la recherche';
+
+  @override
+  String get privacyDeleteTitle => 'Supprimer mon compte';
+
+  @override
+  String get privacyDeleteErasedTitle => 'Ce qui sera effacé';
+
+  @override
+  String get privacyDeleteErasedIdentity =>
+      'Votre nom, votre téléphone et vos notes sont anonymisés';
+
+  @override
+  String get privacyDeleteErasedMedia => 'Vos photos et vidéos sont supprimées';
+
+  @override
+  String get privacyDeleteErasedFinal => 'Cette action est définitive';
+
+  @override
+  String get privacyDeleteKeptTitle => 'Ce qui est conservé de façon anonyme';
+
+  @override
+  String get privacyDeleteKeptStats =>
+      'Les statistiques de rendement agrégées, sans aucune donnée personnelle';
+
+  @override
+  String get privacyDeleteFieldLabel =>
+      'Tapez SUPPRIMER MON COMPTE pour confirmer';
+
+  @override
+  String get privacyDeleteConfirm => 'Supprimer définitivement';
+
+  @override
+  String get privacyDeleteSuccess => 'Votre compte a été supprimé';
+
+  @override
+  String get privacyDeleteError =>
+      'Impossible de supprimer votre compte. Veuillez réessayer.';
+
+  @override
+  String get privacyOwnerConflict =>
+      'Vous êtes le seul propriétaire d\'une organisation qui compte d\'autres membres. Transférez ou supprimez-la avant de supprimer votre compte.';
 }
