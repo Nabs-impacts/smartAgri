@@ -5,9 +5,11 @@ import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/config/app_config.dart';
+import 'core/database/database_owner_guard.dart';
 import 'core/i18n/app_localizations.dart';
 import 'core/i18n/language_controller.dart';
 import 'core/router/app_router.dart';
+import 'core/sync/sync_providers.dart';
 import 'design_system/theme.dart';
 import 'features/auth/data/consent_sync_service.dart';
 
@@ -30,6 +32,8 @@ class SmartAgriApp extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     ref.watch(consentSyncStartupProvider);
+    ref.watch(databaseOwnerGuardProvider);
+    ref.watch(syncSchedulerProvider);
     return MaterialApp.router(
       onGenerateTitle: (BuildContext context) =>
           AppLocalizations.of(context).appName,
