@@ -6,6 +6,8 @@ import '../../../core/i18n/app_localizations.dart';
 import '../../../core/i18n/strings_provider.dart';
 import '../../../core/network/api_error_messages.dart';
 import '../../../core/network/api_exception.dart';
+import '../../../core/sync/sync_providers.dart';
+import '../../../core/sync/sync_status.dart';
 import '../../../design_system/components/app_button.dart';
 import '../../../design_system/components/app_card.dart';
 import '../../../design_system/components/app_error_banner.dart';
@@ -24,6 +26,12 @@ class FarmsPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLocalizations strings = ref.watch(stringsProvider);
     final AsyncValue<List<Farm>> farms = ref.watch(farmsProvider);
+    final SyncSnapshot sync = ref.watch(syncStatusProvider);
+    final List<Farm> farmsValue = farms.value ?? const <Farm>[];
+    final bool firstSyncLoading =
+        farmsValue.isEmpty &&
+        sync.lastSyncAt == null &&
+        sync.status != SyncStatus.offline;
     final List<AdminArea> areas =
         ref.watch(adminAreasProvider).value ?? <AdminArea>[];
 
@@ -32,7 +40,9 @@ class FarmsPage extends ConsumerWidget {
       appBar: AppBar(title: Text(strings.farmsTitle)),
       body: SafeArea(
         child: RefreshIndicator(
-          onRefresh: () => ref.read(farmsProvider.notifier).refresh(),
+          onRefresh: () async {
+            await ref.read(syncRunnerProvider)();
+          },
           child: ListView(
             key: const Key('farms_scroll'),
             physics: const AlwaysScrollableScrollPhysics(),
@@ -53,11 +63,11 @@ class FarmsPage extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: AppSpacing.xl),
-              if (farms.isLoading && farms.value == null)
+              if ((farms.isLoading && farms.value == null) || firstSyncLoading)
                 ..._skeleton()
               else if (farms.hasError && farms.value == null)
                 _error(context, ref, strings, farms.error)
-              else if ((farms.value ?? <Farm>[]).isEmpty)
+              else if (farmsValue.isEmpty)
                 AppCard(
                   child: Text(
                     strings.farmsEmpty,
@@ -67,7 +77,7 @@ class FarmsPage extends ConsumerWidget {
                   ),
                 )
               else
-                for (final Farm farm in farms.value!) ...<Widget>[
+                for (final Farm farm in farmsValue) ...<Widget>[
                   _FarmTile(
                     farm: farm,
                     region: farmRegionName(farm, areas),
@@ -86,6 +96,7 @@ class FarmsPage extends ConsumerWidget {
     return <Widget>[
       for (int index = 0; index < 3; index++) ...<Widget>[
         Container(
+          key: Key('farms_skeleton_$index'),
           height: 84,
           decoration: const BoxDecoration(
             color: AppColors.inputFill,

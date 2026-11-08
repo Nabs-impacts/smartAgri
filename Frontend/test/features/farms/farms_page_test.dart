@@ -1,12 +1,14 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:smartagri/core/network/api_exception.dart';
+import 'package:smartagri/core/sync/sync_providers.dart';
+import 'package:smartagri/core/sync/sync_service.dart';
+import 'package:smartagri/core/sync/sync_status.dart';
 import 'package:smartagri/features/farms/domain/farm.dart';
 import 'package:smartagri/features/farms/presentation/farm_detail_page.dart';
 import 'package:smartagri/features/farms/presentation/farm_form_page.dart';
 
-import 'fake_farms_repository.dart';
 import 'farms_test_app.dart';
+import 'farms_test_data.dart';
 
 void main() {
   testWidgets('lists farms with their village and region', (
@@ -44,33 +46,63 @@ void main() {
     expect(find.text('Nouvelle exploitation'), findsOneWidget);
   });
 
-  testWidgets('shows the empty state', (WidgetTester tester) async {
+  testWidgets('shows the empty state after a first synchronization', (
+    WidgetTester tester,
+  ) async {
     await pumpFarmsApp(tester);
 
     expect(find.text('Aucune exploitation pour le moment.'), findsOneWidget);
   });
 
-  testWidgets('shows an error and retries', (WidgetTester tester) async {
-    final FakeFarmsRepository repository = FakeFarmsRepository()
-      ..listFarmsError = ApiException.network();
-    final FarmsHarness harness = await pumpFarmsApp(
-      tester,
-      repository: repository,
-    );
+  testWidgets('shows the loading state before the first synchronization', (
+    WidgetTester tester,
+  ) async {
+    final FarmsHarness harness = await pumpFarmsApp(tester, markSynced: false);
 
-    expect(
-      find.text(
-        'Impossible de joindre le serveur. Vérifiez votre connexion internet.',
-      ),
-      findsOneWidget,
-    );
+    expect(find.byKey(const Key('farms_skeleton_0')), findsOneWidget);
+    expect(find.byKey(const Key('farms_empty')), findsNothing);
 
-    repository.listFarmsError = null;
-    repository.farms = <Farm>[sampleFarm()];
-    await tester.tap(find.byKey(const Key('farms_retry')));
+    await seedFarm(harness.database, sampleFarm());
+    await harness.database.writeMeta(
+      SyncService.lastSyncAtKey,
+      DateTime.utc(2026, 11, 8, 10).toIso8601String(),
+    );
     await tester.pumpAndSettle();
 
     expect(find.text('Ferme du fleuve'), findsOneWidget);
-    expect(harness.container, isNotNull);
+  });
+
+  testWidgets('shows a simple empty list after an offline first sync', (
+    WidgetTester tester,
+  ) async {
+    final FarmsHarness harness = await pumpFarmsApp(tester, markSynced: false);
+
+    harness.container
+        .read(syncStatusControllerProvider.notifier)
+        .set(SyncStatus.offline);
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('farms_empty')), findsOneWidget);
+  });
+
+  testWidgets('the refresh gesture runs a synchronization', (
+    WidgetTester tester,
+  ) async {
+    int calls = 0;
+    await pumpFarmsApp(
+      tester,
+      syncRunner: () async {
+        calls++;
+        return SyncResult.none;
+      },
+    );
+
+    final RefreshIndicator refresh = tester.widget<RefreshIndicator>(
+      find.byType(RefreshIndicator),
+    );
+    await refresh.onRefresh();
+    await tester.pumpAndSettle();
+
+    expect(calls, 1);
   });
 }

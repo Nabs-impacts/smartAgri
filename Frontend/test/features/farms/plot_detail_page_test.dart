@@ -3,8 +3,8 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:smartagri/features/farms/domain/farm.dart';
 import 'package:smartagri/features/farms/domain/plot.dart';
 
-import 'fake_farms_repository.dart';
 import 'farms_test_app.dart';
+import 'farms_test_data.dart';
 
 Future<FarmsHarness> pumpPlotDetail(WidgetTester tester) {
   return pumpFarmsApp(
@@ -49,7 +49,7 @@ void main() {
 
     await tester.tap(find.byKey(const Key('plot_delete_cancel')));
     await tester.pumpAndSettle();
-    expect(harness.farms.plots['farm-1'], hasLength(1));
+    expect((await harness.database.getPlot('plot-1'))?.deletedAt, isNull);
 
     await tester.tap(find.byKey(const Key('plot_actions')));
     await tester.pumpAndSettle();
@@ -58,7 +58,7 @@ void main() {
     await tester.tap(find.byKey(const Key('plot_delete_confirm')));
     await tester.pumpAndSettle();
 
-    expect(harness.farms.plots['farm-1'], isEmpty);
+    expect((await harness.database.getPlot('plot-1'))?.deletedAt, isNotNull);
   });
 
   testWidgets('opens the edit form', (WidgetTester tester) async {

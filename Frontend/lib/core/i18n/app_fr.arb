@@ -145,6 +145,7 @@
   "diagnosticTipOnePlant": "Une seule plante par photo, jusqu'à 3 photos",
   "diagnosticCropLabel": "Culture (facultatif)",
   "diagnosticPlotLabel": "Parcelle (facultatif)",
+  "diagnosticPlotNotSynced": "Cette parcelle n'est pas encore synchronisée. Connectez-vous à Internet puis réessayez.",
   "diagnosticPhotosTitle": "Photos",
   "diagnosticTakePhoto": "Prendre une photo",
   "diagnosticChooseGallery": "Choisir dans la galerie",

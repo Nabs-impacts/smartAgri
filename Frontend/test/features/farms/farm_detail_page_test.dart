@@ -5,8 +5,8 @@ import 'package:smartagri/features/farms/domain/plot.dart';
 import 'package:smartagri/features/farms/presentation/farms_page.dart';
 import 'package:smartagri/features/farms/presentation/plot_form_page.dart';
 
-import 'fake_farms_repository.dart';
 import 'farms_test_app.dart';
+import 'farms_test_data.dart';
 
 void main() {
   testWidgets('shows the farm information and its plots', (
@@ -64,7 +64,7 @@ void main() {
 
     await tester.tap(find.byKey(const Key('farm_delete_cancel')));
     await tester.pumpAndSettle();
-    expect(harness.farms.farms, hasLength(1));
+    expect((await harness.database.getFarm('farm-1'))?.deletedAt, isNull);
 
     await tester.tap(find.byKey(const Key('farm_actions')));
     await tester.pumpAndSettle();
@@ -73,7 +73,7 @@ void main() {
     await tester.tap(find.byKey(const Key('farm_delete_confirm')));
     await tester.pumpAndSettle();
 
-    expect(harness.farms.farms, isEmpty);
+    expect((await harness.database.getFarm('farm-1'))?.deletedAt, isNotNull);
     expect(find.byType(FarmsPage), findsOneWidget);
   });
 }

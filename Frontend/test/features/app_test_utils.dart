@@ -7,12 +7,15 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smartagri/core/database/app_database.dart';
 import 'package:smartagri/core/i18n/app_language.dart';
 import 'package:smartagri/core/i18n/language_controller.dart';
 import 'package:smartagri/core/network/api_exception.dart';
 import 'package:smartagri/core/session/session_controller.dart';
 import 'package:smartagri/core/session/session_state.dart';
 import 'package:smartagri/core/storage/token_store.dart';
+import 'package:smartagri/core/sync/sync_providers.dart';
+import 'package:smartagri/core/sync/sync_service.dart';
 import 'package:smartagri/design_system/theme.dart';
 import 'package:smartagri/features/auth/data/auth_repository.dart';
 import 'package:smartagri/features/admin/data/stats_repository.dart';
@@ -27,7 +30,6 @@ import 'package:smartagri/features/privacy/data/privacy_repository.dart';
 import 'package:smartagri/features/profile/data/me_repository.dart';
 
 import 'diagnostics/fake_diagnostics_repository.dart';
-import 'farms/fake_farms_repository.dart';
 
 class FixedSessionController extends SessionController {
   FixedSessionController(this.fixedState);
@@ -197,6 +199,8 @@ Future<ProviderContainer> buildTestContainer({
   List<Crop>? crops,
   StatsRepository? statsRepository,
   FarmsRepository? farmsRepository,
+  AppDatabase? database,
+  SyncRunner? syncRunner,
   DiagnosticsRepository? diagnosticsRepository,
   PrivacyRepository? privacyRepository,
   DataExporter? dataExporter,
@@ -205,9 +209,14 @@ Future<ProviderContainer> buildTestContainer({
   await initializeDateFormatting('fr');
   SharedPreferences.setMockInitialValues(initialPreferences);
   final SharedPreferences preferences = await SharedPreferences.getInstance();
+  final AppDatabase appDatabase = database ?? inMemoryAppDatabase();
+  if (database == null) {
+    addTearDown(appDatabase.close);
+  }
   final ProviderContainer container = ProviderContainer(
     overrides: [
       sharedPreferencesProvider.overrideWithValue(preferences),
+      appDatabaseProvider.overrideWithValue(appDatabase),
       sessionControllerProvider.overrideWith(
         () => sessionController ?? FixedSessionController(session),
       ),
@@ -215,8 +224,10 @@ Future<ProviderContainer> buildTestContainer({
       authRepositoryProvider.overrideWithValue(
         authRepository ?? RecordingAuthRepository(),
       ),
-      farmsRepositoryProvider.overrideWithValue(
-        farmsRepository ?? FakeFarmsRepository(),
+      if (farmsRepository != null)
+        farmsRepositoryProvider.overrideWithValue(farmsRepository),
+      syncRunnerProvider.overrideWithValue(
+        syncRunner ?? () async => SyncResult.none,
       ),
       diagnosticsRepositoryProvider.overrideWithValue(
         diagnosticsRepository ?? FakeDiagnosticsRepository(),

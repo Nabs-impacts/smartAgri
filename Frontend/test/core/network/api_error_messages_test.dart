@@ -52,6 +52,16 @@ void main() {
     );
   });
 
+  test('explains that a plot is not synchronized yet', () {
+    expect(
+      apiErrorMessage(
+        const ApiException(code: 'PLOT_NOT_SYNCED', message: ''),
+        strings,
+      ),
+      strings.diagnosticPlotNotSynced,
+    );
+  });
+
   test('falls back to the generic message', () {
     expect(
       apiErrorMessage(

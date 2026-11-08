@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:smartagri/core/database/app_database.dart';
 import 'package:smartagri/core/media/image_compressor.dart';
 import 'package:smartagri/core/network/api_exception.dart';
 import 'package:smartagri/features/diagnostics/data/diagnostics_history_provider.dart';
@@ -124,13 +125,22 @@ class FakeDiagnosticsRepository extends DiagnosticsRepository {
   }
 }
 
-ProviderContainer buildContainer({
+Future<ProviderContainer> buildContainer({
   required FakeCompressor compressor,
   required FakeUploader uploader,
   required FakeDiagnosticsRepository repository,
-}) {
+}) async {
+  final AppDatabase database = inMemoryAppDatabase();
+  addTearDown(database.close);
+  await database.upsertPlot(
+    'plot-1',
+    'farm-1',
+    'Parcelle',
+    updatedAt: DateTime.utc(2026, 11, 8, 9),
+  );
   final ProviderContainer container = ProviderContainer(
     overrides: [
+      appDatabaseProvider.overrideWithValue(database),
       imageCompressorProvider.overrideWithValue(compressor),
       mediaUploaderProvider.overrideWithValue(uploader),
       diagnosticsRepositoryProvider.overrideWithValue(repository),
@@ -150,7 +160,7 @@ void main() {
     final FakeCompressor compressor = FakeCompressor();
     final FakeUploader uploader = FakeUploader(failures: 1);
     final FakeDiagnosticsRepository repository = FakeDiagnosticsRepository();
-    final ProviderContainer container = buildContainer(
+    final ProviderContainer container = await buildContainer(
       compressor: compressor,
       uploader: uploader,
       repository: repository,
@@ -198,7 +208,7 @@ void main() {
 
   test('invalidates the history after creating a diagnostic', () async {
     final FakeDiagnosticsRepository repository = FakeDiagnosticsRepository();
-    final ProviderContainer container = buildContainer(
+    final ProviderContainer container = await buildContainer(
       compressor: FakeCompressor(),
       uploader: FakeUploader(),
       repository: repository,
@@ -222,7 +232,7 @@ void main() {
     final FakeDiagnosticsRepository repository = FakeDiagnosticsRepository(
       failures: 1,
     );
-    final ProviderContainer container = buildContainer(
+    final ProviderContainer container = await buildContainer(
       compressor: FakeCompressor(),
       uploader: uploader,
       repository: repository,
@@ -257,7 +267,7 @@ void main() {
     final FakeDiagnosticsRepository repository = FakeDiagnosticsRepository(
       quotaFailure: true,
     );
-    final ProviderContainer container = buildContainer(
+    final ProviderContainer container = await buildContainer(
       compressor: FakeCompressor(),
       uploader: FakeUploader(),
       repository: repository,
@@ -275,8 +285,31 @@ void main() {
     expect(state.error?.isQuotaExceeded, isTrue);
   });
 
+  test('blocks a plot that has no server version before uploading', () async {
+    final FakeUploader uploader = FakeUploader();
+    final FakeDiagnosticsRepository repository = FakeDiagnosticsRepository();
+    final ProviderContainer container = await buildContainer(
+      compressor: FakeCompressor(),
+      uploader: uploader,
+      repository: repository,
+    );
+    final DiagnosticFlowController flow = container.read(
+      diagnosticFlowProvider.notifier,
+    );
+
+    await flow.addPhoto(Uint8List.fromList(<int>[1, 2, 3]));
+    flow.selectPlot('plot-unsynced');
+    await flow.submit();
+
+    final DiagnosticFlowState state = container.read(diagnosticFlowProvider);
+    expect(uploader.calls, 0);
+    expect(repository.createCalls, 0);
+    expect(state.error?.code, 'PLOT_NOT_SYNCED');
+    expect(state.created, isNull);
+  });
+
   test('marks a photo as failed when compression fails', () async {
-    final ProviderContainer container = buildContainer(
+    final ProviderContainer container = await buildContainer(
       compressor: FakeCompressor(
         error: const ImageProcessingException('Format invalide.'),
       ),

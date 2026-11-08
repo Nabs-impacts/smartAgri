@@ -6,6 +6,7 @@ import '../database/app_database.dart';
 import '../network/network_providers.dart';
 import '../session/session_controller.dart';
 import '../session/session_state.dart';
+import '../../features/profile/data/me_repository.dart';
 import 'outbox.dart';
 import 'sync_scheduler.dart';
 import 'sync_service.dart';
@@ -32,7 +33,35 @@ final Provider<SyncService> syncServiceProvider = Provider<SyncService>((
   return SyncService(
     database: ref.watch(appDatabaseProvider),
     dio: ref.watch(apiClientProvider),
+    outbox: ref.watch(outboxProvider),
   );
+});
+
+typedef SyncRunner = Future<SyncResult> Function();
+
+final Provider<SyncRunner> syncRunnerProvider = Provider<SyncRunner>((Ref ref) {
+  final SyncStatusController status = ref.read(
+    syncStatusControllerProvider.notifier,
+  );
+  final SyncService service = ref.watch(syncServiceProvider);
+  return () async {
+    status.set(SyncStatus.syncing);
+    try {
+      final SyncResult result = await service.syncNow();
+      if (result.error != null) {
+        status.set(SyncStatus.error);
+      } else {
+        status.set(result.offline ? SyncStatus.offline : SyncStatus.idle);
+      }
+      if (result.error == null && !result.offline) {
+        await ref.read(meProvider.notifier).refresh();
+      }
+      return result;
+    } catch (error) {
+      status.set(SyncStatus.error);
+      rethrow;
+    }
+  };
 });
 
 final StreamProvider<int> pendingCountProvider = StreamProvider<int>(
@@ -100,27 +129,10 @@ class _SchedulerLifecycleObserver extends WidgetsBindingObserver {
 final Provider<SyncScheduler> syncSchedulerProvider = Provider<SyncScheduler>((
   Ref ref,
 ) {
-  final SyncStatusController status = ref.read(
-    syncStatusControllerProvider.notifier,
-  );
-  final SyncService service = ref.watch(syncServiceProvider);
+  final SyncRunner runSync = ref.watch(syncRunnerProvider);
   final Outbox outbox = ref.watch(outboxProvider);
   final SyncScheduler scheduler = SyncScheduler(
-    syncNow: () async {
-      status.set(SyncStatus.syncing);
-      try {
-        final SyncResult result = await service.syncNow();
-        if (result.error != null) {
-          status.set(SyncStatus.error);
-        } else {
-          status.set(result.offline ? SyncStatus.offline : SyncStatus.idle);
-        }
-        return result;
-      } catch (error) {
-        status.set(SyncStatus.error);
-        rethrow;
-      }
-    },
+    syncNow: runSync,
     isActive: () =>
         ref.read(sessionControllerProvider) == SessionState.authenticated,
     connectivity: ref.watch(connectivityFactoryProvider),

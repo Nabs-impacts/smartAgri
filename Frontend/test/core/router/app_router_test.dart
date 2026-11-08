@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:smartagri/core/database/app_database.dart';
 import 'package:smartagri/core/i18n/language_controller.dart';
 import 'package:smartagri/core/router/app_router.dart';
 import 'package:smartagri/core/session/session_controller.dart';
@@ -19,7 +20,6 @@ import 'package:smartagri/features/catalog/data/catalog_repository.dart';
 import 'package:smartagri/features/dev_gallery/design_gallery_page.dart';
 import 'package:smartagri/features/diagnostics/data/diagnostics_repository.dart';
 import 'package:smartagri/features/diagnostics/presentation/diagnostic_new_page.dart';
-import 'package:smartagri/features/farms/data/farms_repository.dart';
 import 'package:smartagri/features/home/home_page.dart';
 import 'package:smartagri/features/legal/legal_page.dart';
 import 'package:smartagri/features/privacy/presentation/delete_account_page.dart';
@@ -28,7 +28,6 @@ import 'package:smartagri/features/profile/data/me_repository.dart';
 import '../../features/admin/fake_stats_repository.dart';
 import '../../features/app_test_utils.dart';
 import '../../features/diagnostics/fake_diagnostics_repository.dart';
-import '../../features/farms/fake_farms_repository.dart';
 
 class FixedSessionController extends SessionController {
   FixedSessionController(this.fixedState);
@@ -53,15 +52,17 @@ Future<ProviderContainer> buildContainer(
 }) async {
   SharedPreferences.setMockInitialValues(<String, Object>{});
   final SharedPreferences preferences = await SharedPreferences.getInstance();
+  final AppDatabase database = inMemoryAppDatabase();
+  addTearDown(database.close);
   final ProviderContainer container = ProviderContainer(
     overrides: [
       sharedPreferencesProvider.overrideWithValue(preferences),
+      appDatabaseProvider.overrideWithValue(database),
       sessionControllerProvider.overrideWith(() => controller),
       meRepositoryProvider.overrideWithValue(
         meRepository ?? FakeMeRepository(sampleMeData()),
       ),
       statsRepositoryProvider.overrideWithValue(FakeStatsRepository()),
-      farmsRepositoryProvider.overrideWithValue(FakeFarmsRepository()),
       diagnosticsRepositoryProvider.overrideWithValue(
         FakeDiagnosticsRepository(),
       ),

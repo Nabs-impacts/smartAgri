@@ -1,11 +1,15 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:smartagri/core/network/api_exception.dart';
+import 'package:smartagri/core/database/app_database.dart';
 import 'package:smartagri/features/farms/domain/farm.dart';
 import 'package:smartagri/features/farms/domain/plot.dart';
+import 'package:smartagri/features/profile/data/me_repository.dart';
 
-import 'fake_farms_repository.dart';
+import '../app_test_utils.dart';
 import 'farms_test_app.dart';
+import 'farms_test_data.dart';
 
 Future<void> enterName(WidgetTester tester, String value) async {
   await tester.enterText(find.byKey(const Key('plot_name_field')), value);
@@ -36,7 +40,8 @@ Future<void> scrollUpTo(WidgetTester tester, Finder finder) async {
 
 Future<FarmsHarness> pumpPlotForm(
   WidgetTester tester, {
-  FakeFarmsRepository? repository,
+  FakeMeRepository? meRepository,
+  List<Plot>? plots,
 }) async {
   await tester.binding.setSurfaceSize(const Size(900, 1600));
   addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -44,7 +49,8 @@ Future<FarmsHarness> pumpPlotForm(
     tester,
     initialLocation: '/farms/farm-1/plots/new',
     farms: <Farm>[sampleFarm()],
-    repository: repository,
+    plots: <String, List<Plot>>{'farm-1': plots ?? <Plot>[]},
+    meRepository: meRepository,
   );
 }
 
@@ -80,7 +86,10 @@ void main() {
     await enterArea(tester, '10000');
     await tapSave(tester);
 
-    expect(harness.farms.lastPlotAreaHa, 10000);
+    final List<PendingChangeRow> outbox = await harness.database.getOutbox();
+    final Map<String, dynamic> data =
+        jsonDecode(outbox.single.payload) as Map<String, dynamic>;
+    expect(data['area_ha'], 10000);
   });
 
   testWidgets('accepts a comma and sends the selected chips', (
@@ -99,10 +108,14 @@ void main() {
     await tester.pumpAndSettle();
     await tapSave(tester);
 
-    expect(harness.farms.lastPlotAreaHa, 2.5);
-    expect(harness.farms.lastPlotSoilType, SoilType.sandy);
-    expect(harness.farms.lastPlotIrrigation, IrrigationType.rainfed);
-    expect(harness.farms.lastPlotId, isNotNull);
+    final List<PendingChangeRow> outbox = await harness.database.getOutbox();
+    final Map<String, dynamic> data =
+        jsonDecode(outbox.single.payload) as Map<String, dynamic>;
+    expect(data['area_ha'], 2.5);
+    expect(data['soil_type'], 'sandy');
+    expect(data['irrigation'], 'rainfed');
+    expect(data['farm_id'], 'farm-1');
+    expect(data['geom'], isNull);
   });
 
   testWidgets('accepts a decimal point', (WidgetTester tester) async {
@@ -111,20 +124,31 @@ void main() {
     await enterArea(tester, '3.25');
     await tapSave(tester);
 
-    expect(harness.farms.lastPlotAreaHa, 3.25);
+    final List<PendingChangeRow> outbox = await harness.database.getOutbox();
+    final Map<String, dynamic> data =
+        jsonDecode(outbox.single.payload) as Map<String, dynamic>;
+    expect(data['area_ha'], 3.25);
   });
 
-  testWidgets('shows the plan limit when the quota is exceeded', (
+  testWidgets('shows the plan limit when the local quota is reached', (
     WidgetTester tester,
   ) async {
-    final FakeFarmsRepository repository = FakeFarmsRepository()
-      ..createPlotError = const ApiException(
-        statusCode: 403,
-        code: 'QUOTA_EXCEEDED',
-        message: 'Quota dépassé',
-        details: <String, dynamic>{'metric': 'plots', 'limit': 3, 'used': 3},
-      );
-    await pumpPlotForm(tester, repository: repository);
+    final FakeMeRepository me = FakeMeRepository(
+      sampleMeData(
+        quotas: const <Quota>[
+          Quota(metric: 'plots', limit: 2, used: 2, remaining: 0),
+        ],
+      ),
+    );
+    final FarmsHarness harness = await pumpPlotForm(
+      tester,
+      meRepository: me,
+      plots: <Plot>[
+        samplePlot(id: 'plot-1'),
+        samplePlot(id: 'plot-2', name: 'Parcelle sud'),
+      ],
+    );
+    await harness.container.read(meProvider.future);
     await enterName(tester, 'Parcelle test');
     await enterArea(tester, '2');
 
@@ -132,7 +156,7 @@ void main() {
     await scrollUpTo(tester, find.byKey(const Key('plot_form_error')));
 
     expect(
-      find.text('Vous avez atteint la limite de votre formule (3 parcelles).'),
+      find.text('Vous avez atteint la limite de votre formule (2 parcelles).'),
       findsOneWidget,
     );
   });

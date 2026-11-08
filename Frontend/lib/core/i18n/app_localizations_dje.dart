@@ -391,6 +391,10 @@ class AppLocalizationsDje extends AppLocalizations {
   String get diagnosticPlotLabel => 'Parcelle (facultatif)';
 
   @override
+  String get diagnosticPlotNotSynced =>
+      'Cette parcelle n\'est pas encore synchronisée. Connectez-vous à Internet puis réessayez.';
+
+  @override
   String get diagnosticPhotosTitle => 'Photos';
 
   @override

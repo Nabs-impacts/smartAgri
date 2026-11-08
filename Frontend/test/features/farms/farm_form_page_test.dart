@@ -1,11 +1,13 @@
+import 'dart:convert';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:smartagri/core/network/api_exception.dart';
+import 'package:smartagri/core/database/app_database.dart';
 import 'package:smartagri/features/farms/domain/farm.dart';
 import 'package:smartagri/features/farms/presentation/farm_form_page.dart';
 
-import 'fake_farms_repository.dart';
 import 'farms_test_app.dart';
+import 'farms_test_data.dart';
 
 Future<void> fillName(WidgetTester tester, String value) async {
   await tester.enterText(find.byKey(const Key('farm_name_field')), value);
@@ -42,7 +44,7 @@ void main() {
     );
   });
 
-  testWidgets('sends the generated id, the region and the name', (
+  testWidgets('creates the farm locally and enqueues an upsert', (
     WidgetTester tester,
   ) async {
     final FarmsHarness harness = await pumpFarmsApp(
@@ -58,40 +60,24 @@ void main() {
 
     await tapSave(tester);
 
-    expect(harness.farms.lastFarmId, isNotNull);
-    expect(harness.farms.lastFarmName, 'Ferme test');
-    expect(harness.farms.lastAdminAreaId, 1);
-    expect(harness.farms.lastVillage, isNull);
+    final List<PendingChangeRow> outbox = await harness.database.getOutbox();
+    expect(outbox, hasLength(1));
+    expect(outbox.single.entity, 'farm');
+    expect(outbox.single.op, 'upsert');
+    final FarmRow? row = await harness.database.getFarm(outbox.single.id);
+    expect(row?.name, 'Ferme test');
+    expect(row?.adminAreaId, 1);
+    expect(row?.updatedAt, isNull);
+    final Map<String, dynamic> data =
+        jsonDecode(outbox.single.payload) as Map<String, dynamic>;
+    expect(data['name'], 'Ferme test');
+    expect(data['admin_area_id'], 1);
+    expect(data['village'], isNull);
+    expect(data['location'], isNull);
+    expect(find.byType(FarmFormPage), findsNothing);
   });
 
-  testWidgets('reuses the same id after a failed attempt', (
-    WidgetTester tester,
-  ) async {
-    final FakeFarmsRepository repository = FakeFarmsRepository()
-      ..createFarmError = ApiException.network();
-    final FarmsHarness harness = await pumpFarmsApp(
-      tester,
-      initialLocation: '/farms/new',
-      repository: repository,
-    );
-    await fillName(tester, 'Ferme test');
-
-    await tapSave(tester);
-    final String? firstId = repository.lastFarmId;
-
-    expect(find.byKey(const Key('farm_form_error')), findsOneWidget);
-    expect(find.byType(FarmFormPage), findsOneWidget);
-
-    repository.createFarmError = null;
-    await tapSave(tester);
-    final String? secondId = repository.lastFarmId;
-
-    expect(firstId, isNotNull);
-    expect(secondId, firstId);
-    expect(harness.container, isNotNull);
-  });
-
-  testWidgets('prefills the edit form and patches the farm', (
+  testWidgets('prefills the edit form and updates the farm locally', (
     WidgetTester tester,
   ) async {
     final FarmsHarness harness = await pumpFarmsApp(
@@ -105,7 +91,13 @@ void main() {
     await fillName(tester, 'Nouvelle');
     await tapSave(tester);
 
-    expect(harness.farms.lastUpdatedFarmId, 'farm-1');
-    expect(harness.farms.lastUpdatedName, 'Nouvelle');
+    final FarmRow? row = await harness.database.getFarm('farm-1');
+    expect(row?.name, 'Nouvelle');
+    expect(row?.updatedAt?.toUtc(), DateTime.utc(2026, 10, 20));
+    final List<PendingChangeRow> outbox = await harness.database.getOutbox();
+    expect(outbox.single.entity, 'farm');
+    final Map<String, dynamic> data =
+        jsonDecode(outbox.single.payload) as Map<String, dynamic>;
+    expect(data['name'], 'Nouvelle');
   });
 }

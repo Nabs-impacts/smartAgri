@@ -1,14 +1,24 @@
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
-import '../../profile/data/me_repository.dart';
+import '../../../core/database/app_database.dart';
+import '../../../core/network/api_exception.dart';
 import '../domain/farm.dart';
 import '../domain/plot.dart';
 import 'farms_repository.dart';
 
 class FarmsController extends AsyncNotifier<List<Farm>> {
   @override
-  Future<List<Farm>> build() {
-    return ref.watch(farmsRepositoryProvider).listFarms();
+  Future<List<Farm>> build() async {
+    final AppDatabase database = ref.watch(appDatabaseProvider);
+    final Stream<List<FarmRow>> stream = database.watchFarms();
+    final subscription = stream.listen((List<FarmRow> rows) {
+      if (ref.mounted) {
+        state = AsyncData<List<Farm>>(rows.map(farmFromRow).toList());
+      }
+    });
+    ref.onDispose(subscription.cancel);
+    final List<FarmRow> rows = await stream.first;
+    return rows.map(farmFromRow).toList();
   }
 
   Future<Farm> createFarm(
@@ -17,11 +27,9 @@ class FarmsController extends AsyncNotifier<List<Farm>> {
     String? village,
     int? adminAreaId,
   }) async {
-    final Farm farm = await ref
+    return ref
         .read(farmsRepositoryProvider)
         .createFarm(id, name, village: village, adminAreaId: adminAreaId);
-    await refresh();
-    return farm;
   }
 
   Future<Farm> updateFarm(
@@ -30,16 +38,13 @@ class FarmsController extends AsyncNotifier<List<Farm>> {
     Object? village = unchanged,
     Object? adminAreaId = unchanged,
   }) async {
-    final Farm farm = await ref
+    return ref
         .read(farmsRepositoryProvider)
         .updateFarm(id, name: name, village: village, adminAreaId: adminAreaId);
-    await refresh();
-    return farm;
   }
 
   Future<void> deleteFarm(String id) async {
     await ref.read(farmsRepositoryProvider).deleteFarm(id);
-    await refresh();
   }
 
   Future<void> refresh() async {
@@ -55,8 +60,17 @@ class FarmPlotsController extends AsyncNotifier<List<Plot>> {
   final String farmId;
 
   @override
-  Future<List<Plot>> build() {
-    return ref.watch(farmsRepositoryProvider).listPlots(farmId);
+  Future<List<Plot>> build() async {
+    final AppDatabase database = ref.watch(appDatabaseProvider);
+    final Stream<List<PlotRow>> stream = database.watchPlots(farmId);
+    final subscription = stream.listen((List<PlotRow> rows) {
+      if (ref.mounted) {
+        state = AsyncData<List<Plot>>(rows.map(plotFromRow).toList());
+      }
+    });
+    ref.onDispose(subscription.cancel);
+    final List<PlotRow> rows = await stream.first;
+    return rows.map(plotFromRow).toList();
   }
 
   Future<Plot> createPlot(
@@ -66,7 +80,7 @@ class FarmPlotsController extends AsyncNotifier<List<Plot>> {
     SoilType? soilType,
     IrrigationType? irrigation,
   }) async {
-    final Plot plot = await ref
+    return ref
         .read(farmsRepositoryProvider)
         .createPlot(
           farmId,
@@ -76,9 +90,6 @@ class FarmPlotsController extends AsyncNotifier<List<Plot>> {
           soilType: soilType,
           irrigation: irrigation,
         );
-    await refresh();
-    await ref.read(meProvider.notifier).refresh();
-    return plot;
   }
 
   Future<Plot> updatePlot(
@@ -97,22 +108,52 @@ class FarmPlotsController extends AsyncNotifier<List<Plot>> {
           soilType: soilType,
           irrigation: irrigation,
         );
-    await refresh();
     ref.invalidate(plotProvider(id));
     return plot;
   }
 
   Future<void> deletePlot(String id) async {
     await ref.read(farmsRepositoryProvider).deletePlot(id);
-    await refresh();
     ref.invalidate(plotProvider(id));
-    await ref.read(meProvider.notifier).refresh();
   }
 
   Future<void> refresh() async {
     state = await AsyncValue.guard<List<Plot>>(
       () => ref.read(farmsRepositoryProvider).listPlots(farmId),
     );
+  }
+}
+
+class PlotController extends AsyncNotifier<Plot> {
+  PlotController(this.plotId);
+
+  final String plotId;
+
+  @override
+  Future<Plot> build() async {
+    final AppDatabase database = ref.watch(appDatabaseProvider);
+    final Stream<PlotRow?> stream = database.watchPlot(plotId);
+    final subscription = stream.listen((PlotRow? row) {
+      if (ref.mounted) {
+        state = _stateFromRow(row);
+      }
+    });
+    ref.onDispose(subscription.cancel);
+    final PlotRow? row = await stream.first;
+    if (row == null || row.deletedAt != null) {
+      throw const ApiException(code: 'NOT_FOUND', message: 'Introuvable');
+    }
+    return plotFromRow(row);
+  }
+
+  AsyncValue<Plot> _stateFromRow(PlotRow? row) {
+    if (row == null || row.deletedAt != null) {
+      return AsyncError<Plot>(
+        const ApiException(code: 'NOT_FOUND', message: 'Introuvable'),
+        StackTrace.current,
+      );
+    }
+    return AsyncData<Plot>(plotFromRow(row));
   }
 }
 
@@ -128,7 +169,7 @@ final farmPlotsProvider =
       retry: (int retryCount, Object error) => null,
     );
 
-final plotProvider = FutureProvider.family<Plot, String>(
-  (Ref ref, String id) => ref.watch(farmsRepositoryProvider).getPlot(id),
+final plotProvider = AsyncNotifierProvider.family<PlotController, Plot, String>(
+  PlotController.new,
   retry: (int retryCount, Object error) => null,
 );

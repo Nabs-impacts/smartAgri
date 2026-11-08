@@ -186,6 +186,35 @@ class AppDatabase extends _$AppDatabase {
         .watch();
   }
 
+  Stream<FarmRow?> watchFarm(String id) {
+    return (select(
+      farms,
+    )..where((Farms t) => t.id.equals(id))).watchSingleOrNull();
+  }
+
+  Stream<PlotRow?> watchPlot(String id) {
+    return (select(
+      plots,
+    )..where((Plots t) => t.id.equals(id))).watchSingleOrNull();
+  }
+
+  Future<List<PlotRow>> getActivePlots(String farmId) {
+    return (select(plots)
+          ..where((Plots t) => t.farmId.equals(farmId) & t.deletedAt.isNull())
+          ..orderBy([
+            (Plots t) => OrderingTerm.asc(t.name),
+            (Plots t) => OrderingTerm.asc(t.id),
+          ]))
+        .get();
+  }
+
+  Future<int> countActivePlots() async {
+    final List<PlotRow> rows = await (select(
+      plots,
+    )..where((Plots t) => t.deletedAt.isNull())).get();
+    return rows.length;
+  }
+
   Future<FarmRow?> getFarm(String id) {
     return (select(
       farms,
@@ -339,6 +368,18 @@ END
   Future<bool> hasPendingChange(String entity, String id) async {
     final PendingChangeRow? row = await getPendingChange(entity, id);
     return row != null && row.status == 'pending';
+  }
+
+  Future<bool> isSoftDeleted(String entity, String id) async {
+    if (entity == 'farm') {
+      final FarmRow? row = await getFarm(id);
+      return row?.deletedAt != null;
+    }
+    if (entity == 'plot') {
+      final PlotRow? row = await getPlot(id);
+      return row?.deletedAt != null;
+    }
+    return false;
   }
 
   Future<bool> hasServerVersion(String entity, String id) async {

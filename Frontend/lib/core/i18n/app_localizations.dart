@@ -802,6 +802,12 @@ abstract class AppLocalizations {
   /// **'Parcelle (facultatif)'**
   String get diagnosticPlotLabel;
 
+  /// No description provided for @diagnosticPlotNotSynced.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette parcelle n\'est pas encore synchronisée. Connectez-vous à Internet puis réessayez.'**
+  String get diagnosticPlotNotSynced;
+
   /// No description provided for @diagnosticPhotosTitle.
   ///
   /// In fr, this message translates to:

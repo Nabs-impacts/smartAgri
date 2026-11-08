@@ -4,6 +4,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:uuid/uuid.dart';
 
+import '../../../core/database/app_database.dart';
 import '../../../core/media/image_compressor.dart';
 import '../../../core/network/api_exception.dart';
 import '../../media/data/media_uploader.dart';
@@ -227,6 +228,21 @@ class DiagnosticFlowController extends Notifier<DiagnosticFlowState> {
   Future<void> submit() async {
     if (!state.canSubmit) {
       return;
+    }
+    final String? plotId = state.plotId;
+    if (plotId != null && plotId.isNotEmpty) {
+      final bool confirmed = await ref
+          .read(appDatabaseProvider)
+          .hasServerVersion('plot', plotId);
+      if (!confirmed) {
+        state = state.copyWith(
+          error: const ApiException(
+            code: 'PLOT_NOT_SYNCED',
+            message: 'Cette parcelle n’est pas encore synchronisée.',
+          ),
+        );
+        return;
+      }
     }
     final CancelToken token = CancelToken();
     _cancelToken = token;

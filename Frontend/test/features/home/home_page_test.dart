@@ -5,6 +5,7 @@ import 'package:go_router/go_router.dart';
 import 'package:smartagri/core/i18n/app_language.dart';
 import 'package:smartagri/core/i18n/language_controller.dart';
 import 'package:smartagri/core/network/api_exception.dart';
+import 'package:smartagri/core/database/app_database.dart';
 import 'package:smartagri/features/diagnostics/domain/diagnostic_summary.dart';
 import 'package:smartagri/features/diagnostics/presentation/diagnostic_row.dart';
 import 'package:smartagri/features/farms/domain/farm.dart';
@@ -12,7 +13,7 @@ import 'package:smartagri/features/home/home_page.dart';
 
 import '../app_test_utils.dart';
 import '../diagnostics/fake_diagnostics_repository.dart';
-import '../farms/fake_farms_repository.dart';
+import '../farms/farms_test_data.dart';
 
 GoRouter buildRouter() {
   return GoRouter(
@@ -53,17 +54,25 @@ GoRouter buildRouter() {
 
 Future<(ProviderContainer, FakeMeRepository)> pumpHome(
   WidgetTester tester, {
-  FakeFarmsRepository? farms,
+  List<Farm>? farms,
   FakeDiagnosticsRepository? diagnostics,
+  AppDatabase? database,
 }) async {
   tester.view.physicalSize = const Size(800, 2000);
   tester.view.devicePixelRatio = 1;
   addTearDown(tester.view.resetPhysicalSize);
   addTearDown(tester.view.resetDevicePixelRatio);
   final FakeMeRepository repository = FakeMeRepository(sampleMeData());
+  final AppDatabase appDatabase = database ?? inMemoryAppDatabase();
+  if (database == null) {
+    addTearDown(appDatabase.close);
+  }
+  for (final Farm farm in farms ?? const <Farm>[]) {
+    await seedFarm(appDatabase, farm);
+  }
   final ProviderContainer container = await buildTestContainer(
     meRepository: repository,
-    farmsRepository: farms,
+    database: appDatabase,
     diagnosticsRepository: diagnostics,
   );
   await tester.pumpWidget(testRouterApp(container, buildRouter()));
@@ -140,14 +149,12 @@ void main() {
   ) async {
     await pumpHome(
       tester,
-      farms: FakeFarmsRepository(
-        farms: <Farm>[
-          sampleFarm(id: 'farm-1', name: 'Ferme 1'),
-          sampleFarm(id: 'farm-2', name: 'Ferme 2'),
-          sampleFarm(id: 'farm-3', name: 'Ferme 3'),
-          sampleFarm(id: 'farm-4', name: 'Ferme 4'),
-        ],
-      ),
+      farms: <Farm>[
+        sampleFarm(id: 'farm-1', name: 'Ferme 1'),
+        sampleFarm(id: 'farm-2', name: 'Ferme 2'),
+        sampleFarm(id: 'farm-3', name: 'Ferme 3'),
+        sampleFarm(id: 'farm-4', name: 'Ferme 4'),
+      ],
     );
 
     expect(find.text('Ferme 1'), findsOneWidget);
@@ -258,21 +265,16 @@ void main() {
     expect(find.text('Mildiou'), findsOneWidget);
   });
 
-  testWidgets('shows the farms error and retries', (WidgetTester tester) async {
-    final FakeFarmsRepository farms = FakeFarmsRepository()
-      ..listFarmsError = ApiException.network();
-    await pumpHome(tester, farms: farms);
+  testWidgets('updates the farms section when the local database changes', (
+    WidgetTester tester,
+  ) async {
+    final AppDatabase database = inMemoryAppDatabase();
+    addTearDown(database.close);
+    await pumpHome(tester, database: database);
 
-    expect(
-      find.text(
-        'Impossible de joindre le serveur. Vérifiez votre connexion internet.',
-      ),
-      findsOneWidget,
-    );
+    expect(find.text('Ajoutez votre première exploitation'), findsOneWidget);
 
-    farms.listFarmsError = null;
-    farms.farms = <Farm>[sampleFarm(name: 'Ferme revenue')];
-    await tester.tap(find.byKey(const Key('home_farms_retry')));
+    await seedFarm(database, sampleFarm(name: 'Ferme revenue'));
     await tester.pumpAndSettle();
 
     expect(find.text('Ferme revenue'), findsOneWidget);

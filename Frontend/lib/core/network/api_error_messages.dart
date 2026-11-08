@@ -2,6 +2,9 @@ import '../i18n/app_localizations.dart';
 import 'api_exception.dart';
 
 String apiErrorMessage(ApiException exception, AppLocalizations strings) {
+  if (exception.code == 'PLOT_NOT_SYNCED') {
+    return strings.diagnosticPlotNotSynced;
+  }
   if (exception.isQuotaExceeded) {
     final int? limit = _detailLimit(exception.details);
     if (limit != null) {

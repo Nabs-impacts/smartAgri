@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 
 import '../database/app_database.dart';
+import 'outbox.dart';
 
 const int syncBatchSize = 200;
 const Duration cursorSafetyWindow = Duration(seconds: 15);
@@ -35,8 +36,10 @@ class SyncService {
   SyncService({
     required this.database,
     required this.dio,
+    Outbox? outbox,
     DateTime Function()? now,
-  }) : _now = now ?? DateTime.now;
+  }) : _now = now ?? DateTime.now,
+       _outbox = outbox ?? Outbox(database, now: now);
 
   static const String lastSyncAtKey = 'last_sync_at';
   static const String cursorHistoryKey = 'cursor_history';
@@ -44,6 +47,7 @@ class SyncService {
   final AppDatabase database;
   final Dio dio;
   final DateTime Function() _now;
+  final Outbox _outbox;
 
   Future<SyncResult>? _inFlight;
 
@@ -141,7 +145,6 @@ class SyncService {
         response.data,
       );
       bool resolved = false;
-      bool changedInFlight = false;
       for (final PendingChangeRow change in batch) {
         final Map<String, dynamic>? result =
             results['${change.entity}|${change.id}'];
@@ -153,14 +156,11 @@ class SyncService {
           result['server_updated_at'],
         );
         if (status == 'applied') {
-          final bool removed = await database.removePendingChangeIfUnchanged(
+          await database.removePendingChangeIfUnchanged(
             change.entity,
             change.id,
             change.clientUpdatedAt,
           );
-          if (!removed) {
-            changedInFlight = true;
-          }
           if (serverUpdatedAt != null) {
             await database.touchServerUpdatedAt(
               change.entity,
@@ -168,17 +168,19 @@ class SyncService {
               serverUpdatedAt,
             );
           }
+          if (change.op == 'upsert' &&
+              await database.isSoftDeleted(change.entity, change.id) &&
+              !await database.hasPendingChange(change.entity, change.id)) {
+            await _outbox.enqueueDelete(change.entity, change.id);
+          }
           pushed++;
           resolved = true;
         } else if (status == 'conflict') {
-          final bool removed = await database.removePendingChangeIfUnchanged(
+          await database.removePendingChangeIfUnchanged(
             change.entity,
             change.id,
             change.clientUpdatedAt,
           );
-          if (!removed) {
-            changedInFlight = true;
-          }
           if (serverUpdatedAt != null) {
             await database.touchServerUpdatedAt(
               change.entity,
@@ -190,20 +192,17 @@ class SyncService {
           resolved = true;
         } else if (status == 'rejected') {
           final Object? error = result['error'];
-          final bool marked = await database.markFailedIfUnchanged(
+          await database.markFailedIfUnchanged(
             change.entity,
             change.id,
             change.clientUpdatedAt,
             error is String ? error : '',
           );
-          if (!marked) {
-            changedInFlight = true;
-          }
           rejected++;
           resolved = true;
         }
       }
-      if (changedInFlight || !resolved) {
+      if (!resolved) {
         break;
       }
     }

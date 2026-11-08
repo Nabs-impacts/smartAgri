@@ -673,19 +673,8 @@ void main() {
 
     final SyncResult result = await syncing;
 
-    expect(result.pushed, 1);
-    expect(pushCount, 1);
-    final PendingChangeRow? pending = await harness.database.getPendingChange(
-      'farm',
-      'f1',
-    );
-    expect(pending?.status, 'pending');
-    expect(pending?.payload, '{"name":"Nouvelle"}');
-    expect((await harness.database.getFarm('f1'))?.name, 'Locale');
-
-    final SyncResult next = await harness.service.syncNow();
-
-    expect(next.pushed, 1);
+    expect(result.pushed, 2);
+    expect(pushCount, 2);
     expect(batches.last.single['data'], <String, dynamic>{'name': 'Nouvelle'});
     expect(await harness.database.getOutbox(), isEmpty);
   });
@@ -732,18 +721,8 @@ void main() {
 
     final SyncResult result = await syncing;
 
-    expect(result.pushed, 1);
-    final PendingChangeRow? pending = await harness.database.getPendingChange(
-      'farm',
-      'f1',
-    );
-    expect(pending?.op, 'delete');
-    expect(pending?.status, 'pending');
-    expect((await harness.database.getFarm('f1'))?.name, 'Locale');
-
-    final SyncResult next = await harness.service.syncNow();
-
-    expect(next.pushed, 1);
+    expect(result.pushed, 2);
+    expect(pushCount, 2);
     expect(batches.last.single['op'], 'delete');
     expect(await harness.database.getOutbox(), isEmpty);
   });
@@ -801,19 +780,63 @@ void main() {
     final SyncResult result = await syncing;
 
     expect(result.rejected, 1);
-    final PendingChangeRow? pending = await harness.database.getPendingChange(
-      'farm',
-      'f1',
-    );
-    expect(pending?.status, 'pending');
-    expect(pending?.payload, '{"name":"Nouvelle"}');
-    expect(pending?.lastError, isNull);
-
-    final SyncResult next = await harness.service.syncNow();
-
-    expect(next.pushed, 1);
+    expect(result.pushed, 1);
+    expect(pushCount, 2);
     expect(batches.last.single['data'], <String, dynamic>{'name': 'Nouvelle'});
+    expect(await harness.database.getOutbox(), isEmpty);
   });
+
+  test(
+    'sends a delete when an applied creation was deleted in flight',
+    () async {
+      int pushCount = 0;
+      final Completer<ResponseBody> firstPush = Completer<ResponseBody>();
+      final List<List<Map<String, dynamic>>> batches =
+          <List<Map<String, dynamic>>>[];
+      final Harness harness = buildHarness((
+        RequestOptions options,
+        RecordedRequest request,
+      ) async {
+        if (options.path == '/sync/push') {
+          pushCount++;
+          batches.add(changesOf(request));
+          if (pushCount == 1) {
+            return firstPush.future;
+          }
+          return body(200, appliedResults(changesOf(request)));
+        }
+        return emptyPull(options, request);
+      });
+      addTearDown(harness.close);
+      DateTime now = DateTime.utc(2026, 11, 8, 10);
+      final Outbox outbox = Outbox(harness.database, now: () => now);
+      addTearDown(outbox.dispose);
+      await harness.database.upsertFarm('f1', 'Locale');
+      await outbox.enqueueUpsert('farm', 'f1', <String, dynamic>{
+        'name': 'Locale',
+      });
+
+      final Future<SyncResult> syncing = harness.service.syncNow();
+      await pumpEventQueue();
+      expect(pushCount, 1);
+
+      now = now.add(const Duration(seconds: 1));
+      await harness.database.softDeleteFarm('f1');
+      await outbox.enqueueDelete('farm', 'f1');
+      expect(await harness.database.getOutbox(), isEmpty);
+
+      firstPush.complete(body(200, appliedResults(batches.first)));
+
+      final SyncResult result = await syncing;
+
+      expect(result.pushed, 2);
+      expect(pushCount, 2);
+      expect(batches.last.single['op'], 'delete');
+      expect(batches.last.single['id'], 'f1');
+      expect(await harness.database.getOutbox(), isEmpty);
+      expect((await harness.database.getFarm('f1'))?.deletedAt, isNotNull);
+    },
+  );
 
   test('a conflict triggers a full pull that restores server rows', () async {
     final List<String?> sines = <String?>[];

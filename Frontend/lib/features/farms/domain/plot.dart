@@ -47,11 +47,10 @@ class Plot {
     required this.id,
     required this.farmId,
     required this.name,
-    required this.createdAt,
-    required this.updatedAt,
     this.areaHa,
     this.soilType,
     this.irrigation,
+    this.updatedAt,
   });
 
   final String id;
@@ -60,8 +59,7 @@ class Plot {
   final double? areaHa;
   final SoilType? soilType;
   final IrrigationType? irrigation;
-  final DateTime createdAt;
-  final DateTime updatedAt;
+  final DateTime? updatedAt;
 
   factory Plot.fromJson(Map<String, dynamic> json) {
     return Plot(
@@ -71,7 +69,6 @@ class Plot {
       areaHa: _area(json['area_ha']),
       soilType: SoilType.fromApi(json['soil_type']),
       irrigation: IrrigationType.fromApi(json['irrigation']),
-      createdAt: _date(json['created_at']),
       updatedAt: _date(json['updated_at']),
     );
   }
@@ -87,9 +84,9 @@ double? _area(Object? value) {
   return null;
 }
 
-DateTime _date(Object? value) {
+DateTime? _date(Object? value) {
   if (value is String) {
-    return DateTime.tryParse(value) ?? DateTime.fromMillisecondsSinceEpoch(0);
+    return DateTime.tryParse(value);
   }
-  return DateTime.fromMillisecondsSinceEpoch(0);
+  return null;
 }
