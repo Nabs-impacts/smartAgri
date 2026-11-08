@@ -4,6 +4,7 @@ import 'dart:convert';
 import 'package:dio/dio.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smartagri/core/database/app_database.dart';
+import 'package:smartagri/core/sync/outbox.dart';
 import 'package:smartagri/core/sync/sync_service.dart';
 
 import '../network/recording_adapter.dart';
@@ -85,6 +86,22 @@ Future<void> seedPending(
       createdAt: at,
     ),
   );
+}
+
+Map<String, dynamic> appliedResults(List<Map<String, dynamic>> changes) {
+  return <String, dynamic>{
+    'results': changes
+        .map(
+          (Map<String, dynamic> change) => <String, dynamic>{
+            'id': change['id'],
+            'entity': change['entity'],
+            'status': 'applied',
+            'server_updated_at': '2026-11-08T10:00:05Z',
+            'error': null,
+          },
+        )
+        .toList(),
+  };
 }
 
 void main() {
@@ -602,5 +619,416 @@ void main() {
       await harness.database.readMeta(SyncService.lastSyncAtKey),
       now.toIso8601String(),
     );
+  });
+
+  test('keeps an edit made while a push is in flight', () async {
+    int pushCount = 0;
+    final Completer<ResponseBody> firstPush = Completer<ResponseBody>();
+    final List<List<Map<String, dynamic>>> batches =
+        <List<Map<String, dynamic>>>[];
+    final Harness harness = buildHarness((
+      RequestOptions options,
+      RecordedRequest request,
+    ) async {
+      if (options.path == '/sync/push') {
+        pushCount++;
+        batches.add(changesOf(request));
+        if (pushCount == 1) {
+          return firstPush.future;
+        }
+        return body(200, appliedResults(changesOf(request)));
+      }
+      return body(200, <String, dynamic>{
+        'changes': <Map<String, dynamic>>[
+          <String, dynamic>{
+            'entity': 'farm',
+            'id': 'f1',
+            'data': <String, dynamic>{'name': 'Serveur'},
+            'updated_at': '2026-11-08T09:00:00Z',
+            'deleted_at': null,
+          },
+        ],
+        'next_cursor': null,
+        'has_more': false,
+      });
+    });
+    addTearDown(harness.close);
+    DateTime now = DateTime.utc(2026, 11, 8, 10);
+    final Outbox outbox = Outbox(harness.database, now: () => now);
+    addTearDown(outbox.dispose);
+    await harness.database.upsertFarm('f1', 'Locale');
+    await outbox.enqueueUpsert('farm', 'f1', <String, dynamic>{
+      'name': 'Locale',
+    });
+
+    final Future<SyncResult> syncing = harness.service.syncNow();
+    await pumpEventQueue();
+    expect(pushCount, 1);
+
+    now = now.add(const Duration(seconds: 1));
+    await outbox.enqueueUpsert('farm', 'f1', <String, dynamic>{
+      'name': 'Nouvelle',
+    });
+    firstPush.complete(body(200, appliedResults(batches.first)));
+
+    final SyncResult result = await syncing;
+
+    expect(result.pushed, 1);
+    expect(pushCount, 1);
+    final PendingChangeRow? pending = await harness.database.getPendingChange(
+      'farm',
+      'f1',
+    );
+    expect(pending?.status, 'pending');
+    expect(pending?.payload, '{"name":"Nouvelle"}');
+    expect((await harness.database.getFarm('f1'))?.name, 'Locale');
+
+    final SyncResult next = await harness.service.syncNow();
+
+    expect(next.pushed, 1);
+    expect(batches.last.single['data'], <String, dynamic>{'name': 'Nouvelle'});
+    expect(await harness.database.getOutbox(), isEmpty);
+  });
+
+  test('keeps a delete made while a push is in flight', () async {
+    int pushCount = 0;
+    final Completer<ResponseBody> firstPush = Completer<ResponseBody>();
+    final List<List<Map<String, dynamic>>> batches =
+        <List<Map<String, dynamic>>>[];
+    final Harness harness = buildHarness((
+      RequestOptions options,
+      RecordedRequest request,
+    ) async {
+      if (options.path == '/sync/push') {
+        pushCount++;
+        batches.add(changesOf(request));
+        if (pushCount == 1) {
+          return firstPush.future;
+        }
+        return body(200, appliedResults(changesOf(request)));
+      }
+      return emptyPull(options, request);
+    });
+    addTearDown(harness.close);
+    DateTime now = DateTime.utc(2026, 11, 8, 10);
+    final Outbox outbox = Outbox(harness.database, now: () => now);
+    addTearDown(outbox.dispose);
+    await harness.database.upsertFarm(
+      'f1',
+      'Locale',
+      updatedAt: DateTime.utc(2026, 11, 8, 9),
+    );
+    await outbox.enqueueUpsert('farm', 'f1', <String, dynamic>{
+      'name': 'Locale',
+    });
+
+    final Future<SyncResult> syncing = harness.service.syncNow();
+    await pumpEventQueue();
+    expect(pushCount, 1);
+
+    now = now.add(const Duration(seconds: 1));
+    await outbox.enqueueDelete('farm', 'f1');
+    firstPush.complete(body(200, appliedResults(batches.first)));
+
+    final SyncResult result = await syncing;
+
+    expect(result.pushed, 1);
+    final PendingChangeRow? pending = await harness.database.getPendingChange(
+      'farm',
+      'f1',
+    );
+    expect(pending?.op, 'delete');
+    expect(pending?.status, 'pending');
+    expect((await harness.database.getFarm('f1'))?.name, 'Locale');
+
+    final SyncResult next = await harness.service.syncNow();
+
+    expect(next.pushed, 1);
+    expect(batches.last.single['op'], 'delete');
+    expect(await harness.database.getOutbox(), isEmpty);
+  });
+
+  test('keeps an edit made while a rejected push is in flight', () async {
+    int pushCount = 0;
+    final Completer<ResponseBody> firstPush = Completer<ResponseBody>();
+    final List<List<Map<String, dynamic>>> batches =
+        <List<Map<String, dynamic>>>[];
+    final Harness harness = buildHarness((
+      RequestOptions options,
+      RecordedRequest request,
+    ) async {
+      if (options.path == '/sync/push') {
+        pushCount++;
+        batches.add(changesOf(request));
+        if (pushCount == 1) {
+          return firstPush.future;
+        }
+        return body(200, appliedResults(changesOf(request)));
+      }
+      return emptyPull(options, request);
+    });
+    addTearDown(harness.close);
+    DateTime now = DateTime.utc(2026, 11, 8, 10);
+    final Outbox outbox = Outbox(harness.database, now: () => now);
+    addTearDown(outbox.dispose);
+    await harness.database.upsertFarm('f1', 'Locale');
+    await outbox.enqueueUpsert('farm', 'f1', <String, dynamic>{
+      'name': 'Locale',
+    });
+
+    final Future<SyncResult> syncing = harness.service.syncNow();
+    await pumpEventQueue();
+    expect(pushCount, 1);
+
+    now = now.add(const Duration(seconds: 1));
+    await outbox.enqueueUpsert('farm', 'f1', <String, dynamic>{
+      'name': 'Nouvelle',
+    });
+    firstPush.complete(
+      body(200, <String, dynamic>{
+        'results': <Map<String, dynamic>>[
+          <String, dynamic>{
+            'id': 'f1',
+            'entity': 'farm',
+            'status': 'rejected',
+            'server_updated_at': null,
+            'error': 'Ancienne version refusée.',
+          },
+        ],
+      }),
+    );
+
+    final SyncResult result = await syncing;
+
+    expect(result.rejected, 1);
+    final PendingChangeRow? pending = await harness.database.getPendingChange(
+      'farm',
+      'f1',
+    );
+    expect(pending?.status, 'pending');
+    expect(pending?.payload, '{"name":"Nouvelle"}');
+    expect(pending?.lastError, isNull);
+
+    final SyncResult next = await harness.service.syncNow();
+
+    expect(next.pushed, 1);
+    expect(batches.last.single['data'], <String, dynamic>{'name': 'Nouvelle'});
+  });
+
+  test('a conflict triggers a full pull that restores server rows', () async {
+    final List<String?> sines = <String?>[];
+    final DateTime now = DateTime.utc(2026, 11, 8, 10, 30);
+    final Harness harness = buildHarness((
+      RequestOptions options,
+      RecordedRequest request,
+    ) async {
+      if (options.path == '/sync/push') {
+        return body(200, <String, dynamic>{
+          'results': changesOf(request)
+              .map(
+                (Map<String, dynamic> change) => <String, dynamic>{
+                  'id': change['id'],
+                  'entity': change['entity'],
+                  'status': 'conflict',
+                  'server_updated_at': '2026-11-08T10:05:00Z',
+                  'error': null,
+                },
+              )
+              .toList(),
+        });
+      }
+      sines.add(request.queryParameters['since'] as String?);
+      return body(200, <String, dynamic>{
+        'changes': <Map<String, dynamic>>[
+          <String, dynamic>{
+            'entity': 'farm',
+            'id': 'f1',
+            'data': <String, dynamic>{'name': 'Serveur'},
+            'updated_at': '2026-11-08T10:05:00Z',
+            'deleted_at': null,
+          },
+          <String, dynamic>{
+            'entity': 'plot',
+            'id': 'p1',
+            'data': <String, dynamic>{
+              'farm_id': 'f1',
+              'name': 'Parcelle serveur',
+              'area_ha': 3.0,
+              'soil_type': 'clay',
+              'irrigation': 'drip',
+            },
+            'updated_at': '2026-11-08T10:05:00Z',
+            'deleted_at': null,
+          },
+        ],
+        'next_cursor': 'cursor-full',
+        'has_more': false,
+      });
+    }, now: () => now);
+    addTearDown(harness.close);
+    await harness.database.writeMeta(
+      SyncService.cursorHistoryKey,
+      jsonEncode(<dynamic>[
+        <String, String>{
+          'cursor': 'ancien',
+          'savedAt': DateTime.utc(2026, 11, 8, 9).toIso8601String(),
+        },
+      ]),
+    );
+    await harness.database.upsertFarm('f1', 'Locale');
+    await harness.database.upsertPlot('p1', 'f1', 'Locale');
+    await seedPending(
+      harness.database,
+      'farm',
+      'f1',
+      data: <String, dynamic>{'name': 'Locale'},
+    );
+    await seedPending(
+      harness.database,
+      'plot',
+      'p1',
+      data: <String, dynamic>{'farm_id': 'f1', 'name': 'Locale'},
+    );
+
+    final SyncResult result = await harness.service.syncNow();
+
+    expect(result.conflicts, 2);
+    expect(sines.single, isNull);
+    expect((await harness.database.getFarm('f1'))?.name, 'Serveur');
+    final PlotRow? plot = await harness.database.getPlot('p1');
+    expect(plot?.name, 'Parcelle serveur');
+    expect(plot?.areaHa, 3.0);
+    final String? history = await harness.database.readMeta(
+      SyncService.cursorHistoryKey,
+    );
+    final List<dynamic> entries = jsonDecode(history!) as List<dynamic>;
+    expect((entries.last as Map<String, dynamic>)['cursor'], 'cursor-full');
+  });
+
+  test('a 422 fails the whole batch and sends the next one', () async {
+    int pushCount = 0;
+    final List<List<Map<String, dynamic>>> batches =
+        <List<Map<String, dynamic>>>[];
+    final Harness harness = buildHarness((
+      RequestOptions options,
+      RecordedRequest request,
+    ) async {
+      if (options.path == '/sync/push') {
+        pushCount++;
+        batches.add(changesOf(request));
+        if (pushCount == 1) {
+          return body(422, <String, dynamic>{
+            'error': <String, dynamic>{
+              'code': 'VALIDATION_ERROR',
+              'message': 'Données invalides.',
+              'details': null,
+            },
+          });
+        }
+        return body(200, appliedResults(changesOf(request)));
+      }
+      return emptyPull(options, request);
+    });
+    addTearDown(harness.close);
+    for (int index = 0; index < 205; index++) {
+      await seedPending(harness.database, 'farm', 'farm-$index');
+    }
+
+    final SyncResult result = await harness.service.syncNow();
+
+    expect(result.offline, isFalse);
+    expect(result.rejected, 200);
+    expect(pushCount, 2);
+    expect(batches[0], hasLength(200));
+    expect(batches[1], hasLength(5));
+    final PendingChangeRow? failed = await harness.database.getPendingChange(
+      'farm',
+      'farm-0',
+    );
+    expect(failed?.status, 'failed');
+    expect(failed?.lastError, 'Données invalides.');
+    expect(await harness.database.getOutbox(), isEmpty);
+  });
+
+  test('a 500 keeps the batch pending and reports offline', () async {
+    final Harness harness = buildHarness((
+      RequestOptions options,
+      RecordedRequest request,
+    ) async {
+      if (options.path == '/sync/push') {
+        return body(500, <String, dynamic>{
+          'error': <String, dynamic>{'message': 'Erreur interne.'},
+        });
+      }
+      return emptyPull(options, request);
+    });
+    addTearDown(harness.close);
+    await seedPending(harness.database, 'farm', 'f1');
+
+    final SyncResult result = await harness.service.syncNow();
+
+    expect(result.offline, isTrue);
+    expect(result.rejected, 0);
+    final PendingChangeRow? row = await harness.database.getPendingChange(
+      'farm',
+      'f1',
+    );
+    expect(row?.attempts, 1);
+    expect(row?.status, 'pending');
+    expect(
+      harness.adapter.requests.where(
+        (RecordedRequest request) => request.path == '/sync/pull',
+      ),
+      isEmpty,
+    );
+  });
+
+  for (final int status in <int>[429, 401]) {
+    test('a $status is treated as offline', () async {
+      final Harness harness = buildHarness((
+        RequestOptions options,
+        RecordedRequest request,
+      ) async {
+        if (options.path == '/sync/push') {
+          return body(status, <String, dynamic>{
+            'error': <String, dynamic>{'message': 'Refusé.'},
+          });
+        }
+        return emptyPull(options, request);
+      });
+      addTearDown(harness.close);
+      await seedPending(harness.database, 'farm', 'f1');
+
+      final SyncResult result = await harness.service.syncNow();
+
+      expect(result.offline, isTrue);
+      final PendingChangeRow? row = await harness.database.getPendingChange(
+        'farm',
+        'f1',
+      );
+      expect(row?.attempts, 1);
+      expect(row?.status, 'pending');
+    });
+  }
+
+  test('a 4xx on pull exposes an error without a sync date', () async {
+    final Harness harness = buildHarness((
+      RequestOptions options,
+      RecordedRequest request,
+    ) async {
+      if (options.path == '/sync/push') {
+        return body(200, <String, dynamic>{'results': <dynamic>[]});
+      }
+      return body(403, <String, dynamic>{
+        'error': <String, dynamic>{'message': 'Accès refusé.'},
+      });
+    });
+    addTearDown(harness.close);
+
+    final SyncResult result = await harness.service.syncNow();
+
+    expect(result.offline, isFalse);
+    expect(result.error, 'Accès refusé.');
+    expect(await harness.database.readMeta(SyncService.lastSyncAtKey), isNull);
   });
 }

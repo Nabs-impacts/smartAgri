@@ -273,6 +273,44 @@ END
         .go();
   }
 
+  Future<bool> removePendingChangeIfUnchanged(
+    String entity,
+    String id,
+    DateTime clientUpdatedAt,
+  ) async {
+    final int deleted =
+        await (delete(pendingChanges)..where(
+              (PendingChanges t) =>
+                  t.entity.equals(entity) &
+                  t.id.equals(id) &
+                  t.clientUpdatedAt.equals(clientUpdatedAt),
+            ))
+            .go();
+    return deleted > 0;
+  }
+
+  Future<bool> markFailedIfUnchanged(
+    String entity,
+    String id,
+    DateTime clientUpdatedAt,
+    String error,
+  ) async {
+    final int updated =
+        await (update(pendingChanges)..where(
+              (PendingChanges t) =>
+                  t.entity.equals(entity) &
+                  t.id.equals(id) &
+                  t.clientUpdatedAt.equals(clientUpdatedAt),
+            ))
+            .write(
+              PendingChangesCompanion(
+                status: const Value<String>('failed'),
+                lastError: Value<String?>(error),
+              ),
+            );
+    return updated > 0;
+  }
+
   Future<void> incrementAttempts(String entity, String id) async {
     await customUpdate(
       'UPDATE pending_changes SET attempts = attempts + 1 '

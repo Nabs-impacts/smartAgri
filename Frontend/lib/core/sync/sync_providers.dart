@@ -110,7 +110,11 @@ final Provider<SyncScheduler> syncSchedulerProvider = Provider<SyncScheduler>((
       status.set(SyncStatus.syncing);
       try {
         final SyncResult result = await service.syncNow();
-        status.set(result.offline ? SyncStatus.offline : SyncStatus.idle);
+        if (result.error != null) {
+          status.set(SyncStatus.error);
+        } else {
+          status.set(result.offline ? SyncStatus.offline : SyncStatus.idle);
+        }
         return result;
       } catch (error) {
         status.set(SyncStatus.error);

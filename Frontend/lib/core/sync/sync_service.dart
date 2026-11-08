@@ -17,6 +17,7 @@ class SyncResult {
     this.pulled = 0,
     this.ignored = 0,
     this.offline = false,
+    this.error,
   });
 
   final int pushed;
@@ -25,6 +26,7 @@ class SyncResult {
   final int pulled;
   final int ignored;
   final bool offline;
+  final String? error;
 
   static const SyncResult none = SyncResult();
 }
@@ -75,9 +77,9 @@ class SyncService {
         offline: true,
       );
     }
-    final _PullOutcome pull = await _pull();
+    final _PullOutcome pull = await _pull(full: push.conflicts > 0);
     final bool offline = pull.offline;
-    if (!offline) {
+    if (!offline && pull.error == null) {
       await database.writeMeta(lastSyncAtKey, _now().toUtc().toIso8601String());
     }
     return SyncResult(
@@ -87,6 +89,7 @@ class SyncService {
       pulled: pull.pulled,
       ignored: pull.ignored,
       offline: offline,
+      error: pull.error,
     );
   }
 
@@ -110,21 +113,35 @@ class SyncService {
           '/sync/push',
           data: <String, dynamic>{'changes': changes},
         );
-      } on DioException {
-        for (final PendingChangeRow change in batch) {
-          await database.incrementAttempts(change.entity, change.id);
+      } on DioException catch (error) {
+        if (_isOfflineError(error)) {
+          for (final PendingChangeRow change in batch) {
+            await database.incrementAttempts(change.entity, change.id);
+          }
+          return _PushOutcome(
+            pushed: pushed,
+            conflicts: conflicts,
+            rejected: rejected,
+            offline: true,
+          );
         }
-        return _PushOutcome(
-          pushed: pushed,
-          conflicts: conflicts,
-          rejected: rejected,
-          offline: true,
-        );
+        final String message = _errorMessage(error);
+        for (final PendingChangeRow change in batch) {
+          await database.markFailedIfUnchanged(
+            change.entity,
+            change.id,
+            change.clientUpdatedAt,
+            message,
+          );
+        }
+        rejected += batch.length;
+        continue;
       }
       final Map<String, Map<String, dynamic>> results = _pushResults(
         response.data,
       );
       bool resolved = false;
+      bool changedInFlight = false;
       for (final PendingChangeRow change in batch) {
         final Map<String, dynamic>? result =
             results['${change.entity}|${change.id}'];
@@ -136,7 +153,14 @@ class SyncService {
           result['server_updated_at'],
         );
         if (status == 'applied') {
-          await database.removePendingChange(change.entity, change.id);
+          final bool removed = await database.removePendingChangeIfUnchanged(
+            change.entity,
+            change.id,
+            change.clientUpdatedAt,
+          );
+          if (!removed) {
+            changedInFlight = true;
+          }
           if (serverUpdatedAt != null) {
             await database.touchServerUpdatedAt(
               change.entity,
@@ -147,7 +171,14 @@ class SyncService {
           pushed++;
           resolved = true;
         } else if (status == 'conflict') {
-          await database.removePendingChange(change.entity, change.id);
+          final bool removed = await database.removePendingChangeIfUnchanged(
+            change.entity,
+            change.id,
+            change.clientUpdatedAt,
+          );
+          if (!removed) {
+            changedInFlight = true;
+          }
           if (serverUpdatedAt != null) {
             await database.touchServerUpdatedAt(
               change.entity,
@@ -159,16 +190,20 @@ class SyncService {
           resolved = true;
         } else if (status == 'rejected') {
           final Object? error = result['error'];
-          await database.markFailed(
+          final bool marked = await database.markFailedIfUnchanged(
             change.entity,
             change.id,
+            change.clientUpdatedAt,
             error is String ? error : '',
           );
+          if (!marked) {
+            changedInFlight = true;
+          }
           rejected++;
           resolved = true;
         }
       }
-      if (!resolved) {
+      if (changedInFlight || !resolved) {
         break;
       }
     }
@@ -223,10 +258,10 @@ class SyncService {
     return results;
   }
 
-  Future<_PullOutcome> _pull() async {
+  Future<_PullOutcome> _pull({bool full = false}) async {
     int pulled = 0;
     int ignored = 0;
-    String? since = await _selectSince();
+    String? since = full ? null : await _selectSince();
     String? lastCursor;
     bool offline = false;
     while (true) {
@@ -239,9 +274,16 @@ class SyncService {
             'limit': syncBatchSize,
           },
         );
-      } on DioException {
-        offline = true;
-        break;
+      } on DioException catch (error) {
+        if (_isOfflineError(error)) {
+          offline = true;
+          break;
+        }
+        return _PullOutcome(
+          pulled: pulled,
+          ignored: ignored,
+          error: _errorMessage(error),
+        );
       }
       final Object? data = response.data;
       final Map<String, dynamic> page = data is Map
@@ -380,6 +422,32 @@ class SyncService {
     await database.writeMeta(cursorHistoryKey, jsonEncode(trimmed));
   }
 
+  bool _isOfflineError(DioException error) {
+    final Response<dynamic>? response = error.response;
+    final int? status = response?.statusCode;
+    if (status == null) {
+      return true;
+    }
+    if (status >= 500 || status == 429 || status == 401) {
+      return true;
+    }
+    return false;
+  }
+
+  String _errorMessage(DioException error) {
+    final Object? data = error.response?.data;
+    if (data is Map) {
+      final Object? envelope = data['error'];
+      if (envelope is Map) {
+        final Object? message = envelope['message'];
+        if (message is String && message.trim().isNotEmpty) {
+          return message;
+        }
+      }
+    }
+    return 'Les modifications ont été refusées par le serveur.';
+  }
+
   DateTime? _parseDate(Object? value) {
     if (value is DateTime) {
       return value.toUtc();
@@ -426,9 +494,15 @@ class _PushOutcome {
 }
 
 class _PullOutcome {
-  const _PullOutcome({this.pulled = 0, this.ignored = 0, this.offline = false});
+  const _PullOutcome({
+    this.pulled = 0,
+    this.ignored = 0,
+    this.offline = false,
+    this.error,
+  });
 
   final int pulled;
   final int ignored;
   final bool offline;
+  final String? error;
 }
