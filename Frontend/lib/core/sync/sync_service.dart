@@ -305,7 +305,11 @@ class SyncService {
             }
             final String entity = entityValue;
             final String id = idValue;
-            if (entity != 'farm' && entity != 'plot') {
+            if (entity != 'farm' &&
+                entity != 'plot' &&
+                entity != 'crop_cycle' &&
+                entity != 'farm_activity' &&
+                entity != 'harvest') {
               ignored++;
               continue;
             }
@@ -332,19 +336,71 @@ class SyncService {
                   updatedAt: updatedAt,
                 );
               }
+            } else if (entity == 'plot') {
+              if (deletedAt != null) {
+                await database.softDeletePlot(id, deletedAt: deletedAt);
+              } else {
+                await database.upsertPlot(
+                  id,
+                  changeData['farm_id'] as String? ?? '',
+                  changeData['name'] as String? ?? '',
+                  areaHa: _asDouble(changeData['area_ha']),
+                  soilType: changeData['soil_type'] as String?,
+                  irrigation: changeData['irrigation'] as String?,
+                  geom: changeData['geom'] == null
+                      ? null
+                      : jsonEncode(changeData['geom']),
+                  updatedAt: updatedAt,
+                );
+              }
+            } else if (entity == 'crop_cycle') {
+              if (deletedAt != null) {
+                await database.softDeleteCycle(id, deletedAt: deletedAt);
+              } else {
+                await database.upsertCycle(
+                  id,
+                  changeData['plot_id'] as String? ?? '',
+                  _asInt(changeData['crop_id']) ?? 0,
+                  variety: changeData['variety'] as String?,
+                  season: changeData['season'] as String?,
+                  sowingDate: _dateText(changeData['sowing_date']),
+                  expectedHarvestDate: _dateText(
+                    changeData['expected_harvest_date'],
+                  ),
+                  harvestDate: _dateText(changeData['harvest_date']),
+                  status: changeData['status'] as String? ?? 'planned',
+                  notes: changeData['notes'] as String?,
+                  updatedAt: updatedAt,
+                );
+              }
+            } else if (entity == 'farm_activity') {
+              if (deletedAt != null) {
+                await database.softDeleteActivity(id, deletedAt: deletedAt);
+              } else {
+                await database.upsertActivity(
+                  id,
+                  changeData['crop_cycle_id'] as String? ?? '',
+                  changeData['type'] as String? ?? 'other',
+                  _dateText(changeData['performed_on']) ?? '',
+                  productName: changeData['product_name'] as String?,
+                  quantity: _asDouble(changeData['quantity']),
+                  unit: changeData['unit'] as String?,
+                  costXof: _asInt(changeData['cost_xof']),
+                  notes: changeData['notes'] as String?,
+                  updatedAt: updatedAt,
+                );
+              }
             } else if (deletedAt != null) {
-              await database.softDeletePlot(id, deletedAt: deletedAt);
+              await database.softDeleteHarvest(id, deletedAt: deletedAt);
             } else {
-              await database.upsertPlot(
+              await database.upsertHarvest(
                 id,
-                changeData['farm_id'] as String? ?? '',
-                changeData['name'] as String? ?? '',
-                areaHa: _asDouble(changeData['area_ha']),
-                soilType: changeData['soil_type'] as String?,
-                irrigation: changeData['irrigation'] as String?,
-                geom: changeData['geom'] == null
-                    ? null
-                    : jsonEncode(changeData['geom']),
+                changeData['crop_cycle_id'] as String? ?? '',
+                _dateText(changeData['harvested_on']) ?? '',
+                _asDouble(changeData['quantity_kg']) ?? 0,
+                quality: changeData['quality'] as String?,
+                soldKg: _asDouble(changeData['sold_kg']) ?? 0,
+                avgPriceXofPerKg: _asDouble(changeData['avg_price_xof_per_kg']),
                 updatedAt: updatedAt,
               );
             }
@@ -479,6 +535,25 @@ class SyncService {
     }
     if (value is String) {
       return double.tryParse(value.replaceAll(',', '.'));
+    }
+    return null;
+  }
+
+  String? _dateText(Object? value) {
+    if (value is String) {
+      final String trimmed = value.trim();
+      if (trimmed.isEmpty) {
+        return null;
+      }
+      if (trimmed.length >= 10) {
+        return trimmed.substring(0, 10);
+      }
+      return trimmed;
+    }
+    if (value is DateTime) {
+      final String month = value.month.toString().padLeft(2, '0');
+      final String day = value.day.toString().padLeft(2, '0');
+      return '${value.year}-$month-$day';
     }
     return null;
   }

@@ -5,6 +5,7 @@ import 'package:dio/dio.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
+import '../../../core/i18n/app_language.dart';
 import '../../../core/i18n/language_controller.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/network_providers.dart';
@@ -31,6 +32,22 @@ class CatalogRepository {
 
   Future<List<Crop>?> readCachedCrops() {
     return _readCache<Crop>(cropsKey, Crop.fromJson);
+  }
+
+  Future<String?> cultureNameFor(
+    int cropId, {
+    AppLanguage language = AppLanguage.fr,
+  }) async {
+    final List<Crop>? crops = await readCachedCrops();
+    if (crops == null) {
+      return null;
+    }
+    for (final Crop crop in crops) {
+      if (crop.id == cropId) {
+        return crop.localizedName(language);
+      }
+    }
+    return null;
   }
 
   Future<List<Crop>> refreshCrops() async {
@@ -269,6 +286,15 @@ final Provider<CatalogRepository> catalogRepositoryProvider =
         preferences: ref.watch(sharedPreferencesProvider),
       ),
     );
+
+final cultureNameProvider = FutureProvider.family<String?, int>((
+  Ref ref,
+  int cropId,
+) {
+  return ref
+      .watch(catalogRepositoryProvider)
+      .cultureNameFor(cropId, language: ref.watch(languageControllerProvider));
+});
 
 final AsyncNotifierProvider<CropsController, List<Crop>> cropsProvider =
     AsyncNotifierProvider<CropsController, List<Crop>>(

@@ -156,6 +156,38 @@ void main() {
     );
   });
 
+  test('keeps crop names available offline after a restart', () async {
+    SharedPreferences.setMockInitialValues(<String, Object>{
+      CatalogRepository.cropsKey: cachePayload(<Map<String, dynamic>>[
+        cropJson(1, 'Mil'),
+      ]),
+    });
+    final SharedPreferences preferences = await SharedPreferences.getInstance();
+    final FakeHttpAdapter offline = FakeHttpAdapter(
+      (RequestOptions options) async => throw DioException(
+        requestOptions: options,
+        type: DioExceptionType.connectionError,
+      ),
+    );
+
+    final CatalogRepository first = CatalogRepository(
+      dio: buildDio(offline),
+      preferences: preferences,
+    );
+    expect(await first.cultureNameFor(1), 'Mil');
+    await first.getCrops();
+
+    final CatalogRepository restarted = CatalogRepository(
+      dio: buildDio(offline),
+      preferences: preferences,
+    );
+
+    final List<Crop> crops = await restarted.getCrops();
+    expect(crops.single.nameFr, 'Mil');
+    expect(await restarted.cultureNameFor(1), 'Mil');
+    expect(await restarted.cultureNameFor(99), isNull);
+  });
+
   test('combines paginated envelopes and parses admin areas', () async {
     SharedPreferences.setMockInitialValues(<String, Object>{});
     final SharedPreferences preferences = await SharedPreferences.getInstance();

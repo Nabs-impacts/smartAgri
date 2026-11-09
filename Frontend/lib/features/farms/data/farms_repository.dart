@@ -171,6 +171,7 @@ class LocalFarmsRepository implements FarmsRepository {
     await database.transaction(() async {
       final List<PlotRow> plots = await database.getActivePlots(id);
       for (final PlotRow plot in plots) {
+        await _enqueueCycleDeletes(plot.id);
         await outbox.enqueueDelete('plot', plot.id);
       }
       await database.softDeleteFarm(id);
@@ -301,9 +302,28 @@ class LocalFarmsRepository implements FarmsRepository {
   @override
   Future<void> deletePlot(String id) async {
     await database.transaction(() async {
+      await _enqueueCycleDeletes(id);
       await database.softDeletePlot(id);
       await outbox.enqueueDelete('plot', id);
     });
+  }
+
+  Future<void> _enqueueCycleDeletes(String plotId) async {
+    final List<CropCycleRow> cycles = await database.getActiveCycles(plotId);
+    for (final CropCycleRow cycle in cycles) {
+      final List<HarvestRow> harvests = await database.getActiveHarvests(
+        cycle.id,
+      );
+      for (final HarvestRow harvest in harvests) {
+        await outbox.enqueueDelete('harvest', harvest.id);
+      }
+      final List<FarmActivityRow> activities = await database
+          .getActiveActivities(cycle.id);
+      for (final FarmActivityRow activity in activities) {
+        await outbox.enqueueDelete('farm_activity', activity.id);
+      }
+      await outbox.enqueueDelete('crop_cycle', cycle.id);
+    }
   }
 
   Map<String, dynamic> _farmData({

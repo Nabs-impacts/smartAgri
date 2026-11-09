@@ -262,6 +262,65 @@ void main() {
     },
   );
 
+  test('deletes a plot cycles activities and harvests in order', () async {
+    final Harness harness = buildHarness();
+    addTearDown(harness.close);
+    final DateTime serverAt = DateTime.utc(2026, 11, 8, 9);
+    await harness.database.upsertFarm('farm-1', 'Ferme', updatedAt: serverAt);
+    await harness.database.upsertPlot(
+      'plot-1',
+      'farm-1',
+      'Nord',
+      updatedAt: serverAt,
+    );
+    await harness.database.upsertCycle(
+      'cycle-1',
+      'plot-1',
+      1,
+      updatedAt: serverAt,
+    );
+    await harness.database.upsertActivity(
+      'activity-1',
+      'cycle-1',
+      'sowing',
+      '2026-05-01',
+      updatedAt: serverAt,
+    );
+    await harness.database.upsertHarvest(
+      'harvest-1',
+      'cycle-1',
+      '2026-09-01',
+      100,
+      updatedAt: serverAt,
+    );
+    await harness.database.upsertCycle('cycle-2', 'plot-1', 2);
+    await harness.outbox.enqueueUpsert(
+      'crop_cycle',
+      'cycle-2',
+      <String, dynamic>{},
+    );
+
+    await harness.repository.deletePlot('plot-1');
+
+    final List<PendingChangeRow> outbox = await harness.database.getOutbox();
+    expect(outbox.map((PendingChangeRow row) => row.id), <String>[
+      'harvest-1',
+      'activity-1',
+      'cycle-1',
+      'plot-1',
+    ]);
+    expect((await harness.database.getCycle('cycle-1'))?.deletedAt, isNotNull);
+    expect(
+      (await harness.database.getActivity('activity-1'))?.deletedAt,
+      isNotNull,
+    );
+    expect(
+      (await harness.database.getHarvest('harvest-1'))?.deletedAt,
+      isNotNull,
+    );
+    expect((await harness.database.getCycle('cycle-2'))?.deletedAt, isNotNull);
+  });
+
   test('refuses to create a plot when the local quota is reached', () async {
     final Harness harness = buildHarness(plotLimit: () => 2);
     addTearDown(harness.close);

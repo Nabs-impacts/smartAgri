@@ -1031,6 +1031,1974 @@ class PlotsCompanion extends UpdateCompanion<PlotRow> {
   }
 }
 
+class $CropCyclesTable extends CropCycles
+    with TableInfo<$CropCyclesTable, CropCycleRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $CropCyclesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _plotIdMeta = const VerificationMeta('plotId');
+  @override
+  late final GeneratedColumn<String> plotId = GeneratedColumn<String>(
+    'plot_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cropIdMeta = const VerificationMeta('cropId');
+  @override
+  late final GeneratedColumn<int> cropId = GeneratedColumn<int>(
+    'crop_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.int,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _varietyMeta = const VerificationMeta(
+    'variety',
+  );
+  @override
+  late final GeneratedColumn<String> variety = GeneratedColumn<String>(
+    'variety',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _seasonMeta = const VerificationMeta('season');
+  @override
+  late final GeneratedColumn<String> season = GeneratedColumn<String>(
+    'season',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _sowingDateMeta = const VerificationMeta(
+    'sowingDate',
+  );
+  @override
+  late final GeneratedColumn<String> sowingDate = GeneratedColumn<String>(
+    'sowing_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _expectedHarvestDateMeta =
+      const VerificationMeta('expectedHarvestDate');
+  @override
+  late final GeneratedColumn<String> expectedHarvestDate =
+      GeneratedColumn<String>(
+        'expected_harvest_date',
+        aliasedName,
+        true,
+        type: DriftSqlType.string,
+        requiredDuringInsert: false,
+      );
+  static const VerificationMeta _harvestDateMeta = const VerificationMeta(
+    'harvestDate',
+  );
+  @override
+  late final GeneratedColumn<String> harvestDate = GeneratedColumn<String>(
+    'harvest_date',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _statusMeta = const VerificationMeta('status');
+  @override
+  late final GeneratedColumn<String> status = GeneratedColumn<String>(
+    'status',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+    defaultValue: const Constant<String>('planned'),
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    plotId,
+    cropId,
+    variety,
+    season,
+    sowingDate,
+    expectedHarvestDate,
+    harvestDate,
+    status,
+    notes,
+    updatedAt,
+    deletedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'crop_cycles';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<CropCycleRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('plot_id')) {
+      context.handle(
+        _plotIdMeta,
+        plotId.isAcceptableOrUnknown(data['plot_id']!, _plotIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_plotIdMeta);
+    }
+    if (data.containsKey('crop_id')) {
+      context.handle(
+        _cropIdMeta,
+        cropId.isAcceptableOrUnknown(data['crop_id']!, _cropIdMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_cropIdMeta);
+    }
+    if (data.containsKey('variety')) {
+      context.handle(
+        _varietyMeta,
+        variety.isAcceptableOrUnknown(data['variety']!, _varietyMeta),
+      );
+    }
+    if (data.containsKey('season')) {
+      context.handle(
+        _seasonMeta,
+        season.isAcceptableOrUnknown(data['season']!, _seasonMeta),
+      );
+    }
+    if (data.containsKey('sowing_date')) {
+      context.handle(
+        _sowingDateMeta,
+        sowingDate.isAcceptableOrUnknown(data['sowing_date']!, _sowingDateMeta),
+      );
+    }
+    if (data.containsKey('expected_harvest_date')) {
+      context.handle(
+        _expectedHarvestDateMeta,
+        expectedHarvestDate.isAcceptableOrUnknown(
+          data['expected_harvest_date']!,
+          _expectedHarvestDateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('harvest_date')) {
+      context.handle(
+        _harvestDateMeta,
+        harvestDate.isAcceptableOrUnknown(
+          data['harvest_date']!,
+          _harvestDateMeta,
+        ),
+      );
+    }
+    if (data.containsKey('status')) {
+      context.handle(
+        _statusMeta,
+        status.isAcceptableOrUnknown(data['status']!, _statusMeta),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  CropCycleRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return CropCycleRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      plotId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}plot_id'],
+      )!,
+      cropId: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}crop_id'],
+      )!,
+      variety: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}variety'],
+      ),
+      season: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}season'],
+      ),
+      sowingDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}sowing_date'],
+      ),
+      expectedHarvestDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}expected_harvest_date'],
+      ),
+      harvestDate: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}harvest_date'],
+      ),
+      status: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}status'],
+      )!,
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      ),
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+    );
+  }
+
+  @override
+  $CropCyclesTable createAlias(String alias) {
+    return $CropCyclesTable(attachedDatabase, alias);
+  }
+}
+
+class CropCycleRow extends DataClass implements Insertable<CropCycleRow> {
+  final String id;
+  final String plotId;
+  final int cropId;
+  final String? variety;
+  final String? season;
+  final String? sowingDate;
+  final String? expectedHarvestDate;
+  final String? harvestDate;
+  final String status;
+  final String? notes;
+  final DateTime? updatedAt;
+  final DateTime? deletedAt;
+  const CropCycleRow({
+    required this.id,
+    required this.plotId,
+    required this.cropId,
+    this.variety,
+    this.season,
+    this.sowingDate,
+    this.expectedHarvestDate,
+    this.harvestDate,
+    required this.status,
+    this.notes,
+    this.updatedAt,
+    this.deletedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['plot_id'] = Variable<String>(plotId);
+    map['crop_id'] = Variable<int>(cropId);
+    if (!nullToAbsent || variety != null) {
+      map['variety'] = Variable<String>(variety);
+    }
+    if (!nullToAbsent || season != null) {
+      map['season'] = Variable<String>(season);
+    }
+    if (!nullToAbsent || sowingDate != null) {
+      map['sowing_date'] = Variable<String>(sowingDate);
+    }
+    if (!nullToAbsent || expectedHarvestDate != null) {
+      map['expected_harvest_date'] = Variable<String>(expectedHarvestDate);
+    }
+    if (!nullToAbsent || harvestDate != null) {
+      map['harvest_date'] = Variable<String>(harvestDate);
+    }
+    map['status'] = Variable<String>(status);
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    return map;
+  }
+
+  CropCyclesCompanion toCompanion(bool nullToAbsent) {
+    return CropCyclesCompanion(
+      id: Value(id),
+      plotId: Value(plotId),
+      cropId: Value(cropId),
+      variety: variety == null && nullToAbsent
+          ? const Value.absent()
+          : Value(variety),
+      season: season == null && nullToAbsent
+          ? const Value.absent()
+          : Value(season),
+      sowingDate: sowingDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(sowingDate),
+      expectedHarvestDate: expectedHarvestDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(expectedHarvestDate),
+      harvestDate: harvestDate == null && nullToAbsent
+          ? const Value.absent()
+          : Value(harvestDate),
+      status: Value(status),
+      notes: notes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(notes),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+    );
+  }
+
+  factory CropCycleRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return CropCycleRow(
+      id: serializer.fromJson<String>(json['id']),
+      plotId: serializer.fromJson<String>(json['plotId']),
+      cropId: serializer.fromJson<int>(json['cropId']),
+      variety: serializer.fromJson<String?>(json['variety']),
+      season: serializer.fromJson<String?>(json['season']),
+      sowingDate: serializer.fromJson<String?>(json['sowingDate']),
+      expectedHarvestDate: serializer.fromJson<String?>(
+        json['expectedHarvestDate'],
+      ),
+      harvestDate: serializer.fromJson<String?>(json['harvestDate']),
+      status: serializer.fromJson<String>(json['status']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'plotId': serializer.toJson<String>(plotId),
+      'cropId': serializer.toJson<int>(cropId),
+      'variety': serializer.toJson<String?>(variety),
+      'season': serializer.toJson<String?>(season),
+      'sowingDate': serializer.toJson<String?>(sowingDate),
+      'expectedHarvestDate': serializer.toJson<String?>(expectedHarvestDate),
+      'harvestDate': serializer.toJson<String?>(harvestDate),
+      'status': serializer.toJson<String>(status),
+      'notes': serializer.toJson<String?>(notes),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+    };
+  }
+
+  CropCycleRow copyWith({
+    String? id,
+    String? plotId,
+    int? cropId,
+    Value<String?> variety = const Value.absent(),
+    Value<String?> season = const Value.absent(),
+    Value<String?> sowingDate = const Value.absent(),
+    Value<String?> expectedHarvestDate = const Value.absent(),
+    Value<String?> harvestDate = const Value.absent(),
+    String? status,
+    Value<String?> notes = const Value.absent(),
+    Value<DateTime?> updatedAt = const Value.absent(),
+    Value<DateTime?> deletedAt = const Value.absent(),
+  }) => CropCycleRow(
+    id: id ?? this.id,
+    plotId: plotId ?? this.plotId,
+    cropId: cropId ?? this.cropId,
+    variety: variety.present ? variety.value : this.variety,
+    season: season.present ? season.value : this.season,
+    sowingDate: sowingDate.present ? sowingDate.value : this.sowingDate,
+    expectedHarvestDate: expectedHarvestDate.present
+        ? expectedHarvestDate.value
+        : this.expectedHarvestDate,
+    harvestDate: harvestDate.present ? harvestDate.value : this.harvestDate,
+    status: status ?? this.status,
+    notes: notes.present ? notes.value : this.notes,
+    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+  );
+  CropCycleRow copyWithCompanion(CropCyclesCompanion data) {
+    return CropCycleRow(
+      id: data.id.present ? data.id.value : this.id,
+      plotId: data.plotId.present ? data.plotId.value : this.plotId,
+      cropId: data.cropId.present ? data.cropId.value : this.cropId,
+      variety: data.variety.present ? data.variety.value : this.variety,
+      season: data.season.present ? data.season.value : this.season,
+      sowingDate: data.sowingDate.present
+          ? data.sowingDate.value
+          : this.sowingDate,
+      expectedHarvestDate: data.expectedHarvestDate.present
+          ? data.expectedHarvestDate.value
+          : this.expectedHarvestDate,
+      harvestDate: data.harvestDate.present
+          ? data.harvestDate.value
+          : this.harvestDate,
+      status: data.status.present ? data.status.value : this.status,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CropCycleRow(')
+          ..write('id: $id, ')
+          ..write('plotId: $plotId, ')
+          ..write('cropId: $cropId, ')
+          ..write('variety: $variety, ')
+          ..write('season: $season, ')
+          ..write('sowingDate: $sowingDate, ')
+          ..write('expectedHarvestDate: $expectedHarvestDate, ')
+          ..write('harvestDate: $harvestDate, ')
+          ..write('status: $status, ')
+          ..write('notes: $notes, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    plotId,
+    cropId,
+    variety,
+    season,
+    sowingDate,
+    expectedHarvestDate,
+    harvestDate,
+    status,
+    notes,
+    updatedAt,
+    deletedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is CropCycleRow &&
+          other.id == this.id &&
+          other.plotId == this.plotId &&
+          other.cropId == this.cropId &&
+          other.variety == this.variety &&
+          other.season == this.season &&
+          other.sowingDate == this.sowingDate &&
+          other.expectedHarvestDate == this.expectedHarvestDate &&
+          other.harvestDate == this.harvestDate &&
+          other.status == this.status &&
+          other.notes == this.notes &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt);
+}
+
+class CropCyclesCompanion extends UpdateCompanion<CropCycleRow> {
+  final Value<String> id;
+  final Value<String> plotId;
+  final Value<int> cropId;
+  final Value<String?> variety;
+  final Value<String?> season;
+  final Value<String?> sowingDate;
+  final Value<String?> expectedHarvestDate;
+  final Value<String?> harvestDate;
+  final Value<String> status;
+  final Value<String?> notes;
+  final Value<DateTime?> updatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<int> rowid;
+  const CropCyclesCompanion({
+    this.id = const Value.absent(),
+    this.plotId = const Value.absent(),
+    this.cropId = const Value.absent(),
+    this.variety = const Value.absent(),
+    this.season = const Value.absent(),
+    this.sowingDate = const Value.absent(),
+    this.expectedHarvestDate = const Value.absent(),
+    this.harvestDate = const Value.absent(),
+    this.status = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  CropCyclesCompanion.insert({
+    required String id,
+    required String plotId,
+    required int cropId,
+    this.variety = const Value.absent(),
+    this.season = const Value.absent(),
+    this.sowingDate = const Value.absent(),
+    this.expectedHarvestDate = const Value.absent(),
+    this.harvestDate = const Value.absent(),
+    this.status = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       plotId = Value(plotId),
+       cropId = Value(cropId);
+  static Insertable<CropCycleRow> custom({
+    Expression<String>? id,
+    Expression<String>? plotId,
+    Expression<int>? cropId,
+    Expression<String>? variety,
+    Expression<String>? season,
+    Expression<String>? sowingDate,
+    Expression<String>? expectedHarvestDate,
+    Expression<String>? harvestDate,
+    Expression<String>? status,
+    Expression<String>? notes,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (plotId != null) 'plot_id': plotId,
+      if (cropId != null) 'crop_id': cropId,
+      if (variety != null) 'variety': variety,
+      if (season != null) 'season': season,
+      if (sowingDate != null) 'sowing_date': sowingDate,
+      if (expectedHarvestDate != null)
+        'expected_harvest_date': expectedHarvestDate,
+      if (harvestDate != null) 'harvest_date': harvestDate,
+      if (status != null) 'status': status,
+      if (notes != null) 'notes': notes,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  CropCyclesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? plotId,
+    Value<int>? cropId,
+    Value<String?>? variety,
+    Value<String?>? season,
+    Value<String?>? sowingDate,
+    Value<String?>? expectedHarvestDate,
+    Value<String?>? harvestDate,
+    Value<String>? status,
+    Value<String?>? notes,
+    Value<DateTime?>? updatedAt,
+    Value<DateTime?>? deletedAt,
+    Value<int>? rowid,
+  }) {
+    return CropCyclesCompanion(
+      id: id ?? this.id,
+      plotId: plotId ?? this.plotId,
+      cropId: cropId ?? this.cropId,
+      variety: variety ?? this.variety,
+      season: season ?? this.season,
+      sowingDate: sowingDate ?? this.sowingDate,
+      expectedHarvestDate: expectedHarvestDate ?? this.expectedHarvestDate,
+      harvestDate: harvestDate ?? this.harvestDate,
+      status: status ?? this.status,
+      notes: notes ?? this.notes,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (plotId.present) {
+      map['plot_id'] = Variable<String>(plotId.value);
+    }
+    if (cropId.present) {
+      map['crop_id'] = Variable<int>(cropId.value);
+    }
+    if (variety.present) {
+      map['variety'] = Variable<String>(variety.value);
+    }
+    if (season.present) {
+      map['season'] = Variable<String>(season.value);
+    }
+    if (sowingDate.present) {
+      map['sowing_date'] = Variable<String>(sowingDate.value);
+    }
+    if (expectedHarvestDate.present) {
+      map['expected_harvest_date'] = Variable<String>(
+        expectedHarvestDate.value,
+      );
+    }
+    if (harvestDate.present) {
+      map['harvest_date'] = Variable<String>(harvestDate.value);
+    }
+    if (status.present) {
+      map['status'] = Variable<String>(status.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('CropCyclesCompanion(')
+          ..write('id: $id, ')
+          ..write('plotId: $plotId, ')
+          ..write('cropId: $cropId, ')
+          ..write('variety: $variety, ')
+          ..write('season: $season, ')
+          ..write('sowingDate: $sowingDate, ')
+          ..write('expectedHarvestDate: $expectedHarvestDate, ')
+          ..write('harvestDate: $harvestDate, ')
+          ..write('status: $status, ')
+          ..write('notes: $notes, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $FarmActivitiesTable extends FarmActivities
+    with TableInfo<$FarmActivitiesTable, FarmActivityRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $FarmActivitiesTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cropCycleIdMeta = const VerificationMeta(
+    'cropCycleId',
+  );
+  @override
+  late final GeneratedColumn<String> cropCycleId = GeneratedColumn<String>(
+    'crop_cycle_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _typeMeta = const VerificationMeta('type');
+  @override
+  late final GeneratedColumn<String> type = GeneratedColumn<String>(
+    'type',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _performedOnMeta = const VerificationMeta(
+    'performedOn',
+  );
+  @override
+  late final GeneratedColumn<String> performedOn = GeneratedColumn<String>(
+    'performed_on',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _productNameMeta = const VerificationMeta(
+    'productName',
+  );
+  @override
+  late final GeneratedColumn<String> productName = GeneratedColumn<String>(
+    'product_name',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _quantityMeta = const VerificationMeta(
+    'quantity',
+  );
+  @override
+  late final GeneratedColumn<double> quantity = GeneratedColumn<double>(
+    'quantity',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _unitMeta = const VerificationMeta('unit');
+  @override
+  late final GeneratedColumn<String> unit = GeneratedColumn<String>(
+    'unit',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _costXofMeta = const VerificationMeta(
+    'costXof',
+  );
+  @override
+  late final GeneratedColumn<int> costXof = GeneratedColumn<int>(
+    'cost_xof',
+    aliasedName,
+    true,
+    type: DriftSqlType.int,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _notesMeta = const VerificationMeta('notes');
+  @override
+  late final GeneratedColumn<String> notes = GeneratedColumn<String>(
+    'notes',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    cropCycleId,
+    type,
+    performedOn,
+    productName,
+    quantity,
+    unit,
+    costXof,
+    notes,
+    updatedAt,
+    deletedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'farm_activities';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<FarmActivityRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('crop_cycle_id')) {
+      context.handle(
+        _cropCycleIdMeta,
+        cropCycleId.isAcceptableOrUnknown(
+          data['crop_cycle_id']!,
+          _cropCycleIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_cropCycleIdMeta);
+    }
+    if (data.containsKey('type')) {
+      context.handle(
+        _typeMeta,
+        type.isAcceptableOrUnknown(data['type']!, _typeMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_typeMeta);
+    }
+    if (data.containsKey('performed_on')) {
+      context.handle(
+        _performedOnMeta,
+        performedOn.isAcceptableOrUnknown(
+          data['performed_on']!,
+          _performedOnMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_performedOnMeta);
+    }
+    if (data.containsKey('product_name')) {
+      context.handle(
+        _productNameMeta,
+        productName.isAcceptableOrUnknown(
+          data['product_name']!,
+          _productNameMeta,
+        ),
+      );
+    }
+    if (data.containsKey('quantity')) {
+      context.handle(
+        _quantityMeta,
+        quantity.isAcceptableOrUnknown(data['quantity']!, _quantityMeta),
+      );
+    }
+    if (data.containsKey('unit')) {
+      context.handle(
+        _unitMeta,
+        unit.isAcceptableOrUnknown(data['unit']!, _unitMeta),
+      );
+    }
+    if (data.containsKey('cost_xof')) {
+      context.handle(
+        _costXofMeta,
+        costXof.isAcceptableOrUnknown(data['cost_xof']!, _costXofMeta),
+      );
+    }
+    if (data.containsKey('notes')) {
+      context.handle(
+        _notesMeta,
+        notes.isAcceptableOrUnknown(data['notes']!, _notesMeta),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  FarmActivityRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return FarmActivityRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      cropCycleId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}crop_cycle_id'],
+      )!,
+      type: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}type'],
+      )!,
+      performedOn: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}performed_on'],
+      )!,
+      productName: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}product_name'],
+      ),
+      quantity: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}quantity'],
+      ),
+      unit: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}unit'],
+      ),
+      costXof: attachedDatabase.typeMapping.read(
+        DriftSqlType.int,
+        data['${effectivePrefix}cost_xof'],
+      ),
+      notes: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}notes'],
+      ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      ),
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+    );
+  }
+
+  @override
+  $FarmActivitiesTable createAlias(String alias) {
+    return $FarmActivitiesTable(attachedDatabase, alias);
+  }
+}
+
+class FarmActivityRow extends DataClass implements Insertable<FarmActivityRow> {
+  final String id;
+  final String cropCycleId;
+  final String type;
+  final String performedOn;
+  final String? productName;
+  final double? quantity;
+  final String? unit;
+  final int? costXof;
+  final String? notes;
+  final DateTime? updatedAt;
+  final DateTime? deletedAt;
+  const FarmActivityRow({
+    required this.id,
+    required this.cropCycleId,
+    required this.type,
+    required this.performedOn,
+    this.productName,
+    this.quantity,
+    this.unit,
+    this.costXof,
+    this.notes,
+    this.updatedAt,
+    this.deletedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['crop_cycle_id'] = Variable<String>(cropCycleId);
+    map['type'] = Variable<String>(type);
+    map['performed_on'] = Variable<String>(performedOn);
+    if (!nullToAbsent || productName != null) {
+      map['product_name'] = Variable<String>(productName);
+    }
+    if (!nullToAbsent || quantity != null) {
+      map['quantity'] = Variable<double>(quantity);
+    }
+    if (!nullToAbsent || unit != null) {
+      map['unit'] = Variable<String>(unit);
+    }
+    if (!nullToAbsent || costXof != null) {
+      map['cost_xof'] = Variable<int>(costXof);
+    }
+    if (!nullToAbsent || notes != null) {
+      map['notes'] = Variable<String>(notes);
+    }
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    return map;
+  }
+
+  FarmActivitiesCompanion toCompanion(bool nullToAbsent) {
+    return FarmActivitiesCompanion(
+      id: Value(id),
+      cropCycleId: Value(cropCycleId),
+      type: Value(type),
+      performedOn: Value(performedOn),
+      productName: productName == null && nullToAbsent
+          ? const Value.absent()
+          : Value(productName),
+      quantity: quantity == null && nullToAbsent
+          ? const Value.absent()
+          : Value(quantity),
+      unit: unit == null && nullToAbsent ? const Value.absent() : Value(unit),
+      costXof: costXof == null && nullToAbsent
+          ? const Value.absent()
+          : Value(costXof),
+      notes: notes == null && nullToAbsent
+          ? const Value.absent()
+          : Value(notes),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+    );
+  }
+
+  factory FarmActivityRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return FarmActivityRow(
+      id: serializer.fromJson<String>(json['id']),
+      cropCycleId: serializer.fromJson<String>(json['cropCycleId']),
+      type: serializer.fromJson<String>(json['type']),
+      performedOn: serializer.fromJson<String>(json['performedOn']),
+      productName: serializer.fromJson<String?>(json['productName']),
+      quantity: serializer.fromJson<double?>(json['quantity']),
+      unit: serializer.fromJson<String?>(json['unit']),
+      costXof: serializer.fromJson<int?>(json['costXof']),
+      notes: serializer.fromJson<String?>(json['notes']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'cropCycleId': serializer.toJson<String>(cropCycleId),
+      'type': serializer.toJson<String>(type),
+      'performedOn': serializer.toJson<String>(performedOn),
+      'productName': serializer.toJson<String?>(productName),
+      'quantity': serializer.toJson<double?>(quantity),
+      'unit': serializer.toJson<String?>(unit),
+      'costXof': serializer.toJson<int?>(costXof),
+      'notes': serializer.toJson<String?>(notes),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+    };
+  }
+
+  FarmActivityRow copyWith({
+    String? id,
+    String? cropCycleId,
+    String? type,
+    String? performedOn,
+    Value<String?> productName = const Value.absent(),
+    Value<double?> quantity = const Value.absent(),
+    Value<String?> unit = const Value.absent(),
+    Value<int?> costXof = const Value.absent(),
+    Value<String?> notes = const Value.absent(),
+    Value<DateTime?> updatedAt = const Value.absent(),
+    Value<DateTime?> deletedAt = const Value.absent(),
+  }) => FarmActivityRow(
+    id: id ?? this.id,
+    cropCycleId: cropCycleId ?? this.cropCycleId,
+    type: type ?? this.type,
+    performedOn: performedOn ?? this.performedOn,
+    productName: productName.present ? productName.value : this.productName,
+    quantity: quantity.present ? quantity.value : this.quantity,
+    unit: unit.present ? unit.value : this.unit,
+    costXof: costXof.present ? costXof.value : this.costXof,
+    notes: notes.present ? notes.value : this.notes,
+    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+  );
+  FarmActivityRow copyWithCompanion(FarmActivitiesCompanion data) {
+    return FarmActivityRow(
+      id: data.id.present ? data.id.value : this.id,
+      cropCycleId: data.cropCycleId.present
+          ? data.cropCycleId.value
+          : this.cropCycleId,
+      type: data.type.present ? data.type.value : this.type,
+      performedOn: data.performedOn.present
+          ? data.performedOn.value
+          : this.performedOn,
+      productName: data.productName.present
+          ? data.productName.value
+          : this.productName,
+      quantity: data.quantity.present ? data.quantity.value : this.quantity,
+      unit: data.unit.present ? data.unit.value : this.unit,
+      costXof: data.costXof.present ? data.costXof.value : this.costXof,
+      notes: data.notes.present ? data.notes.value : this.notes,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FarmActivityRow(')
+          ..write('id: $id, ')
+          ..write('cropCycleId: $cropCycleId, ')
+          ..write('type: $type, ')
+          ..write('performedOn: $performedOn, ')
+          ..write('productName: $productName, ')
+          ..write('quantity: $quantity, ')
+          ..write('unit: $unit, ')
+          ..write('costXof: $costXof, ')
+          ..write('notes: $notes, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    cropCycleId,
+    type,
+    performedOn,
+    productName,
+    quantity,
+    unit,
+    costXof,
+    notes,
+    updatedAt,
+    deletedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is FarmActivityRow &&
+          other.id == this.id &&
+          other.cropCycleId == this.cropCycleId &&
+          other.type == this.type &&
+          other.performedOn == this.performedOn &&
+          other.productName == this.productName &&
+          other.quantity == this.quantity &&
+          other.unit == this.unit &&
+          other.costXof == this.costXof &&
+          other.notes == this.notes &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt);
+}
+
+class FarmActivitiesCompanion extends UpdateCompanion<FarmActivityRow> {
+  final Value<String> id;
+  final Value<String> cropCycleId;
+  final Value<String> type;
+  final Value<String> performedOn;
+  final Value<String?> productName;
+  final Value<double?> quantity;
+  final Value<String?> unit;
+  final Value<int?> costXof;
+  final Value<String?> notes;
+  final Value<DateTime?> updatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<int> rowid;
+  const FarmActivitiesCompanion({
+    this.id = const Value.absent(),
+    this.cropCycleId = const Value.absent(),
+    this.type = const Value.absent(),
+    this.performedOn = const Value.absent(),
+    this.productName = const Value.absent(),
+    this.quantity = const Value.absent(),
+    this.unit = const Value.absent(),
+    this.costXof = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  FarmActivitiesCompanion.insert({
+    required String id,
+    required String cropCycleId,
+    required String type,
+    required String performedOn,
+    this.productName = const Value.absent(),
+    this.quantity = const Value.absent(),
+    this.unit = const Value.absent(),
+    this.costXof = const Value.absent(),
+    this.notes = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       cropCycleId = Value(cropCycleId),
+       type = Value(type),
+       performedOn = Value(performedOn);
+  static Insertable<FarmActivityRow> custom({
+    Expression<String>? id,
+    Expression<String>? cropCycleId,
+    Expression<String>? type,
+    Expression<String>? performedOn,
+    Expression<String>? productName,
+    Expression<double>? quantity,
+    Expression<String>? unit,
+    Expression<int>? costXof,
+    Expression<String>? notes,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (cropCycleId != null) 'crop_cycle_id': cropCycleId,
+      if (type != null) 'type': type,
+      if (performedOn != null) 'performed_on': performedOn,
+      if (productName != null) 'product_name': productName,
+      if (quantity != null) 'quantity': quantity,
+      if (unit != null) 'unit': unit,
+      if (costXof != null) 'cost_xof': costXof,
+      if (notes != null) 'notes': notes,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  FarmActivitiesCompanion copyWith({
+    Value<String>? id,
+    Value<String>? cropCycleId,
+    Value<String>? type,
+    Value<String>? performedOn,
+    Value<String?>? productName,
+    Value<double?>? quantity,
+    Value<String?>? unit,
+    Value<int?>? costXof,
+    Value<String?>? notes,
+    Value<DateTime?>? updatedAt,
+    Value<DateTime?>? deletedAt,
+    Value<int>? rowid,
+  }) {
+    return FarmActivitiesCompanion(
+      id: id ?? this.id,
+      cropCycleId: cropCycleId ?? this.cropCycleId,
+      type: type ?? this.type,
+      performedOn: performedOn ?? this.performedOn,
+      productName: productName ?? this.productName,
+      quantity: quantity ?? this.quantity,
+      unit: unit ?? this.unit,
+      costXof: costXof ?? this.costXof,
+      notes: notes ?? this.notes,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (cropCycleId.present) {
+      map['crop_cycle_id'] = Variable<String>(cropCycleId.value);
+    }
+    if (type.present) {
+      map['type'] = Variable<String>(type.value);
+    }
+    if (performedOn.present) {
+      map['performed_on'] = Variable<String>(performedOn.value);
+    }
+    if (productName.present) {
+      map['product_name'] = Variable<String>(productName.value);
+    }
+    if (quantity.present) {
+      map['quantity'] = Variable<double>(quantity.value);
+    }
+    if (unit.present) {
+      map['unit'] = Variable<String>(unit.value);
+    }
+    if (costXof.present) {
+      map['cost_xof'] = Variable<int>(costXof.value);
+    }
+    if (notes.present) {
+      map['notes'] = Variable<String>(notes.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('FarmActivitiesCompanion(')
+          ..write('id: $id, ')
+          ..write('cropCycleId: $cropCycleId, ')
+          ..write('type: $type, ')
+          ..write('performedOn: $performedOn, ')
+          ..write('productName: $productName, ')
+          ..write('quantity: $quantity, ')
+          ..write('unit: $unit, ')
+          ..write('costXof: $costXof, ')
+          ..write('notes: $notes, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
+class $HarvestsTable extends Harvests
+    with TableInfo<$HarvestsTable, HarvestRow> {
+  @override
+  final GeneratedDatabase attachedDatabase;
+  final String? _alias;
+  $HarvestsTable(this.attachedDatabase, [this._alias]);
+  static const VerificationMeta _idMeta = const VerificationMeta('id');
+  @override
+  late final GeneratedColumn<String> id = GeneratedColumn<String>(
+    'id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _cropCycleIdMeta = const VerificationMeta(
+    'cropCycleId',
+  );
+  @override
+  late final GeneratedColumn<String> cropCycleId = GeneratedColumn<String>(
+    'crop_cycle_id',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _harvestedOnMeta = const VerificationMeta(
+    'harvestedOn',
+  );
+  @override
+  late final GeneratedColumn<String> harvestedOn = GeneratedColumn<String>(
+    'harvested_on',
+    aliasedName,
+    false,
+    type: DriftSqlType.string,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _quantityKgMeta = const VerificationMeta(
+    'quantityKg',
+  );
+  @override
+  late final GeneratedColumn<double> quantityKg = GeneratedColumn<double>(
+    'quantity_kg',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: true,
+  );
+  static const VerificationMeta _qualityMeta = const VerificationMeta(
+    'quality',
+  );
+  @override
+  late final GeneratedColumn<String> quality = GeneratedColumn<String>(
+    'quality',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _soldKgMeta = const VerificationMeta('soldKg');
+  @override
+  late final GeneratedColumn<double> soldKg = GeneratedColumn<double>(
+    'sold_kg',
+    aliasedName,
+    false,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+    defaultValue: const Constant<double>(0),
+  );
+  static const VerificationMeta _avgPriceXofPerKgMeta = const VerificationMeta(
+    'avgPriceXofPerKg',
+  );
+  @override
+  late final GeneratedColumn<double> avgPriceXofPerKg = GeneratedColumn<double>(
+    'avg_price_xof_per_kg',
+    aliasedName,
+    true,
+    type: DriftSqlType.double,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _updatedAtMeta = const VerificationMeta(
+    'updatedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> updatedAt = GeneratedColumn<DateTime>(
+    'updated_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  static const VerificationMeta _deletedAtMeta = const VerificationMeta(
+    'deletedAt',
+  );
+  @override
+  late final GeneratedColumn<DateTime> deletedAt = GeneratedColumn<DateTime>(
+    'deleted_at',
+    aliasedName,
+    true,
+    type: DriftSqlType.dateTime,
+    requiredDuringInsert: false,
+  );
+  @override
+  List<GeneratedColumn> get $columns => [
+    id,
+    cropCycleId,
+    harvestedOn,
+    quantityKg,
+    quality,
+    soldKg,
+    avgPriceXofPerKg,
+    updatedAt,
+    deletedAt,
+  ];
+  @override
+  String get aliasedName => _alias ?? actualTableName;
+  @override
+  String get actualTableName => $name;
+  static const String $name = 'harvests';
+  @override
+  VerificationContext validateIntegrity(
+    Insertable<HarvestRow> instance, {
+    bool isInserting = false,
+  }) {
+    final context = VerificationContext();
+    final data = instance.toColumns(true);
+    if (data.containsKey('id')) {
+      context.handle(_idMeta, id.isAcceptableOrUnknown(data['id']!, _idMeta));
+    } else if (isInserting) {
+      context.missing(_idMeta);
+    }
+    if (data.containsKey('crop_cycle_id')) {
+      context.handle(
+        _cropCycleIdMeta,
+        cropCycleId.isAcceptableOrUnknown(
+          data['crop_cycle_id']!,
+          _cropCycleIdMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_cropCycleIdMeta);
+    }
+    if (data.containsKey('harvested_on')) {
+      context.handle(
+        _harvestedOnMeta,
+        harvestedOn.isAcceptableOrUnknown(
+          data['harvested_on']!,
+          _harvestedOnMeta,
+        ),
+      );
+    } else if (isInserting) {
+      context.missing(_harvestedOnMeta);
+    }
+    if (data.containsKey('quantity_kg')) {
+      context.handle(
+        _quantityKgMeta,
+        quantityKg.isAcceptableOrUnknown(data['quantity_kg']!, _quantityKgMeta),
+      );
+    } else if (isInserting) {
+      context.missing(_quantityKgMeta);
+    }
+    if (data.containsKey('quality')) {
+      context.handle(
+        _qualityMeta,
+        quality.isAcceptableOrUnknown(data['quality']!, _qualityMeta),
+      );
+    }
+    if (data.containsKey('sold_kg')) {
+      context.handle(
+        _soldKgMeta,
+        soldKg.isAcceptableOrUnknown(data['sold_kg']!, _soldKgMeta),
+      );
+    }
+    if (data.containsKey('avg_price_xof_per_kg')) {
+      context.handle(
+        _avgPriceXofPerKgMeta,
+        avgPriceXofPerKg.isAcceptableOrUnknown(
+          data['avg_price_xof_per_kg']!,
+          _avgPriceXofPerKgMeta,
+        ),
+      );
+    }
+    if (data.containsKey('updated_at')) {
+      context.handle(
+        _updatedAtMeta,
+        updatedAt.isAcceptableOrUnknown(data['updated_at']!, _updatedAtMeta),
+      );
+    }
+    if (data.containsKey('deleted_at')) {
+      context.handle(
+        _deletedAtMeta,
+        deletedAt.isAcceptableOrUnknown(data['deleted_at']!, _deletedAtMeta),
+      );
+    }
+    return context;
+  }
+
+  @override
+  Set<GeneratedColumn> get $primaryKey => {id};
+  @override
+  HarvestRow map(Map<String, dynamic> data, {String? tablePrefix}) {
+    final effectivePrefix = tablePrefix != null ? '$tablePrefix.' : '';
+    return HarvestRow(
+      id: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}id'],
+      )!,
+      cropCycleId: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}crop_cycle_id'],
+      )!,
+      harvestedOn: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}harvested_on'],
+      )!,
+      quantityKg: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}quantity_kg'],
+      )!,
+      quality: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}quality'],
+      ),
+      soldKg: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}sold_kg'],
+      )!,
+      avgPriceXofPerKg: attachedDatabase.typeMapping.read(
+        DriftSqlType.double,
+        data['${effectivePrefix}avg_price_xof_per_kg'],
+      ),
+      updatedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}updated_at'],
+      ),
+      deletedAt: attachedDatabase.typeMapping.read(
+        DriftSqlType.dateTime,
+        data['${effectivePrefix}deleted_at'],
+      ),
+    );
+  }
+
+  @override
+  $HarvestsTable createAlias(String alias) {
+    return $HarvestsTable(attachedDatabase, alias);
+  }
+}
+
+class HarvestRow extends DataClass implements Insertable<HarvestRow> {
+  final String id;
+  final String cropCycleId;
+  final String harvestedOn;
+  final double quantityKg;
+  final String? quality;
+  final double soldKg;
+  final double? avgPriceXofPerKg;
+  final DateTime? updatedAt;
+  final DateTime? deletedAt;
+  const HarvestRow({
+    required this.id,
+    required this.cropCycleId,
+    required this.harvestedOn,
+    required this.quantityKg,
+    this.quality,
+    required this.soldKg,
+    this.avgPriceXofPerKg,
+    this.updatedAt,
+    this.deletedAt,
+  });
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    map['id'] = Variable<String>(id);
+    map['crop_cycle_id'] = Variable<String>(cropCycleId);
+    map['harvested_on'] = Variable<String>(harvestedOn);
+    map['quantity_kg'] = Variable<double>(quantityKg);
+    if (!nullToAbsent || quality != null) {
+      map['quality'] = Variable<String>(quality);
+    }
+    map['sold_kg'] = Variable<double>(soldKg);
+    if (!nullToAbsent || avgPriceXofPerKg != null) {
+      map['avg_price_xof_per_kg'] = Variable<double>(avgPriceXofPerKg);
+    }
+    if (!nullToAbsent || updatedAt != null) {
+      map['updated_at'] = Variable<DateTime>(updatedAt);
+    }
+    if (!nullToAbsent || deletedAt != null) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt);
+    }
+    return map;
+  }
+
+  HarvestsCompanion toCompanion(bool nullToAbsent) {
+    return HarvestsCompanion(
+      id: Value(id),
+      cropCycleId: Value(cropCycleId),
+      harvestedOn: Value(harvestedOn),
+      quantityKg: Value(quantityKg),
+      quality: quality == null && nullToAbsent
+          ? const Value.absent()
+          : Value(quality),
+      soldKg: Value(soldKg),
+      avgPriceXofPerKg: avgPriceXofPerKg == null && nullToAbsent
+          ? const Value.absent()
+          : Value(avgPriceXofPerKg),
+      updatedAt: updatedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(updatedAt),
+      deletedAt: deletedAt == null && nullToAbsent
+          ? const Value.absent()
+          : Value(deletedAt),
+    );
+  }
+
+  factory HarvestRow.fromJson(
+    Map<String, dynamic> json, {
+    ValueSerializer? serializer,
+  }) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return HarvestRow(
+      id: serializer.fromJson<String>(json['id']),
+      cropCycleId: serializer.fromJson<String>(json['cropCycleId']),
+      harvestedOn: serializer.fromJson<String>(json['harvestedOn']),
+      quantityKg: serializer.fromJson<double>(json['quantityKg']),
+      quality: serializer.fromJson<String?>(json['quality']),
+      soldKg: serializer.fromJson<double>(json['soldKg']),
+      avgPriceXofPerKg: serializer.fromJson<double?>(json['avgPriceXofPerKg']),
+      updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
+      deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
+    );
+  }
+  @override
+  Map<String, dynamic> toJson({ValueSerializer? serializer}) {
+    serializer ??= driftRuntimeOptions.defaultSerializer;
+    return <String, dynamic>{
+      'id': serializer.toJson<String>(id),
+      'cropCycleId': serializer.toJson<String>(cropCycleId),
+      'harvestedOn': serializer.toJson<String>(harvestedOn),
+      'quantityKg': serializer.toJson<double>(quantityKg),
+      'quality': serializer.toJson<String?>(quality),
+      'soldKg': serializer.toJson<double>(soldKg),
+      'avgPriceXofPerKg': serializer.toJson<double?>(avgPriceXofPerKg),
+      'updatedAt': serializer.toJson<DateTime?>(updatedAt),
+      'deletedAt': serializer.toJson<DateTime?>(deletedAt),
+    };
+  }
+
+  HarvestRow copyWith({
+    String? id,
+    String? cropCycleId,
+    String? harvestedOn,
+    double? quantityKg,
+    Value<String?> quality = const Value.absent(),
+    double? soldKg,
+    Value<double?> avgPriceXofPerKg = const Value.absent(),
+    Value<DateTime?> updatedAt = const Value.absent(),
+    Value<DateTime?> deletedAt = const Value.absent(),
+  }) => HarvestRow(
+    id: id ?? this.id,
+    cropCycleId: cropCycleId ?? this.cropCycleId,
+    harvestedOn: harvestedOn ?? this.harvestedOn,
+    quantityKg: quantityKg ?? this.quantityKg,
+    quality: quality.present ? quality.value : this.quality,
+    soldKg: soldKg ?? this.soldKg,
+    avgPriceXofPerKg: avgPriceXofPerKg.present
+        ? avgPriceXofPerKg.value
+        : this.avgPriceXofPerKg,
+    updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
+    deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
+  );
+  HarvestRow copyWithCompanion(HarvestsCompanion data) {
+    return HarvestRow(
+      id: data.id.present ? data.id.value : this.id,
+      cropCycleId: data.cropCycleId.present
+          ? data.cropCycleId.value
+          : this.cropCycleId,
+      harvestedOn: data.harvestedOn.present
+          ? data.harvestedOn.value
+          : this.harvestedOn,
+      quantityKg: data.quantityKg.present
+          ? data.quantityKg.value
+          : this.quantityKg,
+      quality: data.quality.present ? data.quality.value : this.quality,
+      soldKg: data.soldKg.present ? data.soldKg.value : this.soldKg,
+      avgPriceXofPerKg: data.avgPriceXofPerKg.present
+          ? data.avgPriceXofPerKg.value
+          : this.avgPriceXofPerKg,
+      updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
+      deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
+    );
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HarvestRow(')
+          ..write('id: $id, ')
+          ..write('cropCycleId: $cropCycleId, ')
+          ..write('harvestedOn: $harvestedOn, ')
+          ..write('quantityKg: $quantityKg, ')
+          ..write('quality: $quality, ')
+          ..write('soldKg: $soldKg, ')
+          ..write('avgPriceXofPerKg: $avgPriceXofPerKg, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt')
+          ..write(')'))
+        .toString();
+  }
+
+  @override
+  int get hashCode => Object.hash(
+    id,
+    cropCycleId,
+    harvestedOn,
+    quantityKg,
+    quality,
+    soldKg,
+    avgPriceXofPerKg,
+    updatedAt,
+    deletedAt,
+  );
+  @override
+  bool operator ==(Object other) =>
+      identical(this, other) ||
+      (other is HarvestRow &&
+          other.id == this.id &&
+          other.cropCycleId == this.cropCycleId &&
+          other.harvestedOn == this.harvestedOn &&
+          other.quantityKg == this.quantityKg &&
+          other.quality == this.quality &&
+          other.soldKg == this.soldKg &&
+          other.avgPriceXofPerKg == this.avgPriceXofPerKg &&
+          other.updatedAt == this.updatedAt &&
+          other.deletedAt == this.deletedAt);
+}
+
+class HarvestsCompanion extends UpdateCompanion<HarvestRow> {
+  final Value<String> id;
+  final Value<String> cropCycleId;
+  final Value<String> harvestedOn;
+  final Value<double> quantityKg;
+  final Value<String?> quality;
+  final Value<double> soldKg;
+  final Value<double?> avgPriceXofPerKg;
+  final Value<DateTime?> updatedAt;
+  final Value<DateTime?> deletedAt;
+  final Value<int> rowid;
+  const HarvestsCompanion({
+    this.id = const Value.absent(),
+    this.cropCycleId = const Value.absent(),
+    this.harvestedOn = const Value.absent(),
+    this.quantityKg = const Value.absent(),
+    this.quality = const Value.absent(),
+    this.soldKg = const Value.absent(),
+    this.avgPriceXofPerKg = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  });
+  HarvestsCompanion.insert({
+    required String id,
+    required String cropCycleId,
+    required String harvestedOn,
+    required double quantityKg,
+    this.quality = const Value.absent(),
+    this.soldKg = const Value.absent(),
+    this.avgPriceXofPerKg = const Value.absent(),
+    this.updatedAt = const Value.absent(),
+    this.deletedAt = const Value.absent(),
+    this.rowid = const Value.absent(),
+  }) : id = Value(id),
+       cropCycleId = Value(cropCycleId),
+       harvestedOn = Value(harvestedOn),
+       quantityKg = Value(quantityKg);
+  static Insertable<HarvestRow> custom({
+    Expression<String>? id,
+    Expression<String>? cropCycleId,
+    Expression<String>? harvestedOn,
+    Expression<double>? quantityKg,
+    Expression<String>? quality,
+    Expression<double>? soldKg,
+    Expression<double>? avgPriceXofPerKg,
+    Expression<DateTime>? updatedAt,
+    Expression<DateTime>? deletedAt,
+    Expression<int>? rowid,
+  }) {
+    return RawValuesInsertable({
+      if (id != null) 'id': id,
+      if (cropCycleId != null) 'crop_cycle_id': cropCycleId,
+      if (harvestedOn != null) 'harvested_on': harvestedOn,
+      if (quantityKg != null) 'quantity_kg': quantityKg,
+      if (quality != null) 'quality': quality,
+      if (soldKg != null) 'sold_kg': soldKg,
+      if (avgPriceXofPerKg != null) 'avg_price_xof_per_kg': avgPriceXofPerKg,
+      if (updatedAt != null) 'updated_at': updatedAt,
+      if (deletedAt != null) 'deleted_at': deletedAt,
+      if (rowid != null) 'rowid': rowid,
+    });
+  }
+
+  HarvestsCompanion copyWith({
+    Value<String>? id,
+    Value<String>? cropCycleId,
+    Value<String>? harvestedOn,
+    Value<double>? quantityKg,
+    Value<String?>? quality,
+    Value<double>? soldKg,
+    Value<double?>? avgPriceXofPerKg,
+    Value<DateTime?>? updatedAt,
+    Value<DateTime?>? deletedAt,
+    Value<int>? rowid,
+  }) {
+    return HarvestsCompanion(
+      id: id ?? this.id,
+      cropCycleId: cropCycleId ?? this.cropCycleId,
+      harvestedOn: harvestedOn ?? this.harvestedOn,
+      quantityKg: quantityKg ?? this.quantityKg,
+      quality: quality ?? this.quality,
+      soldKg: soldKg ?? this.soldKg,
+      avgPriceXofPerKg: avgPriceXofPerKg ?? this.avgPriceXofPerKg,
+      updatedAt: updatedAt ?? this.updatedAt,
+      deletedAt: deletedAt ?? this.deletedAt,
+      rowid: rowid ?? this.rowid,
+    );
+  }
+
+  @override
+  Map<String, Expression> toColumns(bool nullToAbsent) {
+    final map = <String, Expression>{};
+    if (id.present) {
+      map['id'] = Variable<String>(id.value);
+    }
+    if (cropCycleId.present) {
+      map['crop_cycle_id'] = Variable<String>(cropCycleId.value);
+    }
+    if (harvestedOn.present) {
+      map['harvested_on'] = Variable<String>(harvestedOn.value);
+    }
+    if (quantityKg.present) {
+      map['quantity_kg'] = Variable<double>(quantityKg.value);
+    }
+    if (quality.present) {
+      map['quality'] = Variable<String>(quality.value);
+    }
+    if (soldKg.present) {
+      map['sold_kg'] = Variable<double>(soldKg.value);
+    }
+    if (avgPriceXofPerKg.present) {
+      map['avg_price_xof_per_kg'] = Variable<double>(avgPriceXofPerKg.value);
+    }
+    if (updatedAt.present) {
+      map['updated_at'] = Variable<DateTime>(updatedAt.value);
+    }
+    if (deletedAt.present) {
+      map['deleted_at'] = Variable<DateTime>(deletedAt.value);
+    }
+    if (rowid.present) {
+      map['rowid'] = Variable<int>(rowid.value);
+    }
+    return map;
+  }
+
+  @override
+  String toString() {
+    return (StringBuffer('HarvestsCompanion(')
+          ..write('id: $id, ')
+          ..write('cropCycleId: $cropCycleId, ')
+          ..write('harvestedOn: $harvestedOn, ')
+          ..write('quantityKg: $quantityKg, ')
+          ..write('quality: $quality, ')
+          ..write('soldKg: $soldKg, ')
+          ..write('avgPriceXofPerKg: $avgPriceXofPerKg, ')
+          ..write('updatedAt: $updatedAt, ')
+          ..write('deletedAt: $deletedAt, ')
+          ..write('rowid: $rowid')
+          ..write(')'))
+        .toString();
+  }
+}
+
 class $PendingChangesTable extends PendingChanges
     with TableInfo<$PendingChangesTable, PendingChangeRow> {
   @override
@@ -1799,6 +3767,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   $AppDatabaseManager get managers => $AppDatabaseManager(this);
   late final $FarmsTable farms = $FarmsTable(this);
   late final $PlotsTable plots = $PlotsTable(this);
+  late final $CropCyclesTable cropCycles = $CropCyclesTable(this);
+  late final $FarmActivitiesTable farmActivities = $FarmActivitiesTable(this);
+  late final $HarvestsTable harvests = $HarvestsTable(this);
   late final $PendingChangesTable pendingChanges = $PendingChangesTable(this);
   late final $SyncMetaTable syncMeta = $SyncMetaTable(this);
   @override
@@ -1808,6 +3779,9 @@ abstract class _$AppDatabase extends GeneratedDatabase {
   List<DatabaseSchemaEntity> get allSchemaEntities => [
     farms,
     plots,
+    cropCycles,
+    farmActivities,
+    harvests,
     pendingChanges,
     syncMeta,
   ];
@@ -2331,6 +4305,975 @@ typedef $$PlotsTableProcessedTableManager =
       PlotRow,
       PrefetchHooks Function()
     >;
+typedef $$CropCyclesTableCreateCompanionBuilder = CropCyclesCompanion Function({
+  required String id,
+  required String plotId,
+  required int cropId,
+  Value<String?> variety,
+  Value<String?> season,
+  Value<String?> sowingDate,
+  Value<String?> expectedHarvestDate,
+  Value<String?> harvestDate,
+  Value<String> status,
+  Value<String?> notes,
+  Value<DateTime?> updatedAt,
+  Value<DateTime?> deletedAt,
+  Value<int> rowid,
+});
+typedef $$CropCyclesTableUpdateCompanionBuilder = CropCyclesCompanion Function({
+  Value<String> id,
+  Value<String> plotId,
+  Value<int> cropId,
+  Value<String?> variety,
+  Value<String?> season,
+  Value<String?> sowingDate,
+  Value<String?> expectedHarvestDate,
+  Value<String?> harvestDate,
+  Value<String> status,
+  Value<String?> notes,
+  Value<DateTime?> updatedAt,
+  Value<DateTime?> deletedAt,
+  Value<int> rowid,
+});
+
+class $$CropCyclesTableFilterComposer
+    extends Composer<_$AppDatabase, $CropCyclesTable> {
+  $$CropCyclesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get plotId => $composableBuilder(
+    column: $table.plotId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get cropId => $composableBuilder(
+    column: $table.cropId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get variety => $composableBuilder(
+    column: $table.variety,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get season => $composableBuilder(
+    column: $table.season,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get sowingDate => $composableBuilder(
+    column: $table.sowingDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get expectedHarvestDate => $composableBuilder(
+    column: $table.expectedHarvestDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get harvestDate => $composableBuilder(
+    column: $table.harvestDate,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$CropCyclesTableOrderingComposer
+    extends Composer<_$AppDatabase, $CropCyclesTable> {
+  $$CropCyclesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get plotId => $composableBuilder(
+    column: $table.plotId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get cropId => $composableBuilder(
+    column: $table.cropId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get variety => $composableBuilder(
+    column: $table.variety,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get season => $composableBuilder(
+    column: $table.season,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get sowingDate => $composableBuilder(
+    column: $table.sowingDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get expectedHarvestDate => $composableBuilder(
+    column: $table.expectedHarvestDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get harvestDate => $composableBuilder(
+    column: $table.harvestDate,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get status => $composableBuilder(
+    column: $table.status,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$CropCyclesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $CropCyclesTable> {
+  $$CropCyclesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get plotId =>
+      $composableBuilder(column: $table.plotId, builder: (column) => column);
+
+  GeneratedColumn<int> get cropId =>
+      $composableBuilder(column: $table.cropId, builder: (column) => column);
+
+  GeneratedColumn<String> get variety =>
+      $composableBuilder(column: $table.variety, builder: (column) => column);
+
+  GeneratedColumn<String> get season =>
+      $composableBuilder(column: $table.season, builder: (column) => column);
+
+  GeneratedColumn<String> get sowingDate => $composableBuilder(
+    column: $table.sowingDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get expectedHarvestDate => $composableBuilder(
+    column: $table.expectedHarvestDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get harvestDate => $composableBuilder(
+    column: $table.harvestDate,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get status =>
+      $composableBuilder(column: $table.status, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+}
+
+class $$CropCyclesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $CropCyclesTable,
+          CropCycleRow,
+          $$CropCyclesTableFilterComposer,
+          $$CropCyclesTableOrderingComposer,
+          $$CropCyclesTableAnnotationComposer,
+          $$CropCyclesTableCreateCompanionBuilder,
+          $$CropCyclesTableUpdateCompanionBuilder,
+          (
+            CropCycleRow,
+            BaseReferences<_$AppDatabase, $CropCyclesTable, CropCycleRow>,
+          ),
+          CropCycleRow,
+          PrefetchHooks Function()
+        > {
+  $$CropCyclesTableTableManager(_$AppDatabase db, $CropCyclesTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$CropCyclesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$CropCyclesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$CropCyclesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> plotId = const Value.absent(),
+                Value<int> cropId = const Value.absent(),
+                Value<String?> variety = const Value.absent(),
+                Value<String?> season = const Value.absent(),
+                Value<String?> sowingDate = const Value.absent(),
+                Value<String?> expectedHarvestDate = const Value.absent(),
+                Value<String?> harvestDate = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CropCyclesCompanion(
+                id: id,
+                plotId: plotId,
+                cropId: cropId,
+                variety: variety,
+                season: season,
+                sowingDate: sowingDate,
+                expectedHarvestDate: expectedHarvestDate,
+                harvestDate: harvestDate,
+                status: status,
+                notes: notes,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String plotId,
+                required int cropId,
+                Value<String?> variety = const Value.absent(),
+                Value<String?> season = const Value.absent(),
+                Value<String?> sowingDate = const Value.absent(),
+                Value<String?> expectedHarvestDate = const Value.absent(),
+                Value<String?> harvestDate = const Value.absent(),
+                Value<String> status = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => CropCyclesCompanion.insert(
+                id: id,
+                plotId: plotId,
+                cropId: cropId,
+                variety: variety,
+                season: season,
+                sowingDate: sowingDate,
+                expectedHarvestDate: expectedHarvestDate,
+                harvestDate: harvestDate,
+                status: status,
+                notes: notes,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$CropCyclesTable, CropCycleRow>(table),
+                  BaseReferences<_$AppDatabase, $CropCyclesTable, CropCycleRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$CropCyclesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $CropCyclesTable,
+      CropCycleRow,
+      $$CropCyclesTableFilterComposer,
+      $$CropCyclesTableOrderingComposer,
+      $$CropCyclesTableAnnotationComposer,
+      $$CropCyclesTableCreateCompanionBuilder,
+      $$CropCyclesTableUpdateCompanionBuilder,
+      (
+        CropCycleRow,
+        BaseReferences<_$AppDatabase, $CropCyclesTable, CropCycleRow>,
+      ),
+      CropCycleRow,
+      PrefetchHooks Function()
+    >;
+typedef $$FarmActivitiesTableCreateCompanionBuilder =
+    FarmActivitiesCompanion Function({
+      required String id,
+      required String cropCycleId,
+      required String type,
+      required String performedOn,
+      Value<String?> productName,
+      Value<double?> quantity,
+      Value<String?> unit,
+      Value<int?> costXof,
+      Value<String?> notes,
+      Value<DateTime?> updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+typedef $$FarmActivitiesTableUpdateCompanionBuilder =
+    FarmActivitiesCompanion Function({
+      Value<String> id,
+      Value<String> cropCycleId,
+      Value<String> type,
+      Value<String> performedOn,
+      Value<String?> productName,
+      Value<double?> quantity,
+      Value<String?> unit,
+      Value<int?> costXof,
+      Value<String?> notes,
+      Value<DateTime?> updatedAt,
+      Value<DateTime?> deletedAt,
+      Value<int> rowid,
+    });
+
+class $$FarmActivitiesTableFilterComposer
+    extends Composer<_$AppDatabase, $FarmActivitiesTable> {
+  $$FarmActivitiesTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cropCycleId => $composableBuilder(
+    column: $table.cropCycleId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get performedOn => $composableBuilder(
+    column: $table.performedOn,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get productName => $composableBuilder(
+    column: $table.productName,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get quantity => $composableBuilder(
+    column: $table.quantity,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get unit => $composableBuilder(
+    column: $table.unit,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<int> get costXof => $composableBuilder(
+    column: $table.costXof,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$FarmActivitiesTableOrderingComposer
+    extends Composer<_$AppDatabase, $FarmActivitiesTable> {
+  $$FarmActivitiesTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get cropCycleId => $composableBuilder(
+    column: $table.cropCycleId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get type => $composableBuilder(
+    column: $table.type,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get performedOn => $composableBuilder(
+    column: $table.performedOn,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get productName => $composableBuilder(
+    column: $table.productName,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get quantity => $composableBuilder(
+    column: $table.quantity,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get unit => $composableBuilder(
+    column: $table.unit,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<int> get costXof => $composableBuilder(
+    column: $table.costXof,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get notes => $composableBuilder(
+    column: $table.notes,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$FarmActivitiesTableAnnotationComposer
+    extends Composer<_$AppDatabase, $FarmActivitiesTable> {
+  $$FarmActivitiesTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get cropCycleId => $composableBuilder(
+    column: $table.cropCycleId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get type =>
+      $composableBuilder(column: $table.type, builder: (column) => column);
+
+  GeneratedColumn<String> get performedOn => $composableBuilder(
+    column: $table.performedOn,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get productName => $composableBuilder(
+    column: $table.productName,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get quantity =>
+      $composableBuilder(column: $table.quantity, builder: (column) => column);
+
+  GeneratedColumn<String> get unit =>
+      $composableBuilder(column: $table.unit, builder: (column) => column);
+
+  GeneratedColumn<int> get costXof =>
+      $composableBuilder(column: $table.costXof, builder: (column) => column);
+
+  GeneratedColumn<String> get notes =>
+      $composableBuilder(column: $table.notes, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+}
+
+class $$FarmActivitiesTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $FarmActivitiesTable,
+          FarmActivityRow,
+          $$FarmActivitiesTableFilterComposer,
+          $$FarmActivitiesTableOrderingComposer,
+          $$FarmActivitiesTableAnnotationComposer,
+          $$FarmActivitiesTableCreateCompanionBuilder,
+          $$FarmActivitiesTableUpdateCompanionBuilder,
+          (
+            FarmActivityRow,
+            BaseReferences<
+              _$AppDatabase,
+              $FarmActivitiesTable,
+              FarmActivityRow
+            >,
+          ),
+          FarmActivityRow,
+          PrefetchHooks Function()
+        > {
+  $$FarmActivitiesTableTableManager(
+    _$AppDatabase db,
+    $FarmActivitiesTable table,
+  ) : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$FarmActivitiesTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$FarmActivitiesTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$FarmActivitiesTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> cropCycleId = const Value.absent(),
+                Value<String> type = const Value.absent(),
+                Value<String> performedOn = const Value.absent(),
+                Value<String?> productName = const Value.absent(),
+                Value<double?> quantity = const Value.absent(),
+                Value<String?> unit = const Value.absent(),
+                Value<int?> costXof = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => FarmActivitiesCompanion(
+                id: id,
+                cropCycleId: cropCycleId,
+                type: type,
+                performedOn: performedOn,
+                productName: productName,
+                quantity: quantity,
+                unit: unit,
+                costXof: costXof,
+                notes: notes,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String cropCycleId,
+                required String type,
+                required String performedOn,
+                Value<String?> productName = const Value.absent(),
+                Value<double?> quantity = const Value.absent(),
+                Value<String?> unit = const Value.absent(),
+                Value<int?> costXof = const Value.absent(),
+                Value<String?> notes = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => FarmActivitiesCompanion.insert(
+                id: id,
+                cropCycleId: cropCycleId,
+                type: type,
+                performedOn: performedOn,
+                productName: productName,
+                quantity: quantity,
+                unit: unit,
+                costXof: costXof,
+                notes: notes,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$FarmActivitiesTable, FarmActivityRow>(table),
+                  BaseReferences<
+                    _$AppDatabase,
+                    $FarmActivitiesTable,
+                    FarmActivityRow
+                  >(db, table, e),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$FarmActivitiesTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $FarmActivitiesTable,
+      FarmActivityRow,
+      $$FarmActivitiesTableFilterComposer,
+      $$FarmActivitiesTableOrderingComposer,
+      $$FarmActivitiesTableAnnotationComposer,
+      $$FarmActivitiesTableCreateCompanionBuilder,
+      $$FarmActivitiesTableUpdateCompanionBuilder,
+      (
+        FarmActivityRow,
+        BaseReferences<_$AppDatabase, $FarmActivitiesTable, FarmActivityRow>,
+      ),
+      FarmActivityRow,
+      PrefetchHooks Function()
+    >;
+typedef $$HarvestsTableCreateCompanionBuilder = HarvestsCompanion Function({
+  required String id,
+  required String cropCycleId,
+  required String harvestedOn,
+  required double quantityKg,
+  Value<String?> quality,
+  Value<double> soldKg,
+  Value<double?> avgPriceXofPerKg,
+  Value<DateTime?> updatedAt,
+  Value<DateTime?> deletedAt,
+  Value<int> rowid,
+});
+typedef $$HarvestsTableUpdateCompanionBuilder = HarvestsCompanion Function({
+  Value<String> id,
+  Value<String> cropCycleId,
+  Value<String> harvestedOn,
+  Value<double> quantityKg,
+  Value<String?> quality,
+  Value<double> soldKg,
+  Value<double?> avgPriceXofPerKg,
+  Value<DateTime?> updatedAt,
+  Value<DateTime?> deletedAt,
+  Value<int> rowid,
+});
+
+class $$HarvestsTableFilterComposer
+    extends Composer<_$AppDatabase, $HarvestsTable> {
+  $$HarvestsTableFilterComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnFilters<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get cropCycleId => $composableBuilder(
+    column: $table.cropCycleId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get harvestedOn => $composableBuilder(
+    column: $table.harvestedOn,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get quantityKg => $composableBuilder(
+    column: $table.quantityKg,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get quality => $composableBuilder(
+    column: $table.quality,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get soldKg => $composableBuilder(
+    column: $table.soldKg,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<double> get avgPriceXofPerKg => $composableBuilder(
+    column: $table.avgPriceXofPerKg,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnFilters(column),
+  );
+}
+
+class $$HarvestsTableOrderingComposer
+    extends Composer<_$AppDatabase, $HarvestsTable> {
+  $$HarvestsTableOrderingComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  ColumnOrderings<String> get id => $composableBuilder(
+    column: $table.id,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get cropCycleId => $composableBuilder(
+    column: $table.cropCycleId,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get harvestedOn => $composableBuilder(
+    column: $table.harvestedOn,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get quantityKg => $composableBuilder(
+    column: $table.quantityKg,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<String> get quality => $composableBuilder(
+    column: $table.quality,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get soldKg => $composableBuilder(
+    column: $table.soldKg,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<double> get avgPriceXofPerKg => $composableBuilder(
+    column: $table.avgPriceXofPerKg,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
+    column: $table.updatedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+
+  ColumnOrderings<DateTime> get deletedAt => $composableBuilder(
+    column: $table.deletedAt,
+    builder: (column) => ColumnOrderings(column),
+  );
+}
+
+class $$HarvestsTableAnnotationComposer
+    extends Composer<_$AppDatabase, $HarvestsTable> {
+  $$HarvestsTableAnnotationComposer({
+    required super.$db,
+    required super.$table,
+    super.joinBuilder,
+    super.$addJoinBuilderToRootComposer,
+    super.$removeJoinBuilderFromRootComposer,
+  });
+  GeneratedColumn<String> get id =>
+      $composableBuilder(column: $table.id, builder: (column) => column);
+
+  GeneratedColumn<String> get cropCycleId => $composableBuilder(
+    column: $table.cropCycleId,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get harvestedOn => $composableBuilder(
+    column: $table.harvestedOn,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<double> get quantityKg => $composableBuilder(
+    column: $table.quantityKg,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<String> get quality =>
+      $composableBuilder(column: $table.quality, builder: (column) => column);
+
+  GeneratedColumn<double> get soldKg =>
+      $composableBuilder(column: $table.soldKg, builder: (column) => column);
+
+  GeneratedColumn<double> get avgPriceXofPerKg => $composableBuilder(
+    column: $table.avgPriceXofPerKg,
+    builder: (column) => column,
+  );
+
+  GeneratedColumn<DateTime> get updatedAt =>
+      $composableBuilder(column: $table.updatedAt, builder: (column) => column);
+
+  GeneratedColumn<DateTime> get deletedAt =>
+      $composableBuilder(column: $table.deletedAt, builder: (column) => column);
+}
+
+class $$HarvestsTableTableManager
+    extends
+        RootTableManager<
+          _$AppDatabase,
+          $HarvestsTable,
+          HarvestRow,
+          $$HarvestsTableFilterComposer,
+          $$HarvestsTableOrderingComposer,
+          $$HarvestsTableAnnotationComposer,
+          $$HarvestsTableCreateCompanionBuilder,
+          $$HarvestsTableUpdateCompanionBuilder,
+          (
+            HarvestRow,
+            BaseReferences<_$AppDatabase, $HarvestsTable, HarvestRow>,
+          ),
+          HarvestRow,
+          PrefetchHooks Function()
+        > {
+  $$HarvestsTableTableManager(_$AppDatabase db, $HarvestsTable table)
+    : super(
+        TableManagerState(
+          db: db,
+          table: table,
+          createFilteringComposer: () =>
+              $$HarvestsTableFilterComposer($db: db, $table: table),
+          createOrderingComposer: () =>
+              $$HarvestsTableOrderingComposer($db: db, $table: table),
+          createComputedFieldComposer: () =>
+              $$HarvestsTableAnnotationComposer($db: db, $table: table),
+          updateCompanionCallback:
+              ({
+                Value<String> id = const Value.absent(),
+                Value<String> cropCycleId = const Value.absent(),
+                Value<String> harvestedOn = const Value.absent(),
+                Value<double> quantityKg = const Value.absent(),
+                Value<String?> quality = const Value.absent(),
+                Value<double> soldKg = const Value.absent(),
+                Value<double?> avgPriceXofPerKg = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => HarvestsCompanion(
+                id: id,
+                cropCycleId: cropCycleId,
+                harvestedOn: harvestedOn,
+                quantityKg: quantityKg,
+                quality: quality,
+                soldKg: soldKg,
+                avgPriceXofPerKg: avgPriceXofPerKg,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          createCompanionCallback:
+              ({
+                required String id,
+                required String cropCycleId,
+                required String harvestedOn,
+                required double quantityKg,
+                Value<String?> quality = const Value.absent(),
+                Value<double> soldKg = const Value.absent(),
+                Value<double?> avgPriceXofPerKg = const Value.absent(),
+                Value<DateTime?> updatedAt = const Value.absent(),
+                Value<DateTime?> deletedAt = const Value.absent(),
+                Value<int> rowid = const Value.absent(),
+              }) => HarvestsCompanion.insert(
+                id: id,
+                cropCycleId: cropCycleId,
+                harvestedOn: harvestedOn,
+                quantityKg: quantityKg,
+                quality: quality,
+                soldKg: soldKg,
+                avgPriceXofPerKg: avgPriceXofPerKg,
+                updatedAt: updatedAt,
+                deletedAt: deletedAt,
+                rowid: rowid,
+              ),
+          withReferenceMapper: (p0) => p0
+              .map(
+                (e) => (
+                  e.readTable<$HarvestsTable, HarvestRow>(table),
+                  BaseReferences<_$AppDatabase, $HarvestsTable, HarvestRow>(
+                    db,
+                    table,
+                    e,
+                  ),
+                ),
+              )
+              .toList(),
+          prefetchHooksCallback: null,
+        ),
+      );
+}
+
+typedef $$HarvestsTableProcessedTableManager =
+    ProcessedTableManager<
+      _$AppDatabase,
+      $HarvestsTable,
+      HarvestRow,
+      $$HarvestsTableFilterComposer,
+      $$HarvestsTableOrderingComposer,
+      $$HarvestsTableAnnotationComposer,
+      $$HarvestsTableCreateCompanionBuilder,
+      $$HarvestsTableUpdateCompanionBuilder,
+      (HarvestRow, BaseReferences<_$AppDatabase, $HarvestsTable, HarvestRow>),
+      HarvestRow,
+      PrefetchHooks Function()
+    >;
 typedef $$PendingChangesTableCreateCompanionBuilder =
     PendingChangesCompanion Function({
       required String entity,
@@ -2772,6 +5715,12 @@ class $AppDatabaseManager {
       $$FarmsTableTableManager(_db, _db.farms);
   $$PlotsTableTableManager get plots =>
       $$PlotsTableTableManager(_db, _db.plots);
+  $$CropCyclesTableTableManager get cropCycles =>
+      $$CropCyclesTableTableManager(_db, _db.cropCycles);
+  $$FarmActivitiesTableTableManager get farmActivities =>
+      $$FarmActivitiesTableTableManager(_db, _db.farmActivities);
+  $$HarvestsTableTableManager get harvests =>
+      $$HarvestsTableTableManager(_db, _db.harvests);
   $$PendingChangesTableTableManager get pendingChanges =>
       $$PendingChangesTableTableManager(_db, _db.pendingChanges);
   $$SyncMetaTableTableManager get syncMeta =>

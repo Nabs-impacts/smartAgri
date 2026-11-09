@@ -335,8 +335,8 @@ void main() {
       return body(200, <String, dynamic>{
         'changes': <Map<String, dynamic>>[
           <String, dynamic>{
-            'entity': 'crop_cycle',
-            'id': 'c1',
+            'entity': 'diagnostic',
+            'id': 'd1',
             'data': <String, dynamic>{},
             'updated_at': '2026-11-08T09:02:00Z',
             'deleted_at': null,
