@@ -356,5 +356,85 @@
   "privacyDeleteConfirm": "Supprimer définitivement",
   "privacyDeleteSuccess": "Votre compte a été supprimé",
   "privacyDeleteError": "Impossible de supprimer votre compte. Veuillez réessayer.",
-  "privacyOwnerConflict": "Vous êtes le seul propriétaire d'une organisation qui compte d'autres membres. Transférez ou supprimez-la avant de supprimer votre compte."
+  "privacyOwnerConflict": "Vous êtes le seul propriétaire d'une organisation qui compte d'autres membres. Transférez ou supprimez-la avant de supprimer votre compte.",
+  "syncBannerFailed": "{count, plural, =0{Aucune modification refusée par le serveur} =1{1 modification refusée par le serveur} other{{count} modifications refusées par le serveur}}",
+  "syncOffline": "Hors connexion",
+  "syncPendingBanner": "{count, plural, =0{Aucune modification en attente d'envoi} =1{1 modification en attente d'envoi} other{{count} modifications en attente d'envoi}}",
+  "syncErrorBanner": "La synchronisation a rencontré une erreur.",
+  "syncInProgress": "Synchronisation en cours…",
+  "syncSectionTitle": "Synchronisation",
+  "syncLastTitle": "Dernière synchronisation",
+  "syncNever": "jamais",
+  "syncJustNow": "à l'instant",
+  "syncMinutesAgo": "il y a {count} min",
+  "syncHoursAgo": "il y a {count} h",
+  "syncYesterday": "hier",
+  "syncDaysAgo": "il y a {count} jours",
+  "syncPendingCount": "{count, plural, =0{Aucune modification en attente} =1{1 modification en attente} other{{count} modifications en attente}}",
+  "syncFailedCount": "{count, plural, =0{Aucune modification en échec} =1{1 modification en échec} other{{count} modifications en échec}}",
+  "syncNowButton": "Synchroniser maintenant",
+  "syncFailedTitle": "Modifications en échec",
+  "syncFailedEmpty": "Aucune modification en échec.",
+  "syncRetryAll": "Tout réessayer",
+  "syncEntityFarm": "Exploitation",
+  "syncEntityPlot": "Parcelle",
+  "syncOperationUpsert": "Modification",
+  "syncOperationDelete": "Suppression",
+  "syncDeletedItem": "Élément supprimé",
+  "syncDiscard": "Abandonner",
+  "syncDiscardTitle": "Abandonner cette modification ?",
+  "syncDiscardConfirmed": "La modification sera perdue et la version du serveur remplacera la version locale.",
+  "syncDiscardUnconfirmed": "L'élément sera supprimé définitivement de cet appareil.",
+  "syncDiscardDelete": "L'élément sera restauré depuis le serveur.",
+  "syncDiscardConfirm": "Abandonner",
+  "syncUnknownError": "Refusée par le serveur.",
+  "@syncBannerFailed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@syncPendingBanner": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@syncMinutesAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@syncHoursAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@syncDaysAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@syncPendingCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "@syncFailedCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  }
 }

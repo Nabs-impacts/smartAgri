@@ -48,6 +48,17 @@ class $FarmsTable extends Farms with TableInfo<$FarmsTable, FarmRow> {
     type: DriftSqlType.int,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _locationMeta = const VerificationMeta(
+    'location',
+  );
+  @override
+  late final GeneratedColumn<String> location = GeneratedColumn<String>(
+    'location',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _updatedAtMeta = const VerificationMeta(
     'updatedAt',
   );
@@ -76,6 +87,7 @@ class $FarmsTable extends Farms with TableInfo<$FarmsTable, FarmRow> {
     name,
     village,
     adminAreaId,
+    location,
     updatedAt,
     deletedAt,
   ];
@@ -119,6 +131,12 @@ class $FarmsTable extends Farms with TableInfo<$FarmsTable, FarmRow> {
         ),
       );
     }
+    if (data.containsKey('location')) {
+      context.handle(
+        _locationMeta,
+        location.isAcceptableOrUnknown(data['location']!, _locationMeta),
+      );
+    }
     if (data.containsKey('updated_at')) {
       context.handle(
         _updatedAtMeta,
@@ -156,6 +174,10 @@ class $FarmsTable extends Farms with TableInfo<$FarmsTable, FarmRow> {
         DriftSqlType.int,
         data['${effectivePrefix}admin_area_id'],
       ),
+      location: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}location'],
+      ),
       updatedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}updated_at'],
@@ -178,6 +200,7 @@ class FarmRow extends DataClass implements Insertable<FarmRow> {
   final String name;
   final String? village;
   final int? adminAreaId;
+  final String? location;
   final DateTime? updatedAt;
   final DateTime? deletedAt;
   const FarmRow({
@@ -185,6 +208,7 @@ class FarmRow extends DataClass implements Insertable<FarmRow> {
     required this.name,
     this.village,
     this.adminAreaId,
+    this.location,
     this.updatedAt,
     this.deletedAt,
   });
@@ -198,6 +222,9 @@ class FarmRow extends DataClass implements Insertable<FarmRow> {
     }
     if (!nullToAbsent || adminAreaId != null) {
       map['admin_area_id'] = Variable<int>(adminAreaId);
+    }
+    if (!nullToAbsent || location != null) {
+      map['location'] = Variable<String>(location);
     }
     if (!nullToAbsent || updatedAt != null) {
       map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -218,6 +245,9 @@ class FarmRow extends DataClass implements Insertable<FarmRow> {
       adminAreaId: adminAreaId == null && nullToAbsent
           ? const Value.absent()
           : Value(adminAreaId),
+      location: location == null && nullToAbsent
+          ? const Value.absent()
+          : Value(location),
       updatedAt: updatedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(updatedAt),
@@ -237,6 +267,7 @@ class FarmRow extends DataClass implements Insertable<FarmRow> {
       name: serializer.fromJson<String>(json['name']),
       village: serializer.fromJson<String?>(json['village']),
       adminAreaId: serializer.fromJson<int?>(json['adminAreaId']),
+      location: serializer.fromJson<String?>(json['location']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
     );
@@ -249,6 +280,7 @@ class FarmRow extends DataClass implements Insertable<FarmRow> {
       'name': serializer.toJson<String>(name),
       'village': serializer.toJson<String?>(village),
       'adminAreaId': serializer.toJson<int?>(adminAreaId),
+      'location': serializer.toJson<String?>(location),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
     };
@@ -259,6 +291,7 @@ class FarmRow extends DataClass implements Insertable<FarmRow> {
     String? name,
     Value<String?> village = const Value.absent(),
     Value<int?> adminAreaId = const Value.absent(),
+    Value<String?> location = const Value.absent(),
     Value<DateTime?> updatedAt = const Value.absent(),
     Value<DateTime?> deletedAt = const Value.absent(),
   }) => FarmRow(
@@ -266,6 +299,7 @@ class FarmRow extends DataClass implements Insertable<FarmRow> {
     name: name ?? this.name,
     village: village.present ? village.value : this.village,
     adminAreaId: adminAreaId.present ? adminAreaId.value : this.adminAreaId,
+    location: location.present ? location.value : this.location,
     updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
   );
@@ -277,6 +311,7 @@ class FarmRow extends DataClass implements Insertable<FarmRow> {
       adminAreaId: data.adminAreaId.present
           ? data.adminAreaId.value
           : this.adminAreaId,
+      location: data.location.present ? data.location.value : this.location,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
     );
@@ -289,6 +324,7 @@ class FarmRow extends DataClass implements Insertable<FarmRow> {
           ..write('name: $name, ')
           ..write('village: $village, ')
           ..write('adminAreaId: $adminAreaId, ')
+          ..write('location: $location, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt')
           ..write(')'))
@@ -296,8 +332,15 @@ class FarmRow extends DataClass implements Insertable<FarmRow> {
   }
 
   @override
-  int get hashCode =>
-      Object.hash(id, name, village, adminAreaId, updatedAt, deletedAt);
+  int get hashCode => Object.hash(
+    id,
+    name,
+    village,
+    adminAreaId,
+    location,
+    updatedAt,
+    deletedAt,
+  );
   @override
   bool operator ==(Object other) =>
       identical(this, other) ||
@@ -306,6 +349,7 @@ class FarmRow extends DataClass implements Insertable<FarmRow> {
           other.name == this.name &&
           other.village == this.village &&
           other.adminAreaId == this.adminAreaId &&
+          other.location == this.location &&
           other.updatedAt == this.updatedAt &&
           other.deletedAt == this.deletedAt);
 }
@@ -315,6 +359,7 @@ class FarmsCompanion extends UpdateCompanion<FarmRow> {
   final Value<String> name;
   final Value<String?> village;
   final Value<int?> adminAreaId;
+  final Value<String?> location;
   final Value<DateTime?> updatedAt;
   final Value<DateTime?> deletedAt;
   final Value<int> rowid;
@@ -323,6 +368,7 @@ class FarmsCompanion extends UpdateCompanion<FarmRow> {
     this.name = const Value.absent(),
     this.village = const Value.absent(),
     this.adminAreaId = const Value.absent(),
+    this.location = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -332,6 +378,7 @@ class FarmsCompanion extends UpdateCompanion<FarmRow> {
     required String name,
     this.village = const Value.absent(),
     this.adminAreaId = const Value.absent(),
+    this.location = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -342,6 +389,7 @@ class FarmsCompanion extends UpdateCompanion<FarmRow> {
     Expression<String>? name,
     Expression<String>? village,
     Expression<int>? adminAreaId,
+    Expression<String>? location,
     Expression<DateTime>? updatedAt,
     Expression<DateTime>? deletedAt,
     Expression<int>? rowid,
@@ -351,6 +399,7 @@ class FarmsCompanion extends UpdateCompanion<FarmRow> {
       if (name != null) 'name': name,
       if (village != null) 'village': village,
       if (adminAreaId != null) 'admin_area_id': adminAreaId,
+      if (location != null) 'location': location,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deletedAt != null) 'deleted_at': deletedAt,
       if (rowid != null) 'rowid': rowid,
@@ -362,6 +411,7 @@ class FarmsCompanion extends UpdateCompanion<FarmRow> {
     Value<String>? name,
     Value<String?>? village,
     Value<int?>? adminAreaId,
+    Value<String?>? location,
     Value<DateTime?>? updatedAt,
     Value<DateTime?>? deletedAt,
     Value<int>? rowid,
@@ -371,6 +421,7 @@ class FarmsCompanion extends UpdateCompanion<FarmRow> {
       name: name ?? this.name,
       village: village ?? this.village,
       adminAreaId: adminAreaId ?? this.adminAreaId,
+      location: location ?? this.location,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
       rowid: rowid ?? this.rowid,
@@ -392,6 +443,9 @@ class FarmsCompanion extends UpdateCompanion<FarmRow> {
     if (adminAreaId.present) {
       map['admin_area_id'] = Variable<int>(adminAreaId.value);
     }
+    if (location.present) {
+      map['location'] = Variable<String>(location.value);
+    }
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
@@ -411,6 +465,7 @@ class FarmsCompanion extends UpdateCompanion<FarmRow> {
           ..write('name: $name, ')
           ..write('village: $village, ')
           ..write('adminAreaId: $adminAreaId, ')
+          ..write('location: $location, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('rowid: $rowid')
@@ -482,6 +537,15 @@ class $PlotsTable extends Plots with TableInfo<$PlotsTable, PlotRow> {
     type: DriftSqlType.string,
     requiredDuringInsert: false,
   );
+  static const VerificationMeta _geomMeta = const VerificationMeta('geom');
+  @override
+  late final GeneratedColumn<String> geom = GeneratedColumn<String>(
+    'geom',
+    aliasedName,
+    true,
+    type: DriftSqlType.string,
+    requiredDuringInsert: false,
+  );
   static const VerificationMeta _updatedAtMeta = const VerificationMeta(
     'updatedAt',
   );
@@ -512,6 +576,7 @@ class $PlotsTable extends Plots with TableInfo<$PlotsTable, PlotRow> {
     areaHa,
     soilType,
     irrigation,
+    geom,
     updatedAt,
     deletedAt,
   ];
@@ -566,6 +631,12 @@ class $PlotsTable extends Plots with TableInfo<$PlotsTable, PlotRow> {
         irrigation.isAcceptableOrUnknown(data['irrigation']!, _irrigationMeta),
       );
     }
+    if (data.containsKey('geom')) {
+      context.handle(
+        _geomMeta,
+        geom.isAcceptableOrUnknown(data['geom']!, _geomMeta),
+      );
+    }
     if (data.containsKey('updated_at')) {
       context.handle(
         _updatedAtMeta,
@@ -611,6 +682,10 @@ class $PlotsTable extends Plots with TableInfo<$PlotsTable, PlotRow> {
         DriftSqlType.string,
         data['${effectivePrefix}irrigation'],
       ),
+      geom: attachedDatabase.typeMapping.read(
+        DriftSqlType.string,
+        data['${effectivePrefix}geom'],
+      ),
       updatedAt: attachedDatabase.typeMapping.read(
         DriftSqlType.dateTime,
         data['${effectivePrefix}updated_at'],
@@ -635,6 +710,7 @@ class PlotRow extends DataClass implements Insertable<PlotRow> {
   final double? areaHa;
   final String? soilType;
   final String? irrigation;
+  final String? geom;
   final DateTime? updatedAt;
   final DateTime? deletedAt;
   const PlotRow({
@@ -644,6 +720,7 @@ class PlotRow extends DataClass implements Insertable<PlotRow> {
     this.areaHa,
     this.soilType,
     this.irrigation,
+    this.geom,
     this.updatedAt,
     this.deletedAt,
   });
@@ -661,6 +738,9 @@ class PlotRow extends DataClass implements Insertable<PlotRow> {
     }
     if (!nullToAbsent || irrigation != null) {
       map['irrigation'] = Variable<String>(irrigation);
+    }
+    if (!nullToAbsent || geom != null) {
+      map['geom'] = Variable<String>(geom);
     }
     if (!nullToAbsent || updatedAt != null) {
       map['updated_at'] = Variable<DateTime>(updatedAt);
@@ -685,6 +765,7 @@ class PlotRow extends DataClass implements Insertable<PlotRow> {
       irrigation: irrigation == null && nullToAbsent
           ? const Value.absent()
           : Value(irrigation),
+      geom: geom == null && nullToAbsent ? const Value.absent() : Value(geom),
       updatedAt: updatedAt == null && nullToAbsent
           ? const Value.absent()
           : Value(updatedAt),
@@ -706,6 +787,7 @@ class PlotRow extends DataClass implements Insertable<PlotRow> {
       areaHa: serializer.fromJson<double?>(json['areaHa']),
       soilType: serializer.fromJson<String?>(json['soilType']),
       irrigation: serializer.fromJson<String?>(json['irrigation']),
+      geom: serializer.fromJson<String?>(json['geom']),
       updatedAt: serializer.fromJson<DateTime?>(json['updatedAt']),
       deletedAt: serializer.fromJson<DateTime?>(json['deletedAt']),
     );
@@ -720,6 +802,7 @@ class PlotRow extends DataClass implements Insertable<PlotRow> {
       'areaHa': serializer.toJson<double?>(areaHa),
       'soilType': serializer.toJson<String?>(soilType),
       'irrigation': serializer.toJson<String?>(irrigation),
+      'geom': serializer.toJson<String?>(geom),
       'updatedAt': serializer.toJson<DateTime?>(updatedAt),
       'deletedAt': serializer.toJson<DateTime?>(deletedAt),
     };
@@ -732,6 +815,7 @@ class PlotRow extends DataClass implements Insertable<PlotRow> {
     Value<double?> areaHa = const Value.absent(),
     Value<String?> soilType = const Value.absent(),
     Value<String?> irrigation = const Value.absent(),
+    Value<String?> geom = const Value.absent(),
     Value<DateTime?> updatedAt = const Value.absent(),
     Value<DateTime?> deletedAt = const Value.absent(),
   }) => PlotRow(
@@ -741,6 +825,7 @@ class PlotRow extends DataClass implements Insertable<PlotRow> {
     areaHa: areaHa.present ? areaHa.value : this.areaHa,
     soilType: soilType.present ? soilType.value : this.soilType,
     irrigation: irrigation.present ? irrigation.value : this.irrigation,
+    geom: geom.present ? geom.value : this.geom,
     updatedAt: updatedAt.present ? updatedAt.value : this.updatedAt,
     deletedAt: deletedAt.present ? deletedAt.value : this.deletedAt,
   );
@@ -754,6 +839,7 @@ class PlotRow extends DataClass implements Insertable<PlotRow> {
       irrigation: data.irrigation.present
           ? data.irrigation.value
           : this.irrigation,
+      geom: data.geom.present ? data.geom.value : this.geom,
       updatedAt: data.updatedAt.present ? data.updatedAt.value : this.updatedAt,
       deletedAt: data.deletedAt.present ? data.deletedAt.value : this.deletedAt,
     );
@@ -768,6 +854,7 @@ class PlotRow extends DataClass implements Insertable<PlotRow> {
           ..write('areaHa: $areaHa, ')
           ..write('soilType: $soilType, ')
           ..write('irrigation: $irrigation, ')
+          ..write('geom: $geom, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt')
           ..write(')'))
@@ -782,6 +869,7 @@ class PlotRow extends DataClass implements Insertable<PlotRow> {
     areaHa,
     soilType,
     irrigation,
+    geom,
     updatedAt,
     deletedAt,
   );
@@ -795,6 +883,7 @@ class PlotRow extends DataClass implements Insertable<PlotRow> {
           other.areaHa == this.areaHa &&
           other.soilType == this.soilType &&
           other.irrigation == this.irrigation &&
+          other.geom == this.geom &&
           other.updatedAt == this.updatedAt &&
           other.deletedAt == this.deletedAt);
 }
@@ -806,6 +895,7 @@ class PlotsCompanion extends UpdateCompanion<PlotRow> {
   final Value<double?> areaHa;
   final Value<String?> soilType;
   final Value<String?> irrigation;
+  final Value<String?> geom;
   final Value<DateTime?> updatedAt;
   final Value<DateTime?> deletedAt;
   final Value<int> rowid;
@@ -816,6 +906,7 @@ class PlotsCompanion extends UpdateCompanion<PlotRow> {
     this.areaHa = const Value.absent(),
     this.soilType = const Value.absent(),
     this.irrigation = const Value.absent(),
+    this.geom = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -827,6 +918,7 @@ class PlotsCompanion extends UpdateCompanion<PlotRow> {
     this.areaHa = const Value.absent(),
     this.soilType = const Value.absent(),
     this.irrigation = const Value.absent(),
+    this.geom = const Value.absent(),
     this.updatedAt = const Value.absent(),
     this.deletedAt = const Value.absent(),
     this.rowid = const Value.absent(),
@@ -840,6 +932,7 @@ class PlotsCompanion extends UpdateCompanion<PlotRow> {
     Expression<double>? areaHa,
     Expression<String>? soilType,
     Expression<String>? irrigation,
+    Expression<String>? geom,
     Expression<DateTime>? updatedAt,
     Expression<DateTime>? deletedAt,
     Expression<int>? rowid,
@@ -851,6 +944,7 @@ class PlotsCompanion extends UpdateCompanion<PlotRow> {
       if (areaHa != null) 'area_ha': areaHa,
       if (soilType != null) 'soil_type': soilType,
       if (irrigation != null) 'irrigation': irrigation,
+      if (geom != null) 'geom': geom,
       if (updatedAt != null) 'updated_at': updatedAt,
       if (deletedAt != null) 'deleted_at': deletedAt,
       if (rowid != null) 'rowid': rowid,
@@ -864,6 +958,7 @@ class PlotsCompanion extends UpdateCompanion<PlotRow> {
     Value<double?>? areaHa,
     Value<String?>? soilType,
     Value<String?>? irrigation,
+    Value<String?>? geom,
     Value<DateTime?>? updatedAt,
     Value<DateTime?>? deletedAt,
     Value<int>? rowid,
@@ -875,6 +970,7 @@ class PlotsCompanion extends UpdateCompanion<PlotRow> {
       areaHa: areaHa ?? this.areaHa,
       soilType: soilType ?? this.soilType,
       irrigation: irrigation ?? this.irrigation,
+      geom: geom ?? this.geom,
       updatedAt: updatedAt ?? this.updatedAt,
       deletedAt: deletedAt ?? this.deletedAt,
       rowid: rowid ?? this.rowid,
@@ -902,6 +998,9 @@ class PlotsCompanion extends UpdateCompanion<PlotRow> {
     if (irrigation.present) {
       map['irrigation'] = Variable<String>(irrigation.value);
     }
+    if (geom.present) {
+      map['geom'] = Variable<String>(geom.value);
+    }
     if (updatedAt.present) {
       map['updated_at'] = Variable<DateTime>(updatedAt.value);
     }
@@ -923,6 +1022,7 @@ class PlotsCompanion extends UpdateCompanion<PlotRow> {
           ..write('areaHa: $areaHa, ')
           ..write('soilType: $soilType, ')
           ..write('irrigation: $irrigation, ')
+          ..write('geom: $geom, ')
           ..write('updatedAt: $updatedAt, ')
           ..write('deletedAt: $deletedAt, ')
           ..write('rowid: $rowid')
@@ -1718,6 +1818,7 @@ typedef $$FarmsTableCreateCompanionBuilder = FarmsCompanion Function({
   required String name,
   Value<String?> village,
   Value<int?> adminAreaId,
+  Value<String?> location,
   Value<DateTime?> updatedAt,
   Value<DateTime?> deletedAt,
   Value<int> rowid,
@@ -1727,6 +1828,7 @@ typedef $$FarmsTableUpdateCompanionBuilder = FarmsCompanion Function({
   Value<String> name,
   Value<String?> village,
   Value<int?> adminAreaId,
+  Value<String?> location,
   Value<DateTime?> updatedAt,
   Value<DateTime?> deletedAt,
   Value<int> rowid,
@@ -1757,6 +1859,11 @@ class $$FarmsTableFilterComposer extends Composer<_$AppDatabase, $FarmsTable> {
 
   ColumnFilters<int> get adminAreaId => $composableBuilder(
     column: $table.adminAreaId,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get location => $composableBuilder(
+    column: $table.location,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -1800,6 +1907,11 @@ class $$FarmsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get location => $composableBuilder(
+    column: $table.location,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
     column: $table.updatedAt,
     builder: (column) => ColumnOrderings(column),
@@ -1833,6 +1945,9 @@ class $$FarmsTableAnnotationComposer
     column: $table.adminAreaId,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get location =>
+      $composableBuilder(column: $table.location, builder: (column) => column);
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
@@ -1873,6 +1988,7 @@ class $$FarmsTableTableManager
                 Value<String> name = const Value.absent(),
                 Value<String?> village = const Value.absent(),
                 Value<int?> adminAreaId = const Value.absent(),
+                Value<String?> location = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -1881,6 +1997,7 @@ class $$FarmsTableTableManager
                 name: name,
                 village: village,
                 adminAreaId: adminAreaId,
+                location: location,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
                 rowid: rowid,
@@ -1891,6 +2008,7 @@ class $$FarmsTableTableManager
                 required String name,
                 Value<String?> village = const Value.absent(),
                 Value<int?> adminAreaId = const Value.absent(),
+                Value<String?> location = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -1899,6 +2017,7 @@ class $$FarmsTableTableManager
                 name: name,
                 village: village,
                 adminAreaId: adminAreaId,
+                location: location,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
                 rowid: rowid,
@@ -1941,6 +2060,7 @@ typedef $$PlotsTableCreateCompanionBuilder = PlotsCompanion Function({
   Value<double?> areaHa,
   Value<String?> soilType,
   Value<String?> irrigation,
+  Value<String?> geom,
   Value<DateTime?> updatedAt,
   Value<DateTime?> deletedAt,
   Value<int> rowid,
@@ -1952,6 +2072,7 @@ typedef $$PlotsTableUpdateCompanionBuilder = PlotsCompanion Function({
   Value<double?> areaHa,
   Value<String?> soilType,
   Value<String?> irrigation,
+  Value<String?> geom,
   Value<DateTime?> updatedAt,
   Value<DateTime?> deletedAt,
   Value<int> rowid,
@@ -1992,6 +2113,11 @@ class $$PlotsTableFilterComposer extends Composer<_$AppDatabase, $PlotsTable> {
 
   ColumnFilters<String> get irrigation => $composableBuilder(
     column: $table.irrigation,
+    builder: (column) => ColumnFilters(column),
+  );
+
+  ColumnFilters<String> get geom => $composableBuilder(
+    column: $table.geom,
     builder: (column) => ColumnFilters(column),
   );
 
@@ -2045,6 +2171,11 @@ class $$PlotsTableOrderingComposer
     builder: (column) => ColumnOrderings(column),
   );
 
+  ColumnOrderings<String> get geom => $composableBuilder(
+    column: $table.geom,
+    builder: (column) => ColumnOrderings(column),
+  );
+
   ColumnOrderings<DateTime> get updatedAt => $composableBuilder(
     column: $table.updatedAt,
     builder: (column) => ColumnOrderings(column),
@@ -2084,6 +2215,9 @@ class $$PlotsTableAnnotationComposer
     column: $table.irrigation,
     builder: (column) => column,
   );
+
+  GeneratedColumn<String> get geom =>
+      $composableBuilder(column: $table.geom, builder: (column) => column);
 
   GeneratedColumn<DateTime> get updatedAt =>
       $composableBuilder(column: $table.updatedAt, builder: (column) => column);
@@ -2126,6 +2260,7 @@ class $$PlotsTableTableManager
                 Value<double?> areaHa = const Value.absent(),
                 Value<String?> soilType = const Value.absent(),
                 Value<String?> irrigation = const Value.absent(),
+                Value<String?> geom = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -2136,6 +2271,7 @@ class $$PlotsTableTableManager
                 areaHa: areaHa,
                 soilType: soilType,
                 irrigation: irrigation,
+                geom: geom,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
                 rowid: rowid,
@@ -2148,6 +2284,7 @@ class $$PlotsTableTableManager
                 Value<double?> areaHa = const Value.absent(),
                 Value<String?> soilType = const Value.absent(),
                 Value<String?> irrigation = const Value.absent(),
+                Value<String?> geom = const Value.absent(),
                 Value<DateTime?> updatedAt = const Value.absent(),
                 Value<DateTime?> deletedAt = const Value.absent(),
                 Value<int> rowid = const Value.absent(),
@@ -2158,6 +2295,7 @@ class $$PlotsTableTableManager
                 areaHa: areaHa,
                 soilType: soilType,
                 irrigation: irrigation,
+                geom: geom,
                 updatedAt: updatedAt,
                 deletedAt: deletedAt,
                 rowid: rowid,

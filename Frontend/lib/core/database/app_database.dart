@@ -8,6 +8,8 @@ import 'package:path_provider/path_provider.dart';
 
 part 'app_database.g.dart';
 
+const Object _absent = Object();
+
 @DataClassName('FarmRow')
 class Farms extends Table {
   TextColumn get id => text()();
@@ -17,6 +19,8 @@ class Farms extends Table {
   TextColumn get village => text().nullable()();
 
   IntColumn get adminAreaId => integer().nullable()();
+
+  TextColumn get location => text().nullable()();
 
   DateTimeColumn get updatedAt => dateTime().nullable()();
 
@@ -39,6 +43,8 @@ class Plots extends Table {
   TextColumn get soilType => text().nullable()();
 
   TextColumn get irrigation => text().nullable()();
+
+  TextColumn get geom => text().nullable()();
 
   DateTimeColumn get updatedAt => dateTime().nullable()();
 
@@ -90,12 +96,20 @@ class AppDatabase extends _$AppDatabase {
   AppDatabase.forTesting(super.executor);
 
   @override
-  int get schemaVersion => 1;
+  int get schemaVersion => 2;
 
   @override
   MigrationStrategy get migration => MigrationStrategy(
     onCreate: (Migrator migrator) => migrator.createAll(),
-    onUpgrade: (Migrator migrator, int from, int to) async {},
+    onUpgrade: (Migrator migrator, int from, int to) async {
+      if (from < 2) {
+        await migrator.addColumn(farms, farms.location);
+        await migrator.addColumn(plots, plots.geom);
+        await customStatement(
+          "DELETE FROM sync_meta WHERE key = 'cursor_history'",
+        );
+      }
+    },
     beforeOpen: (OpeningDetails details) async {
       await customStatement('PRAGMA foreign_keys = OFF');
     },
@@ -106,16 +120,21 @@ class AppDatabase extends _$AppDatabase {
     String name, {
     String? village,
     int? adminAreaId,
+    Object? location = _absent,
     DateTime? updatedAt,
     DateTime? deletedAt,
   }) async {
     final FarmRow? existing = await getFarm(id);
+    final String? nextLocation = identical(location, _absent)
+        ? existing?.location
+        : location as String?;
     await into(farms).insertOnConflictUpdate(
       FarmsCompanion.insert(
         id: id,
         name: name,
         village: Value<String?>(village),
         adminAreaId: Value<int?>(adminAreaId),
+        location: Value<String?>(nextLocation),
         updatedAt: Value<DateTime?>(updatedAt ?? existing?.updatedAt),
         deletedAt: Value<DateTime?>(deletedAt),
       ),
@@ -129,10 +148,14 @@ class AppDatabase extends _$AppDatabase {
     double? areaHa,
     String? soilType,
     String? irrigation,
+    Object? geom = _absent,
     DateTime? updatedAt,
     DateTime? deletedAt,
   }) async {
     final PlotRow? existing = await getPlot(id);
+    final String? nextGeom = identical(geom, _absent)
+        ? existing?.geom
+        : geom as String?;
     await into(plots).insertOnConflictUpdate(
       PlotsCompanion.insert(
         id: id,
@@ -141,6 +164,7 @@ class AppDatabase extends _$AppDatabase {
         areaHa: Value<double?>(areaHa),
         soilType: Value<String?>(soilType),
         irrigation: Value<String?>(irrigation),
+        geom: Value<String?>(nextGeom),
         updatedAt: Value<DateTime?>(updatedAt ?? existing?.updatedAt),
         deletedAt: Value<DateTime?>(deletedAt),
       ),
@@ -263,6 +287,74 @@ END
           ..where((PendingChanges t) => t.status.equals('failed')))
         .watch()
         .map((List<PendingChangeRow> rows) => rows.length);
+  }
+
+  Stream<List<PendingChangeRow>> watchFailedChanges() {
+    return (select(pendingChanges)
+          ..where((PendingChanges t) => t.status.equals('failed'))
+          ..orderBy([
+            (PendingChanges t) => OrderingTerm.asc(t.createdAt),
+            (PendingChanges t) => OrderingTerm.asc(t.entity),
+            (PendingChanges t) => OrderingTerm.asc(t.id),
+          ]))
+        .watch();
+  }
+
+  Future<bool> resetFailedChange(String entity, String id) async {
+    final int updated =
+        await (update(pendingChanges)..where(
+              (PendingChanges t) =>
+                  t.entity.equals(entity) &
+                  t.id.equals(id) &
+                  t.status.equals('failed'),
+            ))
+            .write(
+              const PendingChangesCompanion(
+                status: Value<String>('pending'),
+                attempts: Value<int>(0),
+                lastError: Value<String?>(null),
+              ),
+            );
+    return updated > 0;
+  }
+
+  Future<int> resetAllFailedChanges() {
+    return (update(
+      pendingChanges,
+    )..where((PendingChanges t) => t.status.equals('failed'))).write(
+      const PendingChangesCompanion(
+        status: Value<String>('pending'),
+        attempts: Value<int>(0),
+        lastError: Value<String?>(null),
+      ),
+    );
+  }
+
+  Future<void> deleteLocalEntity(String entity, String id) async {
+    await transaction(() async {
+      if (entity == 'farm') {
+        final List<PlotRow> localPlots =
+            await (select(plots)..where(
+                  (Plots t) => t.farmId.equals(id) & t.updatedAt.isNull(),
+                ))
+                .get();
+        for (final PlotRow plot in localPlots) {
+          await removePendingChange('plot', plot.id);
+        }
+        await (delete(
+          plots,
+        )..where((Plots t) => t.farmId.equals(id) & t.updatedAt.isNull())).go();
+        await removePendingChange('farm', id);
+        await (delete(farms)..where((Farms t) => t.id.equals(id))).go();
+      } else if (entity == 'plot') {
+        await removePendingChange('plot', id);
+        await (delete(plots)..where((Plots t) => t.id.equals(id))).go();
+      }
+    });
+  }
+
+  Future<void> deleteMeta(String key) {
+    return (delete(syncMeta)..where((SyncMeta t) => t.key.equals(key))).go();
   }
 
   Future<String?> readMeta(String key) async {

@@ -7,6 +7,7 @@ import '../../core/i18n/strings_provider.dart';
 import '../../design_system/components/app_bottom_nav.dart';
 import '../../design_system/tokens.dart';
 import '../profile/data/me_repository.dart';
+import '../sync/presentation/sync_banner.dart';
 
 class HomeShell extends ConsumerWidget {
   const HomeShell({required this.navigationShell, super.key});
@@ -23,7 +24,12 @@ class HomeShell extends ConsumerWidget {
       AppNavItem(icon: Icons.person_outline, label: strings.navProfile),
     ];
     return Scaffold(
-      body: navigationShell,
+      body: Column(
+        children: <Widget>[
+          const SyncBanner(),
+          Expanded(child: navigationShell),
+        ],
+      ),
       bottomNavigationBar: SafeArea(
         minimum: const EdgeInsets.all(AppSpacing.lg),
         child: AppBottomNav(

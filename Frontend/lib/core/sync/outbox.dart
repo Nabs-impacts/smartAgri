@@ -6,6 +6,8 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../database/app_database.dart';
 
+const String cursorHistoryMetaKey = 'cursor_history';
+
 class Outbox {
   Outbox(this.database, {DateTime Function()? now})
     : _now = now ?? DateTime.now;
@@ -76,6 +78,48 @@ class Outbox {
     if (enqueued) {
       _enqueues.add(null);
     }
+  }
+
+  Future<void> retryFailed(String entity, String id) async {
+    final bool changed = await database.resetFailedChange(entity, id);
+    if (changed) {
+      _enqueues.add(null);
+    }
+  }
+
+  Future<void> retryAllFailed() async {
+    final int changed = await database.resetAllFailedChanges();
+    if (changed > 0) {
+      _enqueues.add(null);
+    }
+  }
+
+  Future<void> discardFailed(String entity, String id) async {
+    final PendingChangeRow? change = await database.getPendingChange(
+      entity,
+      id,
+    );
+    if (change == null || change.status != 'failed') {
+      return;
+    }
+    if (change.op == 'delete') {
+      await database.transaction(() async {
+        await database.removePendingChange(entity, id);
+        await database.deleteMeta(cursorHistoryMetaKey);
+      });
+      _enqueues.add(null);
+      return;
+    }
+    final bool confirmed = await database.hasServerVersion(entity, id);
+    if (confirmed) {
+      await database.transaction(() async {
+        await database.removePendingChange(entity, id);
+        await database.deleteMeta(cursorHistoryMetaKey);
+      });
+      _enqueues.add(null);
+      return;
+    }
+    await database.deleteLocalEntity(entity, id);
   }
 
   Future<void> dispose() => _enqueues.close();

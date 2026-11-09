@@ -72,6 +72,14 @@ final StreamProvider<int> failedCountProvider = StreamProvider<int>(
   (Ref ref) => ref.watch(appDatabaseProvider).failedCount,
 );
 
+final StreamProvider<List<PendingChangeRow>> failedChangesProvider =
+    StreamProvider<List<PendingChangeRow>>(
+      (Ref ref) => ref.watch(appDatabaseProvider).watchFailedChanges(),
+    );
+
+final Provider<DateTime Function()> syncClockProvider =
+    Provider<DateTime Function()>((Ref ref) => DateTime.now);
+
 final StreamProvider<DateTime?> lastSyncAtProvider = StreamProvider<DateTime?>(
   (Ref ref) => ref
       .watch(appDatabaseProvider)

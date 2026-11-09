@@ -1605,6 +1605,192 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Vous êtes le seul propriétaire d\'une organisation qui compte d\'autres membres. Transférez ou supprimez-la avant de supprimer votre compte.'**
   String get privacyOwnerConflict;
+
+  /// No description provided for @syncBannerFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Aucune modification refusée par le serveur} =1{1 modification refusée par le serveur} other{{count} modifications refusées par le serveur}}'**
+  String syncBannerFailed(int count);
+
+  /// No description provided for @syncOffline.
+  ///
+  /// In fr, this message translates to:
+  /// **'Hors connexion'**
+  String get syncOffline;
+
+  /// No description provided for @syncPendingBanner.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Aucune modification en attente d\'envoi} =1{1 modification en attente d\'envoi} other{{count} modifications en attente d\'envoi}}'**
+  String syncPendingBanner(int count);
+
+  /// No description provided for @syncErrorBanner.
+  ///
+  /// In fr, this message translates to:
+  /// **'La synchronisation a rencontré une erreur.'**
+  String get syncErrorBanner;
+
+  /// No description provided for @syncInProgress.
+  ///
+  /// In fr, this message translates to:
+  /// **'Synchronisation en cours…'**
+  String get syncInProgress;
+
+  /// No description provided for @syncSectionTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Synchronisation'**
+  String get syncSectionTitle;
+
+  /// No description provided for @syncLastTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dernière synchronisation'**
+  String get syncLastTitle;
+
+  /// No description provided for @syncNever.
+  ///
+  /// In fr, this message translates to:
+  /// **'jamais'**
+  String get syncNever;
+
+  /// No description provided for @syncJustNow.
+  ///
+  /// In fr, this message translates to:
+  /// **'à l\'instant'**
+  String get syncJustNow;
+
+  /// No description provided for @syncMinutesAgo.
+  ///
+  /// In fr, this message translates to:
+  /// **'il y a {count} min'**
+  String syncMinutesAgo(int count);
+
+  /// No description provided for @syncHoursAgo.
+  ///
+  /// In fr, this message translates to:
+  /// **'il y a {count} h'**
+  String syncHoursAgo(int count);
+
+  /// No description provided for @syncYesterday.
+  ///
+  /// In fr, this message translates to:
+  /// **'hier'**
+  String get syncYesterday;
+
+  /// No description provided for @syncDaysAgo.
+  ///
+  /// In fr, this message translates to:
+  /// **'il y a {count} jours'**
+  String syncDaysAgo(int count);
+
+  /// No description provided for @syncPendingCount.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Aucune modification en attente} =1{1 modification en attente} other{{count} modifications en attente}}'**
+  String syncPendingCount(int count);
+
+  /// No description provided for @syncFailedCount.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Aucune modification en échec} =1{1 modification en échec} other{{count} modifications en échec}}'**
+  String syncFailedCount(int count);
+
+  /// No description provided for @syncNowButton.
+  ///
+  /// In fr, this message translates to:
+  /// **'Synchroniser maintenant'**
+  String get syncNowButton;
+
+  /// No description provided for @syncFailedTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifications en échec'**
+  String get syncFailedTitle;
+
+  /// No description provided for @syncFailedEmpty.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune modification en échec.'**
+  String get syncFailedEmpty;
+
+  /// No description provided for @syncRetryAll.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tout réessayer'**
+  String get syncRetryAll;
+
+  /// No description provided for @syncEntityFarm.
+  ///
+  /// In fr, this message translates to:
+  /// **'Exploitation'**
+  String get syncEntityFarm;
+
+  /// No description provided for @syncEntityPlot.
+  ///
+  /// In fr, this message translates to:
+  /// **'Parcelle'**
+  String get syncEntityPlot;
+
+  /// No description provided for @syncOperationUpsert.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modification'**
+  String get syncOperationUpsert;
+
+  /// No description provided for @syncOperationDelete.
+  ///
+  /// In fr, this message translates to:
+  /// **'Suppression'**
+  String get syncOperationDelete;
+
+  /// No description provided for @syncDeletedItem.
+  ///
+  /// In fr, this message translates to:
+  /// **'Élément supprimé'**
+  String get syncDeletedItem;
+
+  /// No description provided for @syncDiscard.
+  ///
+  /// In fr, this message translates to:
+  /// **'Abandonner'**
+  String get syncDiscard;
+
+  /// No description provided for @syncDiscardTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Abandonner cette modification ?'**
+  String get syncDiscardTitle;
+
+  /// No description provided for @syncDiscardConfirmed.
+  ///
+  /// In fr, this message translates to:
+  /// **'La modification sera perdue et la version du serveur remplacera la version locale.'**
+  String get syncDiscardConfirmed;
+
+  /// No description provided for @syncDiscardUnconfirmed.
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'élément sera supprimé définitivement de cet appareil.'**
+  String get syncDiscardUnconfirmed;
+
+  /// No description provided for @syncDiscardDelete.
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'élément sera restauré depuis le serveur.'**
+  String get syncDiscardDelete;
+
+  /// No description provided for @syncDiscardConfirm.
+  ///
+  /// In fr, this message translates to:
+  /// **'Abandonner'**
+  String get syncDiscardConfirm;
+
+  /// No description provided for @syncUnknownError.
+  ///
+  /// In fr, this message translates to:
+  /// **'Refusée par le serveur.'**
+  String get syncUnknownError;
 }
 
 class _AppLocalizationsDelegate

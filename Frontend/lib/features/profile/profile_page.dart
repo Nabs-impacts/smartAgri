@@ -9,6 +9,8 @@ import '../../core/i18n/strings_provider.dart';
 import '../../core/network/api_error_messages.dart';
 import '../../core/network/api_exception.dart';
 import '../../core/phone/niger_phone.dart';
+import '../../core/sync/sync_providers.dart';
+import '../../core/sync/sync_status.dart';
 import '../../design_system/components/app_button.dart';
 import '../../design_system/components/app_card.dart';
 import '../../design_system/components/app_progress_bar.dart';
@@ -19,6 +21,7 @@ import '../auth/data/auth_repository.dart';
 import '../auth/domain/user_profile.dart';
 import '../privacy/data/data_exporter.dart';
 import '../privacy/data/privacy_repository.dart';
+import '../sync/sync_format.dart';
 import 'data/me_repository.dart';
 
 class ProfilePage extends ConsumerWidget {
@@ -99,6 +102,8 @@ class ProfilePage extends ConsumerWidget {
                   ),
                   const SizedBox(height: AppSpacing.xl),
                   _PrivacySection(strings: strings),
+                  const SizedBox(height: AppSpacing.xl),
+                  _SyncSection(strings: strings),
                 ],
                 const SizedBox(height: AppSpacing.lg),
                 SizedBox(
@@ -319,6 +324,98 @@ class ProfilePage extends ConsumerWidget {
     if (confirmed == true) {
       await ref.read(authRepositoryProvider).logout();
     }
+  }
+}
+
+class _SyncSection extends ConsumerWidget {
+  const _SyncSection({required this.strings});
+
+  final AppLocalizations strings;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final SyncSnapshot snapshot = ref.watch(syncStatusProvider);
+    final DateTime now = ref.watch(syncClockProvider)();
+    final bool syncing = snapshot.status == SyncStatus.syncing;
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(strings.syncSectionTitle, style: AppTextStyles.title),
+        const SizedBox(height: AppSpacing.md),
+        AppCard(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: <Widget>[
+              Row(
+                children: <Widget>[
+                  Expanded(
+                    child: Text(
+                      strings.syncLastTitle,
+                      style: AppTextStyles.body,
+                    ),
+                  ),
+                  const SizedBox(width: AppSpacing.sm),
+                  Text(
+                    formatLastSync(strings, snapshot.lastSyncAt, now),
+                    key: const Key('profile_sync_last'),
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.muted,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                strings.syncPendingCount(snapshot.pendingCount),
+                key: const Key('profile_sync_pending'),
+                style: AppTextStyles.body,
+              ),
+              const SizedBox(height: AppSpacing.xs),
+              InkWell(
+                key: const Key('profile_sync_failed'),
+                borderRadius: AppRadii.smallBorder,
+                onTap: snapshot.failedCount > 0
+                    ? () => context.push('/sync/failed')
+                    : null,
+                child: Row(
+                  children: <Widget>[
+                    Expanded(
+                      child: Text(
+                        strings.syncFailedCount(snapshot.failedCount),
+                        style: AppTextStyles.body.copyWith(
+                          color: snapshot.failedCount > 0
+                              ? AppColors.danger
+                              : AppColors.ink,
+                        ),
+                      ),
+                    ),
+                    if (snapshot.failedCount > 0)
+                      const Icon(
+                        Icons.chevron_right,
+                        color: AppColors.danger,
+                        size: AppSizes.icon,
+                      ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: AppSpacing.md),
+              SizedBox(
+                width: double.infinity,
+                child: AppButton(
+                  key: const Key('profile_sync_now'),
+                  label: strings.syncNowButton,
+                  loading: syncing,
+                  onPressed: syncing
+                      ? null
+                      : () => ref.read(syncRunnerProvider)(),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
   }
 }
 

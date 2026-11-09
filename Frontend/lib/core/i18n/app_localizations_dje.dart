@@ -838,4 +838,141 @@ class AppLocalizationsDje extends AppLocalizations {
   @override
   String get privacyOwnerConflict =>
       'Vous êtes le seul propriétaire d\'une organisation qui compte d\'autres membres. Transférez ou supprimez-la avant de supprimer votre compte.';
+
+  @override
+  String syncBannerFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count modifications refusées par le serveur',
+      one: '1 modification refusée par le serveur',
+      zero: 'Aucune modification refusée par le serveur',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncOffline => 'Hors connexion';
+
+  @override
+  String syncPendingBanner(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count modifications en attente d\'envoi',
+      one: '1 modification en attente d\'envoi',
+      zero: 'Aucune modification en attente d\'envoi',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncErrorBanner => 'La synchronisation a rencontré une erreur.';
+
+  @override
+  String get syncInProgress => 'Synchronisation en cours…';
+
+  @override
+  String get syncSectionTitle => 'Synchronisation';
+
+  @override
+  String get syncLastTitle => 'Dernière synchronisation';
+
+  @override
+  String get syncNever => 'jamais';
+
+  @override
+  String get syncJustNow => 'à l\'instant';
+
+  @override
+  String syncMinutesAgo(int count) {
+    return 'il y a $count min';
+  }
+
+  @override
+  String syncHoursAgo(int count) {
+    return 'il y a $count h';
+  }
+
+  @override
+  String get syncYesterday => 'hier';
+
+  @override
+  String syncDaysAgo(int count) {
+    return 'il y a $count jours';
+  }
+
+  @override
+  String syncPendingCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count modifications en attente',
+      one: '1 modification en attente',
+      zero: 'Aucune modification en attente',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String syncFailedCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count modifications en échec',
+      one: '1 modification en échec',
+      zero: 'Aucune modification en échec',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get syncNowButton => 'Synchroniser maintenant';
+
+  @override
+  String get syncFailedTitle => 'Modifications en échec';
+
+  @override
+  String get syncFailedEmpty => 'Aucune modification en échec.';
+
+  @override
+  String get syncRetryAll => 'Tout réessayer';
+
+  @override
+  String get syncEntityFarm => 'Exploitation';
+
+  @override
+  String get syncEntityPlot => 'Parcelle';
+
+  @override
+  String get syncOperationUpsert => 'Modification';
+
+  @override
+  String get syncOperationDelete => 'Suppression';
+
+  @override
+  String get syncDeletedItem => 'Élément supprimé';
+
+  @override
+  String get syncDiscard => 'Abandonner';
+
+  @override
+  String get syncDiscardTitle => 'Abandonner cette modification ?';
+
+  @override
+  String get syncDiscardConfirmed =>
+      'La modification sera perdue et la version du serveur remplacera la version locale.';
+
+  @override
+  String get syncDiscardUnconfirmed =>
+      'L\'élément sera supprimé définitivement de cet appareil.';
+
+  @override
+  String get syncDiscardDelete => 'L\'élément sera restauré depuis le serveur.';
+
+  @override
+  String get syncDiscardConfirm => 'Abandonner';
+
+  @override
+  String get syncUnknownError => 'Refusée par le serveur.';
 }

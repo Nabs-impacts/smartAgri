@@ -42,7 +42,7 @@ class SyncService {
        _outbox = outbox ?? Outbox(database, now: now);
 
   static const String lastSyncAtKey = 'last_sync_at';
-  static const String cursorHistoryKey = 'cursor_history';
+  static const String cursorHistoryKey = cursorHistoryMetaKey;
 
   final AppDatabase database;
   final Dio dio;
@@ -326,6 +326,9 @@ class SyncService {
                   changeData['name'] as String? ?? '',
                   village: changeData['village'] as String?,
                   adminAreaId: _asInt(changeData['admin_area_id']),
+                  location: changeData['location'] == null
+                      ? null
+                      : jsonEncode(changeData['location']),
                   updatedAt: updatedAt,
                 );
               }
@@ -339,6 +342,9 @@ class SyncService {
                 areaHa: _asDouble(changeData['area_ha']),
                 soilType: changeData['soil_type'] as String?,
                 irrigation: changeData['irrigation'] as String?,
+                geom: changeData['geom'] == null
+                    ? null
+                    : jsonEncode(changeData['geom']),
                 updatedAt: updatedAt,
               );
             }

@@ -29,6 +29,7 @@ import '../../features/privacy/presentation/delete_account_page.dart';
 import '../../features/profile/data/me_repository.dart';
 import '../../features/profile/profile_page.dart';
 import '../../features/search/search_page.dart';
+import '../../features/sync/presentation/sync_failed_page.dart';
 import '../config/app_config.dart';
 import '../session/session_controller.dart';
 import '../session/session_state.dart';
@@ -189,6 +190,7 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
         path: '/diagnostics',
         builder: (_, _) => const DiagnosticsHistoryPage(),
       ),
+      GoRoute(path: '/sync/failed', builder: (_, _) => const SyncFailedPage()),
       GoRoute(path: '/diagnostic', redirect: (_, _) => '/diagnostic/new'),
       GoRoute(
         path: '/diagnostic/new',
@@ -254,6 +256,7 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
           '/search',
           '/profile',
           '/admin',
+          '/sync/failed',
         };
         return adminRedirects.contains(path) ? '/admin/overview' : null;
       }

@@ -1,3 +1,5 @@
+import 'dart:convert';
+
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 
 import '../../../core/database/app_database.dart';
@@ -108,7 +110,12 @@ class LocalFarmsRepository implements FarmsRepository {
       await outbox.enqueueUpsert(
         'farm',
         id,
-        _farmData(name: name, village: village, adminAreaId: adminAreaId),
+        _farmData(
+          name: name,
+          village: village,
+          adminAreaId: adminAreaId,
+          location: null,
+        ),
       );
     });
     final FarmRow? row = await database.getFarm(id);
@@ -151,6 +158,7 @@ class LocalFarmsRepository implements FarmsRepository {
           name: nextName,
           village: nextVillage,
           adminAreaId: nextAdminAreaId,
+          location: _decodeGeo(current.location),
         ),
       );
     });
@@ -219,6 +227,7 @@ class LocalFarmsRepository implements FarmsRepository {
           areaHa: areaHa,
           soilType: soilType,
           irrigation: irrigation,
+          geom: null,
         ),
       );
     });
@@ -281,6 +290,7 @@ class LocalFarmsRepository implements FarmsRepository {
           areaHa: nextAreaHa,
           soilType: nextSoilType,
           irrigation: nextIrrigation,
+          geom: _decodeGeo(current.geom),
         ),
       );
     });
@@ -300,12 +310,13 @@ class LocalFarmsRepository implements FarmsRepository {
     required String name,
     String? village,
     int? adminAreaId,
+    required Object? location,
   }) {
     return <String, dynamic>{
       'name': name,
       'village': village,
       'admin_area_id': adminAreaId,
-      'location': null,
+      'location': location,
     };
   }
 
@@ -315,15 +326,27 @@ class LocalFarmsRepository implements FarmsRepository {
     double? areaHa,
     SoilType? soilType,
     IrrigationType? irrigation,
+    required Object? geom,
   }) {
     return <String, dynamic>{
       'farm_id': farmId,
       'name': name,
       'area_ha': areaHa,
-      'geom': null,
+      'geom': geom,
       'soil_type': soilType?.apiValue,
       'irrigation': irrigation?.apiValue,
     };
+  }
+
+  Object? _decodeGeo(String? raw) {
+    if (raw == null) {
+      return null;
+    }
+    try {
+      return jsonDecode(raw);
+    } catch (_) {
+      return null;
+    }
   }
 }
 
