@@ -1791,6 +1791,540 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Refusée par le serveur.'**
   String get syncUnknownError;
+
+  /// No description provided for @cycleAdd.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter un cycle'**
+  String get cycleAdd;
+
+  /// No description provided for @plotCyclesEmpty.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun cycle pour cette parcelle. Ajoutez votre première culture.'**
+  String get plotCyclesEmpty;
+
+  /// No description provided for @plotTimelineLink.
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir l\'historique de la parcelle'**
+  String get plotTimelineLink;
+
+  /// No description provided for @cycleStatusPlanned.
+  ///
+  /// In fr, this message translates to:
+  /// **'Prévu'**
+  String get cycleStatusPlanned;
+
+  /// No description provided for @cycleStatusGrowing.
+  ///
+  /// In fr, this message translates to:
+  /// **'En cours'**
+  String get cycleStatusGrowing;
+
+  /// No description provided for @cycleStatusHarvested.
+  ///
+  /// In fr, this message translates to:
+  /// **'Récolté'**
+  String get cycleStatusHarvested;
+
+  /// No description provided for @cycleStatusFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'Échec'**
+  String get cycleStatusFailed;
+
+  /// No description provided for @cycleSowingDate.
+  ///
+  /// In fr, this message translates to:
+  /// **'Semis'**
+  String get cycleSowingDate;
+
+  /// No description provided for @cycleExpectedHarvestDate.
+  ///
+  /// In fr, this message translates to:
+  /// **'Récolte prévue'**
+  String get cycleExpectedHarvestDate;
+
+  /// No description provided for @cycleHarvestDate.
+  ///
+  /// In fr, this message translates to:
+  /// **'Récolte'**
+  String get cycleHarvestDate;
+
+  /// No description provided for @cycleVarietyLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Variété'**
+  String get cycleVarietyLabel;
+
+  /// No description provided for @cycleSeasonLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Saison'**
+  String get cycleSeasonLabel;
+
+  /// No description provided for @cycleNotesLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Notes'**
+  String get cycleNotesLabel;
+
+  /// No description provided for @cycleCreateTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouveau cycle'**
+  String get cycleCreateTitle;
+
+  /// No description provided for @cycleEditTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifier le cycle'**
+  String get cycleEditTitle;
+
+  /// No description provided for @cycleCropLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Culture'**
+  String get cycleCropLabel;
+
+  /// No description provided for @cycleCropRequired.
+  ///
+  /// In fr, this message translates to:
+  /// **'Choisissez une culture.'**
+  String get cycleCropRequired;
+
+  /// No description provided for @cycleSowingDateLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Date de semis'**
+  String get cycleSowingDateLabel;
+
+  /// No description provided for @cycleExpectedHarvestDateLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Date de récolte prévue'**
+  String get cycleExpectedHarvestDateLabel;
+
+  /// No description provided for @cycleExpectedHarvestHelp.
+  ///
+  /// In fr, this message translates to:
+  /// **'Laissez vide pour un calcul automatique selon la culture'**
+  String get cycleExpectedHarvestHelp;
+
+  /// No description provided for @cycleDateHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Choisir une date'**
+  String get cycleDateHint;
+
+  /// No description provided for @cycleDateClear.
+  ///
+  /// In fr, this message translates to:
+  /// **'Effacer la date'**
+  String get cycleDateClear;
+
+  /// No description provided for @cycleDateInvalid.
+  ///
+  /// In fr, this message translates to:
+  /// **'La date de récolte prévue ne peut pas précéder le semis.'**
+  String get cycleDateInvalid;
+
+  /// No description provided for @cycleDateImplausible.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette date n\'est pas plausible.'**
+  String get cycleDateImplausible;
+
+  /// No description provided for @cycleInitialStatusLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Statut initial'**
+  String get cycleInitialStatusLabel;
+
+  /// No description provided for @cycleSave.
+  ///
+  /// In fr, this message translates to:
+  /// **'Enregistrer'**
+  String get cycleSave;
+
+  /// No description provided for @cycleNotFound.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cycle introuvable.'**
+  String get cycleNotFound;
+
+  /// No description provided for @cycleBack.
+  ///
+  /// In fr, this message translates to:
+  /// **'Retour'**
+  String get cycleBack;
+
+  /// No description provided for @cycleDeleteTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer le cycle ?'**
+  String get cycleDeleteTitle;
+
+  /// No description provided for @cycleDeleteMessage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Les activités et récoltes de ce cycle seront aussi supprimées.'**
+  String get cycleDeleteMessage;
+
+  /// No description provided for @cycleStart.
+  ///
+  /// In fr, this message translates to:
+  /// **'Démarrer le cycle'**
+  String get cycleStart;
+
+  /// No description provided for @cycleFail.
+  ///
+  /// In fr, this message translates to:
+  /// **'Déclarer un échec'**
+  String get cycleFail;
+
+  /// No description provided for @cycleFailTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Déclarer un échec ?'**
+  String get cycleFailTitle;
+
+  /// No description provided for @cycleFailMessage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le cycle sera marqué comme échoué. Cette action est définitive.'**
+  String get cycleFailMessage;
+
+  /// No description provided for @cycleAddHarvest.
+  ///
+  /// In fr, this message translates to:
+  /// **'Enregistrer une récolte'**
+  String get cycleAddHarvest;
+
+  /// No description provided for @cycleAddActivity.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter une activité'**
+  String get cycleAddActivity;
+
+  /// No description provided for @cycleJournalTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Journal du cycle'**
+  String get cycleJournalTitle;
+
+  /// No description provided for @cycleJournalEmpty.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune activité ni récolte pour ce cycle.'**
+  String get cycleJournalEmpty;
+
+  /// No description provided for @cycleJournalDeleteTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer cet élément ?'**
+  String get cycleJournalDeleteTitle;
+
+  /// No description provided for @cycleJournalDeleteMessage.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cet élément sera supprimé du journal du cycle.'**
+  String get cycleJournalDeleteMessage;
+
+  /// No description provided for @cycleSummaryTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Bilan'**
+  String get cycleSummaryTitle;
+
+  /// No description provided for @cycleSummaryArea.
+  ///
+  /// In fr, this message translates to:
+  /// **'Surface'**
+  String get cycleSummaryArea;
+
+  /// No description provided for @cycleSummaryTotalHarvest.
+  ///
+  /// In fr, this message translates to:
+  /// **'Récolte totale'**
+  String get cycleSummaryTotalHarvest;
+
+  /// No description provided for @cycleSummaryYield.
+  ///
+  /// In fr, this message translates to:
+  /// **'Rendement'**
+  String get cycleSummaryYield;
+
+  /// No description provided for @cycleSummaryCosts.
+  ///
+  /// In fr, this message translates to:
+  /// **'Coûts'**
+  String get cycleSummaryCosts;
+
+  /// No description provided for @cycleSummaryRevenue.
+  ///
+  /// In fr, this message translates to:
+  /// **'Revenus'**
+  String get cycleSummaryRevenue;
+
+  /// No description provided for @cycleSummaryMargin.
+  ///
+  /// In fr, this message translates to:
+  /// **'Marge'**
+  String get cycleSummaryMargin;
+
+  /// No description provided for @cycleSummaryLocal.
+  ///
+  /// In fr, this message translates to:
+  /// **'Calculé sur votre téléphone'**
+  String get cycleSummaryLocal;
+
+  /// No description provided for @cycleSummaryNoValue.
+  ///
+  /// In fr, this message translates to:
+  /// **'—'**
+  String get cycleSummaryNoValue;
+
+  /// No description provided for @cycleQuality.
+  ///
+  /// In fr, this message translates to:
+  /// **'Qualité'**
+  String get cycleQuality;
+
+  /// No description provided for @cycleSold.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vendu'**
+  String get cycleSold;
+
+  /// No description provided for @cycleComparison.
+  ///
+  /// In fr, this message translates to:
+  /// **'Moyenne des autres agriculteurs : {value} ({count} cycles)'**
+  String cycleComparison(String value, int count);
+
+  /// No description provided for @activityCreateTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouvelle activité'**
+  String get activityCreateTitle;
+
+  /// No description provided for @activityEditTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifier l\'activité'**
+  String get activityEditTitle;
+
+  /// No description provided for @activityTypeLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Type'**
+  String get activityTypeLabel;
+
+  /// No description provided for @activityDateLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Date'**
+  String get activityDateLabel;
+
+  /// No description provided for @activityProductLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Produit'**
+  String get activityProductLabel;
+
+  /// No description provided for @activityQuantityLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Quantité'**
+  String get activityQuantityLabel;
+
+  /// No description provided for @activityUnitLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Unité'**
+  String get activityUnitLabel;
+
+  /// No description provided for @activityCostLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Coût (FCFA)'**
+  String get activityCostLabel;
+
+  /// No description provided for @activityNotesLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Notes'**
+  String get activityNotesLabel;
+
+  /// No description provided for @activityQuantityInvalid.
+  ///
+  /// In fr, this message translates to:
+  /// **'La quantité doit être positive ou nulle.'**
+  String get activityQuantityInvalid;
+
+  /// No description provided for @activityCostInvalid.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le coût doit être positif ou nul.'**
+  String get activityCostInvalid;
+
+  /// No description provided for @activityNotFound.
+  ///
+  /// In fr, this message translates to:
+  /// **'Activité introuvable.'**
+  String get activityNotFound;
+
+  /// No description provided for @activitySave.
+  ///
+  /// In fr, this message translates to:
+  /// **'Enregistrer'**
+  String get activitySave;
+
+  /// No description provided for @activityTypeSowing.
+  ///
+  /// In fr, this message translates to:
+  /// **'Semis'**
+  String get activityTypeSowing;
+
+  /// No description provided for @activityTypeFertilizing.
+  ///
+  /// In fr, this message translates to:
+  /// **'Fertilisation'**
+  String get activityTypeFertilizing;
+
+  /// No description provided for @activityTypeIrrigation.
+  ///
+  /// In fr, this message translates to:
+  /// **'Irrigation'**
+  String get activityTypeIrrigation;
+
+  /// No description provided for @activityTypeWeeding.
+  ///
+  /// In fr, this message translates to:
+  /// **'Désherbage'**
+  String get activityTypeWeeding;
+
+  /// No description provided for @activityTypePesticide.
+  ///
+  /// In fr, this message translates to:
+  /// **'Traitement'**
+  String get activityTypePesticide;
+
+  /// No description provided for @activityTypeHarvest.
+  ///
+  /// In fr, this message translates to:
+  /// **'Récolte'**
+  String get activityTypeHarvest;
+
+  /// No description provided for @activityTypeOther.
+  ///
+  /// In fr, this message translates to:
+  /// **'Autre'**
+  String get activityTypeOther;
+
+  /// No description provided for @harvestCreateTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouvelle récolte'**
+  String get harvestCreateTitle;
+
+  /// No description provided for @harvestEditTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifier la récolte'**
+  String get harvestEditTitle;
+
+  /// No description provided for @harvestDateLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Date de récolte'**
+  String get harvestDateLabel;
+
+  /// No description provided for @harvestQuantityLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Quantité récoltée (kg)'**
+  String get harvestQuantityLabel;
+
+  /// No description provided for @harvestQualityLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Qualité'**
+  String get harvestQualityLabel;
+
+  /// No description provided for @harvestSoldLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Quantité vendue (kg)'**
+  String get harvestSoldLabel;
+
+  /// No description provided for @harvestPriceLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Prix moyen (FCFA/kg)'**
+  String get harvestPriceLabel;
+
+  /// No description provided for @harvestEstimatedRevenue.
+  ///
+  /// In fr, this message translates to:
+  /// **'Revenu estimé : {amount}'**
+  String harvestEstimatedRevenue(String amount);
+
+  /// No description provided for @harvestCloseCycle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Clôturer le cycle (récolte terminée)'**
+  String get harvestCloseCycle;
+
+  /// No description provided for @harvestQuantityInvalid.
+  ///
+  /// In fr, this message translates to:
+  /// **'La quantité récoltée doit être supérieure à 0.'**
+  String get harvestQuantityInvalid;
+
+  /// No description provided for @harvestSoldInvalid.
+  ///
+  /// In fr, this message translates to:
+  /// **'La quantité vendue ne peut pas dépasser la quantité récoltée.'**
+  String get harvestSoldInvalid;
+
+  /// No description provided for @harvestPriceInvalid.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le prix doit être positif ou nul.'**
+  String get harvestPriceInvalid;
+
+  /// No description provided for @harvestNotFound.
+  ///
+  /// In fr, this message translates to:
+  /// **'Récolte introuvable.'**
+  String get harvestNotFound;
+
+  /// No description provided for @harvestSave.
+  ///
+  /// In fr, this message translates to:
+  /// **'Enregistrer'**
+  String get harvestSave;
+
+  /// No description provided for @plotTimelineTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Historique de la parcelle'**
+  String get plotTimelineTitle;
+
+  /// No description provided for @plotTimelineEmpty.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun événement pour cette parcelle.'**
+  String get plotTimelineEmpty;
+
+  /// No description provided for @plotTimelineDiagnosticsHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Les diagnostics sont dans l\'onglet Diagnostics.'**
+  String get plotTimelineDiagnosticsHint;
 }
 
 class _AppLocalizationsDelegate

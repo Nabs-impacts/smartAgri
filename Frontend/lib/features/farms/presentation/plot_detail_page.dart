@@ -5,8 +5,15 @@ import 'package:go_router/go_router.dart';
 import '../../../core/i18n/app_localizations.dart';
 import '../../../core/i18n/strings_provider.dart';
 import '../../../design_system/components/app_card.dart';
+import '../../../design_system/components/app_error_banner.dart';
+import '../../../design_system/components/app_status_chip.dart';
 import '../../../design_system/components/app_text_button.dart';
 import '../../../design_system/tokens.dart';
+import '../../catalog/data/catalog_repository.dart';
+import '../../cycles/data/cycles_providers.dart';
+import '../../cycles/domain/cycle.dart';
+import '../../cycles/presentation/cycle_display.dart';
+import '../../cycles/presentation/cycle_format.dart';
 import '../data/farms_providers.dart';
 import '../domain/plot.dart';
 import 'farm_display.dart';
@@ -115,11 +122,8 @@ class PlotDetailPage extends ConsumerWidget {
                 ),
               ),
               const SizedBox(height: AppSpacing.xl),
-              _ComingSoonSection(
-                title: strings.plotCyclesTitle,
-                message: strings.comingSoon,
-              ),
-              const SizedBox(height: AppSpacing.md),
+              _CyclesSection(plotId: plotId, strings: strings),
+              const SizedBox(height: AppSpacing.xl),
               _ComingSoonSection(
                 title: strings.plotDiagnosticsTitle,
                 message: strings.comingSoon,
@@ -167,6 +171,147 @@ class PlotDetailPage extends ConsumerWidget {
         context.pop();
       }
     }
+  }
+}
+
+class _CyclesSection extends ConsumerWidget {
+  const _CyclesSection({required this.plotId, required this.strings});
+
+  final String plotId;
+  final AppLocalizations strings;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final AsyncValue<List<Cycle>> cycles = ref.watch(cyclesProvider(plotId));
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Row(
+          children: <Widget>[
+            Expanded(
+              child: Text(strings.plotCyclesTitle, style: AppTextStyles.title),
+            ),
+            AppTextButton(
+              key: const Key('plot_add_cycle'),
+              label: strings.cycleAdd,
+              onPressed: () => context.go('/plots/$plotId/cycles/new'),
+            ),
+          ],
+        ),
+        const SizedBox(height: AppSpacing.md),
+        cycles.when(
+          loading: () => const Center(
+            child: Padding(
+              padding: EdgeInsets.all(AppSpacing.lg),
+              child: CircularProgressIndicator(color: AppColors.primary),
+            ),
+          ),
+          error: (Object error, StackTrace stackTrace) => Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: <Widget>[
+              AppErrorBanner(message: strings.errorGeneric),
+              const SizedBox(height: AppSpacing.md),
+              Center(
+                child: AppTextButton(
+                  key: const Key('plot_cycles_retry'),
+                  label: strings.retry,
+                  onPressed: () => ref.invalidate(cyclesProvider(plotId)),
+                ),
+              ),
+            ],
+          ),
+          data: (List<Cycle> items) {
+            if (items.isEmpty) {
+              return AppCard(
+                child: Text(
+                  strings.plotCyclesEmpty,
+                  key: const Key('plot_cycles_empty'),
+                  style: AppTextStyles.body.copyWith(color: AppColors.muted),
+                  textAlign: TextAlign.center,
+                ),
+              );
+            }
+            return Column(
+              children: <Widget>[
+                for (final Cycle cycle in items) ...<Widget>[
+                  _CycleTile(strings: strings, cycle: cycle),
+                  const SizedBox(height: AppSpacing.md),
+                ],
+              ],
+            );
+          },
+        ),
+        const SizedBox(height: AppSpacing.xs),
+        Align(
+          alignment: Alignment.centerLeft,
+          child: AppTextButton(
+            key: const Key('plot_timeline_link'),
+            label: strings.plotTimelineLink,
+            onPressed: () => context.go('/plots/$plotId/timeline'),
+          ),
+        ),
+      ],
+    );
+  }
+}
+
+class _CycleTile extends ConsumerWidget {
+  const _CycleTile({required this.strings, required this.cycle});
+
+  final AppLocalizations strings;
+  final Cycle cycle;
+
+  @override
+  Widget build(BuildContext context, WidgetRef ref) {
+    final String? cropName = ref.watch(cultureNameProvider(cycle.cropId)).value;
+    return InkWell(
+      key: Key('cycle_card_${cycle.id}'),
+      borderRadius: AppRadii.cardBorder,
+      onTap: () => context.go('/cycles/${cycle.id}'),
+      child: AppCard(
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: <Widget>[
+            Row(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: <Widget>[
+                Expanded(
+                  child: Text(
+                    cropName ?? cycle.cropId.toString(),
+                    style: AppTextStyles.title,
+                  ),
+                ),
+                const SizedBox(width: AppSpacing.sm),
+                AppStatusChip(
+                  label: cycleStatusLabel(strings, cycle.status),
+                  variant: cycleStatusVariant(cycle.status),
+                ),
+              ],
+            ),
+            if (cycle.variety != null && cycle.variety!.isNotEmpty) ...<Widget>[
+              const SizedBox(height: AppSpacing.xs),
+              Text(cycle.variety!, style: AppTextStyles.body),
+            ],
+            if (cycle.sowingDate != null) ...<Widget>[
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                '${strings.cycleSowingDate} : '
+                '${formatLongDate(cycle.sowingDate!)}',
+                style: AppTextStyles.caption.copyWith(color: AppColors.muted),
+              ),
+            ],
+            if (cycle.expectedHarvestDate != null) ...<Widget>[
+              const SizedBox(height: AppSpacing.xs),
+              Text(
+                '${strings.cycleExpectedHarvestDate} : '
+                '${formatLongDate(cycle.expectedHarvestDate!)}',
+                style: AppTextStyles.caption.copyWith(color: AppColors.muted),
+              ),
+            ],
+          ],
+        ),
+      ),
+    );
   }
 }
 

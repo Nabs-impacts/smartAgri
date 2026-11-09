@@ -341,6 +341,41 @@ void main() {
     expect(find.text('Mes diagnostics'), findsNothing);
   });
 
+  testWidgets('an administrator is redirected from the cycle routes', (
+    WidgetTester tester,
+  ) async {
+    final ProviderContainer container = await buildContainer(
+      FixedSessionController(SessionState.authenticated),
+      meRepository: FakeMeRepository(sampleMeData(role: 'gov_admin')),
+      startRoute: '/cycles/c1',
+    );
+    final GoRouter router = await pumpContainer(tester, container);
+    await tester.pumpAndSettle();
+
+    expect(router.state.uri.path, '/admin/overview');
+
+    router.go('/plots/plot-1/timeline');
+    await tester.pumpAndSettle();
+    expect(router.state.uri.path, '/admin/overview');
+
+    router.go('/plots/plot-1/cycles/new');
+    await tester.pumpAndSettle();
+    expect(router.state.uri.path, '/admin/overview');
+  });
+
+  testWidgets('a missing cycle shows the not found state', (
+    WidgetTester tester,
+  ) async {
+    final ProviderContainer container = await buildContainer(
+      FixedSessionController(SessionState.authenticated),
+      startRoute: '/cycles/missing',
+    );
+    await pumpContainer(tester, container);
+    await tester.pumpAndSettle();
+
+    expect(find.text('Cycle introuvable.'), findsOneWidget);
+  });
+
   testWidgets('the login redirect sends an administrator to the overview', (
     WidgetTester tester,
   ) async {

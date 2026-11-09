@@ -18,7 +18,7 @@ Future<FarmsHarness> pumpPlotDetail(WidgetTester tester) {
 }
 
 void main() {
-  testWidgets('shows the plot information and the coming soon sections', (
+  testWidgets('shows the plot information and the sections', (
     WidgetTester tester,
   ) async {
     await pumpPlotDetail(tester);
@@ -28,8 +28,15 @@ void main() {
     expect(find.text('Type de sol : Limoneux'), findsOneWidget);
     expect(find.text('Irrigation : Goutte-à-goutte'), findsOneWidget);
     expect(find.text('Cycles de culture'), findsOneWidget);
+    expect(
+      find.text(
+        'Aucun cycle pour cette parcelle. Ajoutez votre première culture.',
+      ),
+      findsOneWidget,
+    );
+    expect(find.text("Voir l'historique de la parcelle"), findsOneWidget);
     expect(find.text('Diagnostics'), findsOneWidget);
-    expect(find.text('Disponible prochainement'), findsNWidgets(2));
+    expect(find.text('Disponible prochainement'), findsOneWidget);
   });
 
   testWidgets('deletes the plot after confirmation', (

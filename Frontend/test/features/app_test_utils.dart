@@ -23,6 +23,7 @@ import 'package:smartagri/features/auth/domain/user_profile.dart';
 import 'package:smartagri/features/catalog/data/catalog_repository.dart';
 import 'package:smartagri/features/catalog/domain/admin_area.dart';
 import 'package:smartagri/features/catalog/domain/crop.dart';
+import 'package:smartagri/features/cycles/data/cycles_repository.dart';
 import 'package:smartagri/features/diagnostics/data/diagnostics_repository.dart';
 import 'package:smartagri/features/farms/data/farms_repository.dart';
 import 'package:smartagri/features/privacy/data/data_exporter.dart';
@@ -202,6 +203,7 @@ Future<ProviderContainer> buildTestContainer({
   AppDatabase? database,
   SyncRunner? syncRunner,
   DiagnosticsRepository? diagnosticsRepository,
+  CyclesRepository? cyclesRepository,
   PrivacyRepository? privacyRepository,
   DataExporter? dataExporter,
   SessionController? sessionController,
@@ -226,6 +228,8 @@ Future<ProviderContainer> buildTestContainer({
       ),
       if (farmsRepository != null)
         farmsRepositoryProvider.overrideWithValue(farmsRepository),
+      if (cyclesRepository != null)
+        cyclesRepositoryProvider.overrideWithValue(cyclesRepository),
       syncRunnerProvider.overrideWithValue(
         syncRunner ?? () async => SyncResult.none,
       ),

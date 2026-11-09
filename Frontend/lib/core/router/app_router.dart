@@ -12,6 +12,11 @@ import '../../features/auth/presentation/login_page.dart';
 import '../../features/auth/presentation/otp_page.dart';
 import '../../features/auth/presentation/register_page.dart';
 import '../../features/common/placeholder_page.dart';
+import '../../features/cycles/presentation/activity_form_page.dart';
+import '../../features/cycles/presentation/cycle_detail_page.dart';
+import '../../features/cycles/presentation/cycle_form_page.dart';
+import '../../features/cycles/presentation/harvest_form_page.dart';
+import '../../features/cycles/presentation/plot_timeline_page.dart';
 import '../../features/dev_gallery/design_gallery_page.dart';
 import '../../features/diagnostics/presentation/diagnostic_new_page.dart';
 import '../../features/diagnostics/presentation/diagnostics_history_page.dart';
@@ -182,9 +187,53 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
             PlotFormPage(plotId: state.pathParameters['plotId']),
       ),
       GoRoute(
+        path: '/plots/:plotId/cycles/new',
+        builder: (_, GoRouterState state) =>
+            CycleFormPage(plotId: state.pathParameters['plotId']),
+      ),
+      GoRoute(
+        path: '/plots/:plotId/timeline',
+        builder: (_, GoRouterState state) =>
+            PlotTimelinePage(plotId: state.pathParameters['plotId'] ?? ''),
+      ),
+      GoRoute(
         path: '/plots/:plotId',
         builder: (_, GoRouterState state) =>
             PlotDetailPage(plotId: state.pathParameters['plotId'] ?? ''),
+      ),
+      GoRoute(
+        path: '/cycles/:cycleId/edit',
+        builder: (_, GoRouterState state) =>
+            CycleFormPage(cycleId: state.pathParameters['cycleId']),
+      ),
+      GoRoute(
+        path: '/cycles/:cycleId/activities/new',
+        builder: (_, GoRouterState state) =>
+            ActivityFormPage(cycleId: state.pathParameters['cycleId'] ?? ''),
+      ),
+      GoRoute(
+        path: '/cycles/:cycleId/activities/:activityId/edit',
+        builder: (_, GoRouterState state) => ActivityFormPage(
+          cycleId: state.pathParameters['cycleId'] ?? '',
+          activityId: state.pathParameters['activityId'],
+        ),
+      ),
+      GoRoute(
+        path: '/cycles/:cycleId/harvests/new',
+        builder: (_, GoRouterState state) =>
+            HarvestFormPage(cycleId: state.pathParameters['cycleId'] ?? ''),
+      ),
+      GoRoute(
+        path: '/cycles/:cycleId/harvests/:harvestId/edit',
+        builder: (_, GoRouterState state) => HarvestFormPage(
+          cycleId: state.pathParameters['cycleId'] ?? '',
+          harvestId: state.pathParameters['harvestId'],
+        ),
+      ),
+      GoRoute(
+        path: '/cycles/:cycleId',
+        builder: (_, GoRouterState state) =>
+            CycleDetailPage(cycleId: state.pathParameters['cycleId'] ?? ''),
       ),
       GoRoute(
         path: '/diagnostics',
@@ -258,7 +307,14 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
           '/admin',
           '/sync/failed',
         };
-        return adminRedirects.contains(path) ? '/admin/overview' : null;
+        final bool farmerDetailRoute =
+            path == '/plots' ||
+            path.startsWith('/plots/') ||
+            path == '/cycles' ||
+            path.startsWith('/cycles/');
+        return adminRedirects.contains(path) || farmerDetailRoute
+            ? '/admin/overview'
+            : null;
       }
       if (isAdminRoute) {
         return '/home';

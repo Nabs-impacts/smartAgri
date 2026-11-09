@@ -975,4 +975,285 @@ class AppLocalizationsHa extends AppLocalizations {
 
   @override
   String get syncUnknownError => 'Refusée par le serveur.';
+
+  @override
+  String get cycleAdd => 'Ajouter un cycle';
+
+  @override
+  String get plotCyclesEmpty =>
+      'Aucun cycle pour cette parcelle. Ajoutez votre première culture.';
+
+  @override
+  String get plotTimelineLink => 'Voir l\'historique de la parcelle';
+
+  @override
+  String get cycleStatusPlanned => 'Prévu';
+
+  @override
+  String get cycleStatusGrowing => 'En cours';
+
+  @override
+  String get cycleStatusHarvested => 'Récolté';
+
+  @override
+  String get cycleStatusFailed => 'Échec';
+
+  @override
+  String get cycleSowingDate => 'Semis';
+
+  @override
+  String get cycleExpectedHarvestDate => 'Récolte prévue';
+
+  @override
+  String get cycleHarvestDate => 'Récolte';
+
+  @override
+  String get cycleVarietyLabel => 'Variété';
+
+  @override
+  String get cycleSeasonLabel => 'Saison';
+
+  @override
+  String get cycleNotesLabel => 'Notes';
+
+  @override
+  String get cycleCreateTitle => 'Nouveau cycle';
+
+  @override
+  String get cycleEditTitle => 'Modifier le cycle';
+
+  @override
+  String get cycleCropLabel => 'Culture';
+
+  @override
+  String get cycleCropRequired => 'Choisissez une culture.';
+
+  @override
+  String get cycleSowingDateLabel => 'Date de semis';
+
+  @override
+  String get cycleExpectedHarvestDateLabel => 'Date de récolte prévue';
+
+  @override
+  String get cycleExpectedHarvestHelp =>
+      'Laissez vide pour un calcul automatique selon la culture';
+
+  @override
+  String get cycleDateHint => 'Choisir une date';
+
+  @override
+  String get cycleDateClear => 'Effacer la date';
+
+  @override
+  String get cycleDateInvalid =>
+      'La date de récolte prévue ne peut pas précéder le semis.';
+
+  @override
+  String get cycleDateImplausible => 'Cette date n\'est pas plausible.';
+
+  @override
+  String get cycleInitialStatusLabel => 'Statut initial';
+
+  @override
+  String get cycleSave => 'Enregistrer';
+
+  @override
+  String get cycleNotFound => 'Cycle introuvable.';
+
+  @override
+  String get cycleBack => 'Retour';
+
+  @override
+  String get cycleDeleteTitle => 'Supprimer le cycle ?';
+
+  @override
+  String get cycleDeleteMessage =>
+      'Les activités et récoltes de ce cycle seront aussi supprimées.';
+
+  @override
+  String get cycleStart => 'Démarrer le cycle';
+
+  @override
+  String get cycleFail => 'Déclarer un échec';
+
+  @override
+  String get cycleFailTitle => 'Déclarer un échec ?';
+
+  @override
+  String get cycleFailMessage =>
+      'Le cycle sera marqué comme échoué. Cette action est définitive.';
+
+  @override
+  String get cycleAddHarvest => 'Enregistrer une récolte';
+
+  @override
+  String get cycleAddActivity => 'Ajouter une activité';
+
+  @override
+  String get cycleJournalTitle => 'Journal du cycle';
+
+  @override
+  String get cycleJournalEmpty => 'Aucune activité ni récolte pour ce cycle.';
+
+  @override
+  String get cycleJournalDeleteTitle => 'Supprimer cet élément ?';
+
+  @override
+  String get cycleJournalDeleteMessage =>
+      'Cet élément sera supprimé du journal du cycle.';
+
+  @override
+  String get cycleSummaryTitle => 'Bilan';
+
+  @override
+  String get cycleSummaryArea => 'Surface';
+
+  @override
+  String get cycleSummaryTotalHarvest => 'Récolte totale';
+
+  @override
+  String get cycleSummaryYield => 'Rendement';
+
+  @override
+  String get cycleSummaryCosts => 'Coûts';
+
+  @override
+  String get cycleSummaryRevenue => 'Revenus';
+
+  @override
+  String get cycleSummaryMargin => 'Marge';
+
+  @override
+  String get cycleSummaryLocal => 'Calculé sur votre téléphone';
+
+  @override
+  String get cycleSummaryNoValue => '—';
+
+  @override
+  String get cycleQuality => 'Qualité';
+
+  @override
+  String get cycleSold => 'Vendu';
+
+  @override
+  String cycleComparison(String value, int count) {
+    return 'Moyenne des autres agriculteurs : $value ($count cycles)';
+  }
+
+  @override
+  String get activityCreateTitle => 'Nouvelle activité';
+
+  @override
+  String get activityEditTitle => 'Modifier l\'activité';
+
+  @override
+  String get activityTypeLabel => 'Type';
+
+  @override
+  String get activityDateLabel => 'Date';
+
+  @override
+  String get activityProductLabel => 'Produit';
+
+  @override
+  String get activityQuantityLabel => 'Quantité';
+
+  @override
+  String get activityUnitLabel => 'Unité';
+
+  @override
+  String get activityCostLabel => 'Coût (FCFA)';
+
+  @override
+  String get activityNotesLabel => 'Notes';
+
+  @override
+  String get activityQuantityInvalid =>
+      'La quantité doit être positive ou nulle.';
+
+  @override
+  String get activityCostInvalid => 'Le coût doit être positif ou nul.';
+
+  @override
+  String get activityNotFound => 'Activité introuvable.';
+
+  @override
+  String get activitySave => 'Enregistrer';
+
+  @override
+  String get activityTypeSowing => 'Semis';
+
+  @override
+  String get activityTypeFertilizing => 'Fertilisation';
+
+  @override
+  String get activityTypeIrrigation => 'Irrigation';
+
+  @override
+  String get activityTypeWeeding => 'Désherbage';
+
+  @override
+  String get activityTypePesticide => 'Traitement';
+
+  @override
+  String get activityTypeHarvest => 'Récolte';
+
+  @override
+  String get activityTypeOther => 'Autre';
+
+  @override
+  String get harvestCreateTitle => 'Nouvelle récolte';
+
+  @override
+  String get harvestEditTitle => 'Modifier la récolte';
+
+  @override
+  String get harvestDateLabel => 'Date de récolte';
+
+  @override
+  String get harvestQuantityLabel => 'Quantité récoltée (kg)';
+
+  @override
+  String get harvestQualityLabel => 'Qualité';
+
+  @override
+  String get harvestSoldLabel => 'Quantité vendue (kg)';
+
+  @override
+  String get harvestPriceLabel => 'Prix moyen (FCFA/kg)';
+
+  @override
+  String harvestEstimatedRevenue(String amount) {
+    return 'Revenu estimé : $amount';
+  }
+
+  @override
+  String get harvestCloseCycle => 'Clôturer le cycle (récolte terminée)';
+
+  @override
+  String get harvestQuantityInvalid =>
+      'La quantité récoltée doit être supérieure à 0.';
+
+  @override
+  String get harvestSoldInvalid =>
+      'La quantité vendue ne peut pas dépasser la quantité récoltée.';
+
+  @override
+  String get harvestPriceInvalid => 'Le prix doit être positif ou nul.';
+
+  @override
+  String get harvestNotFound => 'Récolte introuvable.';
+
+  @override
+  String get harvestSave => 'Enregistrer';
+
+  @override
+  String get plotTimelineTitle => 'Historique de la parcelle';
+
+  @override
+  String get plotTimelineEmpty => 'Aucun événement pour cette parcelle.';
+
+  @override
+  String get plotTimelineDiagnosticsHint =>
+      'Les diagnostics sont dans l\'onglet Diagnostics.';
 }
