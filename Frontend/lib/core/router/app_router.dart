@@ -21,9 +21,11 @@ import '../../features/dev_gallery/design_gallery_page.dart';
 import '../../features/diagnostics/presentation/diagnostic_new_page.dart';
 import '../../features/diagnostics/presentation/diagnostics_history_page.dart';
 import '../../features/diagnostics/presentation/diagnostic_result_page.dart';
+import '../../features/farms/domain/plot_geometry.dart';
 import '../../features/farms/presentation/farm_detail_page.dart';
 import '../../features/farms/presentation/farm_form_page.dart';
 import '../../features/farms/presentation/farms_page.dart';
+import '../../features/farms/presentation/plot_boundary_editor_page.dart';
 import '../../features/farms/presentation/plot_detail_page.dart';
 import '../../features/farms/presentation/plot_form_page.dart';
 import '../../features/home/home_page.dart';
@@ -180,6 +182,14 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
         path: '/farms/:farmId',
         builder: (_, GoRouterState state) =>
             FarmDetailPage(farmId: state.pathParameters['farmId'] ?? ''),
+      ),
+      GoRoute(
+        path: '/plots/boundary',
+        builder: (_, GoRouterState state) => PlotBoundaryEditorPage(
+          initialGeometry: state.extra is PlotGeometry
+              ? state.extra! as PlotGeometry
+              : null,
+        ),
       ),
       GoRoute(
         path: '/plots/:plotId/edit',

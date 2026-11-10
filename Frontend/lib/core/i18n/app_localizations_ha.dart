@@ -323,10 +323,6 @@ class AppLocalizationsHa extends AppLocalizations {
   String get plotIrrigationLabel => 'Irrigation';
 
   @override
-  String get plotMapComingSoon =>
-      'Le tracé de la parcelle sur la carte arrivera plus tard';
-
-  @override
   String get plotDeleteTitle => 'Supprimer la parcelle ?';
 
   @override
@@ -1256,4 +1252,157 @@ class AppLocalizationsHa extends AppLocalizations {
   @override
   String get plotTimelineDiagnosticsHint =>
       'Les diagnostics sont dans l\'onglet Diagnostics.';
+
+  @override
+  String get plotBoundaryTitle => 'Tracer la parcelle';
+
+  @override
+  String get plotBoundaryEditTitle => 'Modifier le tracé';
+
+  @override
+  String get plotBoundaryHint =>
+      'Appuyez sur la carte pour ajouter les sommets du contour.';
+
+  @override
+  String get plotBoundaryAddPosition => 'Ajouter ma position';
+
+  @override
+  String get plotBoundaryCenterPosition => 'Centrer sur ma position';
+
+  @override
+  String get plotBoundaryFinish => 'Terminer';
+
+  @override
+  String get plotBoundaryDelete => 'Supprimer le tracé';
+
+  @override
+  String get plotBoundaryUndo => 'Annuler le dernier sommet';
+
+  @override
+  String get plotBoundaryClear => 'Tout effacer';
+
+  @override
+  String plotBoundaryVertexCount(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count sommets',
+      one: '1 sommet',
+      zero: 'Aucun sommet',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String plotBoundaryArea(String area) {
+    return '≈ $area ha';
+  }
+
+  @override
+  String get plotBoundaryValid => 'Tracé valide.';
+
+  @override
+  String get plotBoundaryTooFew => 'Ajoutez au moins 3 sommets distincts.';
+
+  @override
+  String get plotBoundarySelfIntersection =>
+      'Le contour se croise. Corrigez le tracé.';
+
+  @override
+  String get plotBoundaryTooMany =>
+      'Le tracé ne doit pas dépasser 500 sommets.';
+
+  @override
+  String get plotBoundaryZeroArea => 'La surface du tracé est nulle.';
+
+  @override
+  String get plotBoundaryAreaTooLarge =>
+      'La surface ne doit pas dépasser 10 000 ha.';
+
+  @override
+  String get plotBoundaryOutOfBounds =>
+      'Le tracé contient des coordonnées hors limites.';
+
+  @override
+  String get plotBoundaryComplexLimit =>
+      'Cette limite est complexe : elle ne peut pas être modifiée dans l\'application.';
+
+  @override
+  String get plotBoundaryOpen => 'Tracer la parcelle';
+
+  @override
+  String get plotBoundaryModify => 'Modifier le tracé';
+
+  @override
+  String plotAreaCalculated(String area) {
+    return 'Superficie calculée : $area (estimation, confirmée après synchronisation)';
+  }
+
+  @override
+  String get mapAttribution => '© OpenStreetMap contributors';
+
+  @override
+  String get mapOffline => 'Fond de carte indisponible hors connexion';
+
+  @override
+  String get locationExplanation =>
+      'SmartAgri utilise votre position uniquement pour enregistrer les limites de votre parcelle.';
+
+  @override
+  String get locationContinue => 'Continuer';
+
+  @override
+  String get locationDenied => 'L\'accès à votre position a été refusé.';
+
+  @override
+  String get locationDeniedForever =>
+      'L\'accès à votre position est refusé définitivement. Ouvrez les réglages de l\'application pour l\'autoriser.';
+
+  @override
+  String get locationServiceDisabled =>
+      'Le service de localisation est désactivé. Activez-le pour utiliser votre position.';
+
+  @override
+  String get locationUnsupported =>
+      'La géolocalisation n\'est pas prise en charge sur cet appareil.';
+
+  @override
+  String get locationTimeout =>
+      'La position n\'a pas pu être obtenue à temps. Réessayez.';
+
+  @override
+  String get locationError =>
+      'Impossible d\'obtenir votre position. Réessayez.';
+
+  @override
+  String locationAccuracy(String meters) {
+    return 'Précision : $meters m';
+  }
+
+  @override
+  String get locationAccuracyWarning =>
+      'La précision est faible (plus de 30 m). Déplacez-vous vers un endroit dégagé.';
+
+  @override
+  String get locationOpenSettings => 'Ouvrir les réglages';
+
+  @override
+  String get locationSettingsUnavailable =>
+      'Impossible d\'ouvrir les réglages de l\'application.';
+
+  @override
+  String get farmLocationLabel => 'Position de l\'exploitation';
+
+  @override
+  String get farmLocationUseCurrent => 'Utiliser ma position actuelle';
+
+  @override
+  String get farmLocationClear => 'Effacer la position';
+
+  @override
+  String get farmLocationRegistered => 'Position enregistrée';
+
+  @override
+  String get farmLocationHelp =>
+      'Position facultative, utilisée pour situer l\'exploitation.';
 }

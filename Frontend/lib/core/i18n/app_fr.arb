@@ -118,7 +118,6 @@
   "plotAreaInvalid": "La surface doit être supérieure à 0 et au plus 10000.",
   "plotSoilLabel": "Type de sol",
   "plotIrrigationLabel": "Irrigation",
-  "plotMapComingSoon": "Le tracé de la parcelle sur la carte arrivera plus tard",
   "plotDeleteTitle": "Supprimer la parcelle ?",
   "plotDeleteMessage": "Voulez-vous vraiment supprimer cette parcelle ?",
   "plotDetailsTitle": "Parcelle",
@@ -542,5 +541,74 @@
   "harvestSave": "Enregistrer",
   "plotTimelineTitle": "Historique de la parcelle",
   "plotTimelineEmpty": "Aucun événement pour cette parcelle.",
-  "plotTimelineDiagnosticsHint": "Les diagnostics sont dans l'onglet Diagnostics."
+  "plotTimelineDiagnosticsHint": "Les diagnostics sont dans l'onglet Diagnostics.",
+  "plotBoundaryTitle": "Tracer la parcelle",
+  "plotBoundaryEditTitle": "Modifier le tracé",
+  "plotBoundaryHint": "Appuyez sur la carte pour ajouter les sommets du contour.",
+  "plotBoundaryAddPosition": "Ajouter ma position",
+  "plotBoundaryCenterPosition": "Centrer sur ma position",
+  "plotBoundaryFinish": "Terminer",
+  "plotBoundaryDelete": "Supprimer le tracé",
+  "plotBoundaryUndo": "Annuler le dernier sommet",
+  "plotBoundaryClear": "Tout effacer",
+  "plotBoundaryVertexCount": "{count, plural, =0{Aucun sommet} =1{1 sommet} other{{count} sommets}}",
+  "@plotBoundaryVertexCount": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "plotBoundaryArea": "≈ {area} ha",
+  "@plotBoundaryArea": {
+    "placeholders": {
+      "area": {
+        "type": "String"
+      }
+    }
+  },
+  "plotBoundaryValid": "Tracé valide.",
+  "plotBoundaryTooFew": "Ajoutez au moins 3 sommets distincts.",
+  "plotBoundarySelfIntersection": "Le contour se croise. Corrigez le tracé.",
+  "plotBoundaryTooMany": "Le tracé ne doit pas dépasser 500 sommets.",
+  "plotBoundaryZeroArea": "La surface du tracé est nulle.",
+  "plotBoundaryAreaTooLarge": "La surface ne doit pas dépasser 10 000 ha.",
+  "plotBoundaryOutOfBounds": "Le tracé contient des coordonnées hors limites.",
+  "plotBoundaryComplexLimit": "Cette limite est complexe : elle ne peut pas être modifiée dans l'application.",
+  "plotBoundaryOpen": "Tracer la parcelle",
+  "plotBoundaryModify": "Modifier le tracé",
+  "plotAreaCalculated": "Superficie calculée : {area} (estimation, confirmée après synchronisation)",
+  "@plotAreaCalculated": {
+    "placeholders": {
+      "area": {
+        "type": "String"
+      }
+    }
+  },
+  "mapAttribution": "© OpenStreetMap contributors",
+  "mapOffline": "Fond de carte indisponible hors connexion",
+  "locationExplanation": "SmartAgri utilise votre position uniquement pour enregistrer les limites de votre parcelle.",
+  "locationContinue": "Continuer",
+  "locationDenied": "L'accès à votre position a été refusé.",
+  "locationDeniedForever": "L'accès à votre position est refusé définitivement. Ouvrez les réglages de l'application pour l'autoriser.",
+  "locationServiceDisabled": "Le service de localisation est désactivé. Activez-le pour utiliser votre position.",
+  "locationUnsupported": "La géolocalisation n'est pas prise en charge sur cet appareil.",
+  "locationTimeout": "La position n'a pas pu être obtenue à temps. Réessayez.",
+  "locationError": "Impossible d'obtenir votre position. Réessayez.",
+  "locationAccuracy": "Précision : {meters} m",
+  "@locationAccuracy": {
+    "placeholders": {
+      "meters": {
+        "type": "String"
+      }
+    }
+  },
+  "locationAccuracyWarning": "La précision est faible (plus de 30 m). Déplacez-vous vers un endroit dégagé.",
+  "locationOpenSettings": "Ouvrir les réglages",
+  "locationSettingsUnavailable": "Impossible d'ouvrir les réglages de l'application.",
+  "farmLocationLabel": "Position de l'exploitation",
+  "farmLocationUseCurrent": "Utiliser ma position actuelle",
+  "farmLocationClear": "Effacer la position",
+  "farmLocationRegistered": "Position enregistrée",
+  "farmLocationHelp": "Position facultative, utilisée pour situer l'exploitation."
 }

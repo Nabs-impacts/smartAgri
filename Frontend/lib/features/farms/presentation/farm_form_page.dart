@@ -1,10 +1,13 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/i18n/app_localizations.dart';
 import '../../../core/i18n/strings_provider.dart';
+import '../../../core/location/location_messages.dart';
+import '../../../core/location/location_service.dart';
 import '../../../core/network/api_error_messages.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../design_system/components/app_button.dart';
@@ -16,7 +19,9 @@ import '../../../design_system/tokens.dart';
 import '../../catalog/data/catalog_repository.dart';
 import '../../catalog/domain/admin_area.dart';
 import '../data/farms_providers.dart';
+import '../data/farms_repository.dart';
 import '../domain/farm.dart';
+import '../domain/plot_geometry.dart';
 
 class FarmFormPage extends ConsumerWidget {
   const FarmFormPage({this.farmId, super.key});
@@ -90,6 +95,13 @@ class _FarmFormState extends ConsumerState<_FarmForm> {
   late final TextEditingController _village;
   late final String _id;
   int? _adminAreaId;
+  Map<String, dynamic>? _location;
+  bool _locationChanged = false;
+  bool _permissionExplained = false;
+  bool _locating = false;
+  String? _locationError;
+  bool _canOpenSettings = false;
+  double? _locationAccuracy;
   bool _saving = false;
   String? _error;
 
@@ -100,6 +112,7 @@ class _FarmFormState extends ConsumerState<_FarmForm> {
     _name = TextEditingController(text: widget.farm?.name ?? '');
     _village = TextEditingController(text: widget.farm?.village ?? '');
     _adminAreaId = widget.farm?.adminAreaId;
+    _location = widget.farm?.location;
   }
 
   @override
@@ -129,6 +142,7 @@ class _FarmFormState extends ConsumerState<_FarmForm> {
               name,
               village: village.isEmpty ? null : village,
               adminAreaId: _adminAreaId,
+              location: _location,
             );
       } else {
         await ref
@@ -138,6 +152,7 @@ class _FarmFormState extends ConsumerState<_FarmForm> {
               name: name,
               village: village.isEmpty ? null : village,
               adminAreaId: _adminAreaId,
+              location: _locationChanged ? _location : unchanged,
             );
       }
       if (mounted) {
@@ -150,6 +165,86 @@ class _FarmFormState extends ConsumerState<_FarmForm> {
           _error = apiErrorMessage(error, widget.strings);
         });
       }
+    }
+  }
+
+  Future<bool> _confirmLocationExplanation() async {
+    if (_permissionExplained) {
+      return true;
+    }
+    final bool? proceed = await showDialog<bool>(
+      context: context,
+      builder: (BuildContext dialogContext) {
+        return AlertDialog(
+          title: Text(widget.strings.farmLocationLabel),
+          content: Text(widget.strings.locationExplanation),
+          actions: <Widget>[
+            AppTextButton(
+              key: const Key('farm_location_explanation_cancel'),
+              label: widget.strings.cancel,
+              variant: AppTextButtonVariant.muted,
+              onPressed: () => Navigator.of(dialogContext).pop(false),
+            ),
+            AppTextButton(
+              key: const Key('farm_location_explanation_continue'),
+              label: widget.strings.locationContinue,
+              onPressed: () => Navigator.of(dialogContext).pop(true),
+            ),
+          ],
+        );
+      },
+    );
+    if (proceed == true) {
+      _permissionExplained = true;
+      return true;
+    }
+    return false;
+  }
+
+  Future<void> _useCurrentLocation() async {
+    if (!await _confirmLocationExplanation()) {
+      return;
+    }
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _locating = true;
+      _locationError = null;
+      _canOpenSettings = false;
+    });
+    final LocationService service = ref.read(locationServiceProvider);
+    final LocationResult result = await service.currentPosition();
+    if (!mounted) {
+      return;
+    }
+    setState(() {
+      _locating = false;
+      _locationAccuracy = result.position?.accuracyMeters;
+      _locationError = locationErrorMessage(widget.strings, result.status);
+      _canOpenSettings =
+          result.status == LocationOutcomeStatus.permissionDeniedForever;
+      final LocationPosition? position = result.position;
+      if (position != null) {
+        _location = pointToGeoJson(
+          LatLng(position.latitude, position.longitude),
+        );
+        _locationChanged = true;
+      }
+    });
+  }
+
+  Future<void> _openSettings() async {
+    final LocationService service = ref.read(locationServiceProvider);
+    final bool opened = await service.openAppSettings();
+    if (!mounted) {
+      return;
+    }
+    if (!opened) {
+      setState(() {
+        _locationError = widget.strings.locationSettingsUnavailable;
+        _canOpenSettings = false;
+      });
     }
   }
 
@@ -217,6 +312,87 @@ class _FarmFormState extends ConsumerState<_FarmForm> {
                 emptyLabel: widget.strings.farmRegionNone,
                 onChanged: (int? value) => setState(() => _adminAreaId = value),
               ),
+              const SizedBox(height: AppSpacing.xl),
+              Text(
+                widget.strings.farmLocationLabel,
+                style: AppTextStyles.label,
+              ),
+              const SizedBox(height: AppSpacing.sm),
+              Text(
+                _location == null
+                    ? widget.strings.farmLocationHelp
+                    : widget.strings.farmLocationRegistered,
+                key: const Key('farm_location_status'),
+                style: AppTextStyles.body.copyWith(
+                  color: _location == null
+                      ? AppColors.muted
+                      : AppColors.tertiary,
+                ),
+              ),
+              if (_locationAccuracy != null) ...<Widget>[
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  widget.strings.locationAccuracy(
+                    _locationAccuracy!.toStringAsFixed(0),
+                  ),
+                  style: AppTextStyles.caption.copyWith(color: AppColors.muted),
+                ),
+                if (_locationAccuracy! > 30) ...<Widget>[
+                  const SizedBox(height: AppSpacing.xs),
+                  Text(
+                    widget.strings.locationAccuracyWarning,
+                    style: AppTextStyles.caption.copyWith(
+                      color: AppColors.accentBrown,
+                    ),
+                  ),
+                ],
+              ],
+              const SizedBox(height: AppSpacing.md),
+              Wrap(
+                spacing: AppSpacing.sm,
+                runSpacing: AppSpacing.sm,
+                children: <Widget>[
+                  AppButton(
+                    key: const Key('farm_location_use'),
+                    label: widget.strings.farmLocationUseCurrent,
+                    size: AppButtonSize.compact,
+                    variant: AppButtonVariant.secondary,
+                    loading: _locating,
+                    onPressed: _locating ? null : _useCurrentLocation,
+                  ),
+                  if (_location != null)
+                    AppButton(
+                      key: const Key('farm_location_clear'),
+                      label: widget.strings.farmLocationClear,
+                      size: AppButtonSize.compact,
+                      variant: AppButtonVariant.outlined,
+                      onPressed: () => setState(() {
+                        _location = null;
+                        _locationChanged = true;
+                        _locationAccuracy = null;
+                        _locationError = null;
+                        _canOpenSettings = false;
+                      }),
+                    ),
+                ],
+              ),
+              if (_locationError != null) ...<Widget>[
+                const SizedBox(height: AppSpacing.md),
+                AppErrorBanner(
+                  key: const Key('farm_location_error'),
+                  message: _locationError!,
+                ),
+              ],
+              if (_canOpenSettings) ...<Widget>[
+                Align(
+                  alignment: Alignment.centerLeft,
+                  child: AppTextButton(
+                    key: const Key('farm_location_open_settings'),
+                    label: widget.strings.locationOpenSettings,
+                    onPressed: _openSettings,
+                  ),
+                ),
+              ],
               const SizedBox(height: AppSpacing.xl),
               AppButton(
                 key: const Key('farm_save'),

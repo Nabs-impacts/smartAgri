@@ -1,12 +1,16 @@
+import 'dart:convert';
+
 import 'package:smartagri/core/database/app_database.dart';
 import 'package:smartagri/features/farms/domain/farm.dart';
 import 'package:smartagri/features/farms/domain/plot.dart';
+import 'package:smartagri/features/farms/domain/plot_geometry.dart';
 
 Farm sampleFarm({
   String id = 'farm-1',
   String name = 'Ferme du fleuve',
   String? village = 'Saga',
   int? adminAreaId = 1,
+  Map<String, dynamic>? location,
   DateTime? updatedAt,
 }) {
   return Farm(
@@ -14,6 +18,7 @@ Farm sampleFarm({
     name: name,
     village: village,
     adminAreaId: adminAreaId,
+    location: location,
     updatedAt: updatedAt ?? DateTime.utc(2026, 10, 20),
   );
 }
@@ -25,6 +30,7 @@ Plot samplePlot({
   double? areaHa = 2.5,
   SoilType? soilType = SoilType.loam,
   IrrigationType? irrigation = IrrigationType.drip,
+  PlotGeometry? geometry,
   DateTime? updatedAt,
 }) {
   return Plot(
@@ -34,6 +40,7 @@ Plot samplePlot({
     areaHa: areaHa,
     soilType: soilType,
     irrigation: irrigation,
+    geometry: geometry,
     updatedAt: updatedAt ?? DateTime.utc(2026, 10, 20),
   );
 }
@@ -44,6 +51,7 @@ Future<void> seedFarm(AppDatabase database, Farm farm) {
     farm.name,
     village: farm.village,
     adminAreaId: farm.adminAreaId,
+    location: farm.location == null ? null : jsonEncode(farm.location),
     updatedAt: farm.updatedAt,
   );
 }
@@ -56,6 +64,7 @@ Future<void> seedPlot(AppDatabase database, Plot plot) {
     areaHa: plot.areaHa,
     soilType: plot.soilType?.apiValue,
     irrigation: plot.irrigation?.apiValue,
+    geom: plot.geometry == null ? null : jsonEncode(plot.geometry!.toGeoJson()),
     updatedAt: plot.updatedAt,
   );
 }

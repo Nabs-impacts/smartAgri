@@ -3,9 +3,12 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:go_router/go_router.dart';
 import 'package:smartagri/core/database/app_database.dart';
 import 'package:smartagri/core/sync/sync_providers.dart';
+import 'package:smartagri/core/location/location_service.dart';
 import 'package:smartagri/core/sync/sync_service.dart';
 import 'package:smartagri/features/farms/domain/farm.dart';
 import 'package:smartagri/features/farms/domain/plot.dart';
+import 'package:smartagri/features/farms/domain/plot_geometry.dart';
+import 'package:smartagri/features/farms/presentation/plot_boundary_editor_page.dart';
 import 'package:smartagri/features/farms/presentation/farm_detail_page.dart';
 import 'package:smartagri/features/farms/presentation/farm_form_page.dart';
 import 'package:smartagri/features/farms/presentation/farms_page.dart';
@@ -51,6 +54,14 @@ GoRouter buildFarmsRouter() {
             FarmDetailPage(farmId: state.pathParameters['farmId'] ?? ''),
       ),
       GoRoute(
+        path: '/plots/boundary',
+        builder: (_, GoRouterState state) => PlotBoundaryEditorPage(
+          initialGeometry: state.extra is PlotGeometry
+              ? state.extra! as PlotGeometry
+              : null,
+        ),
+      ),
+      GoRoute(
         path: '/plots/:plotId/edit',
         builder: (_, GoRouterState state) =>
             PlotFormPage(plotId: state.pathParameters['plotId']),
@@ -73,6 +84,7 @@ Future<FarmsHarness> pumpFarmsApp(
   FakeMeRepository? meRepository,
   SyncRunner? syncRunner,
   bool markSynced = true,
+  LocationService? locationService,
 }) async {
   final AppDatabase appDatabase = database ?? inMemoryAppDatabase();
   if (database == null) {
@@ -98,6 +110,7 @@ Future<FarmsHarness> pumpFarmsApp(
     meRepository: me,
     database: appDatabase,
     syncRunner: syncRunner,
+    locationService: locationService,
   );
   final GoRouter router = buildFarmsRouter();
   await tester.pumpWidget(testRouterApp(container, router));

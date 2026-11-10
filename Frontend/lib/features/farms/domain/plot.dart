@@ -1,3 +1,5 @@
+import 'plot_geometry.dart';
+
 enum SoilType {
   sandy('sandy', 'Sableux'),
   loam('loam', 'Limoneux'),
@@ -50,6 +52,7 @@ class Plot {
     this.areaHa,
     this.soilType,
     this.irrigation,
+    this.geometry,
     this.updatedAt,
   });
 
@@ -59,6 +62,7 @@ class Plot {
   final double? areaHa;
   final SoilType? soilType;
   final IrrigationType? irrigation;
+  final PlotGeometry? geometry;
   final DateTime? updatedAt;
 
   factory Plot.fromJson(Map<String, dynamic> json) {
@@ -69,9 +73,21 @@ class Plot {
       areaHa: _area(json['area_ha']),
       soilType: SoilType.fromApi(json['soil_type']),
       irrigation: IrrigationType.fromApi(json['irrigation']),
+      geometry: _geometry(json['geom']),
       updatedAt: _date(json['updated_at']),
     );
   }
+}
+
+PlotGeometry? _geometry(Object? value) {
+  if (value is Map) {
+    try {
+      return PlotGeometry.fromGeoJson(Map<String, dynamic>.from(value));
+    } catch (_) {
+      return null;
+    }
+  }
+  return null;
 }
 
 double? _area(Object? value) {

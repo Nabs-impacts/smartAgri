@@ -10,6 +10,8 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:smartagri/core/database/app_database.dart';
 import 'package:smartagri/core/i18n/app_language.dart';
 import 'package:smartagri/core/i18n/language_controller.dart';
+import 'package:smartagri/core/location/location_service.dart';
+import 'package:smartagri/core/map/map_config.dart';
 import 'package:smartagri/core/network/api_exception.dart';
 import 'package:smartagri/core/session/session_controller.dart';
 import 'package:smartagri/core/session/session_state.dart';
@@ -207,6 +209,8 @@ Future<ProviderContainer> buildTestContainer({
   PrivacyRepository? privacyRepository,
   DataExporter? dataExporter,
   SessionController? sessionController,
+  LocationService? locationService,
+  Widget Function({required VoidCallback onTileError})? mapTileLayerBuilder,
 }) async {
   await initializeDateFormatting('fr');
   SharedPreferences.setMockInitialValues(initialPreferences);
@@ -248,6 +252,12 @@ Future<ProviderContainer> buildTestContainer({
       if (dataExporter != null)
         dataExporterProvider.overrideWithValue(dataExporter),
       if (stale) meStaleProvider.overrideWith(() => FixedStaleController(true)),
+      mapTileLayerBuilderProvider.overrideWithValue(
+        mapTileLayerBuilder ??
+            ({required VoidCallback onTileError}) => const SizedBox.shrink(),
+      ),
+      if (locationService != null)
+        locationServiceProvider.overrideWithValue(locationService),
     ],
   );
   addTearDown(container.dispose);

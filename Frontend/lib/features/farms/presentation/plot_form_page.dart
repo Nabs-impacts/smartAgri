@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:uuid/uuid.dart';
 
 import '../../../core/i18n/app_localizations.dart';
@@ -14,7 +15,13 @@ import '../../../design_system/components/app_text_button.dart';
 import '../../../design_system/components/app_text_field.dart';
 import '../../../design_system/tokens.dart';
 import '../data/farms_providers.dart';
+import '../data/farms_repository.dart';
+import '../domain/farms_exception.dart';
 import '../domain/plot.dart';
+import '../domain/plot_geometry.dart';
+import 'farm_display.dart';
+import 'plot_boundary_editor_page.dart';
+import 'plot_map.dart';
 
 class PlotFormPage extends ConsumerWidget {
   const PlotFormPage({this.farmId, this.plotId, super.key});
@@ -87,6 +94,8 @@ class _PlotFormState extends ConsumerState<_PlotForm> {
   late final String _id;
   SoilType? _soilType;
   IrrigationType? _irrigation;
+  PlotGeometry? _geometry;
+  bool _geometryChanged = false;
   bool _saving = false;
   String? _error;
 
@@ -98,6 +107,7 @@ class _PlotFormState extends ConsumerState<_PlotForm> {
     _area = TextEditingController(text: _areaText(widget.plot?.areaHa));
     _soilType = widget.plot?.soilType;
     _irrigation = widget.plot?.irrigation;
+    _geometry = widget.plot?.geometry;
   }
 
   @override
@@ -128,9 +138,10 @@ class _PlotFormState extends ConsumerState<_PlotForm> {
             .createPlot(
               _id,
               name,
-              areaHa: areaHa,
+              areaHa: _geometry == null ? areaHa : null,
               soilType: _soilType,
               irrigation: _irrigation,
+              geometry: _geometry,
             );
       } else {
         await ref
@@ -138,9 +149,12 @@ class _PlotFormState extends ConsumerState<_PlotForm> {
             .updatePlot(
               _id,
               name: name,
-              areaHa: areaHa,
+              areaHa: _geometry != null
+                  ? (_geometryChanged ? null : unchanged)
+                  : areaHa,
               soilType: _soilType,
               irrigation: _irrigation,
+              geometry: _geometryChanged ? _geometry : unchanged,
             );
       }
       if (mounted) {
@@ -153,7 +167,34 @@ class _PlotFormState extends ConsumerState<_PlotForm> {
           _error = apiErrorMessage(error, widget.strings);
         });
       }
+    } on FarmsDomainException catch (error) {
+      if (mounted) {
+        setState(() {
+          _saving = false;
+          _error = error.message;
+        });
+      }
     }
+  }
+
+  Future<void> _openBoundaryEditor() async {
+    final Object? result = await context.push<Object?>(
+      '/plots/boundary',
+      extra: _geometry,
+    );
+    if (!mounted || identical(result, boundaryUnchanged)) {
+      return;
+    }
+    setState(() {
+      if (result is PlotGeometry) {
+        _geometry = result;
+        _geometryChanged = true;
+      } else if (result == null) {
+        _geometry = null;
+        _geometryChanged = true;
+      }
+      _error = null;
+    });
   }
 
   @override
@@ -195,22 +236,31 @@ class _PlotFormState extends ConsumerState<_PlotForm> {
                     _validName(value) ? null : widget.strings.plotNameLength,
               ),
               const SizedBox(height: AppSpacing.md),
-              AppTextField(
-                key: const Key('plot_area_field'),
-                controller: _area,
-                hintText: widget.strings.plotAreaHint,
-                keyboardType: const TextInputType.numberWithOptions(
-                  decimal: true,
+              if (_geometry == null) ...<Widget>[
+                AppTextField(
+                  key: const Key('plot_area_field'),
+                  controller: _area,
+                  hintText: widget.strings.plotAreaHint,
+                  keyboardType: const TextInputType.numberWithOptions(
+                    decimal: true,
+                  ),
+                  textInputAction: TextInputAction.done,
+                  validator: (String? value) =>
+                      _validArea(value) ? null : widget.strings.plotAreaInvalid,
                 ),
-                textInputAction: TextInputAction.done,
-                validator: (String? value) =>
-                    _validArea(value) ? null : widget.strings.plotAreaInvalid,
-              ),
-              const SizedBox(height: AppSpacing.xs),
-              Text(
-                widget.strings.plotAreaLabel,
-                style: AppTextStyles.caption.copyWith(color: AppColors.muted),
-              ),
+                const SizedBox(height: AppSpacing.xs),
+                Text(
+                  widget.strings.plotAreaLabel,
+                  style: AppTextStyles.caption.copyWith(color: AppColors.muted),
+                ),
+              ] else
+                Text(
+                  widget.strings.plotAreaCalculated(
+                    formatAreaHa(_geometry!.areaHectares()),
+                  ),
+                  key: const Key('plot_calculated_area'),
+                  style: AppTextStyles.body,
+                ),
               const SizedBox(height: AppSpacing.xl),
               Text(widget.strings.plotSoilLabel, style: AppTextStyles.label),
               const SizedBox(height: AppSpacing.sm),
@@ -249,10 +299,19 @@ class _PlotFormState extends ConsumerState<_PlotForm> {
                     setState(() => _irrigation = value),
               ),
               const SizedBox(height: AppSpacing.lg),
-              Text(
-                widget.strings.plotMapComingSoon,
-                key: const Key('plot_map_coming_soon'),
-                style: AppTextStyles.caption.copyWith(color: AppColors.muted),
+              PlotMap(
+                key: const Key('plot_map_preview'),
+                points: _geometry?.ring ?? const <LatLng>[],
+                height: 200,
+              ),
+              const SizedBox(height: AppSpacing.md),
+              AppButton(
+                key: const Key('plot_boundary_button'),
+                label: _geometry == null
+                    ? widget.strings.plotBoundaryOpen
+                    : widget.strings.plotBoundaryModify,
+                variant: AppButtonVariant.secondary,
+                onPressed: _openBoundaryEditor,
               ),
               const SizedBox(height: AppSpacing.xl),
               AppButton(

@@ -17,6 +17,7 @@ import '../../cycles/presentation/cycle_format.dart';
 import '../data/farms_providers.dart';
 import '../domain/plot.dart';
 import 'farm_display.dart';
+import 'plot_map.dart';
 
 class PlotDetailPage extends ConsumerWidget {
   const PlotDetailPage({required this.plotId, super.key});
@@ -121,6 +122,14 @@ class PlotDetailPage extends ConsumerWidget {
                   ],
                 ),
               ),
+              if (data.geometry != null) ...<Widget>[
+                const SizedBox(height: AppSpacing.lg),
+                PlotMap(
+                  key: const Key('plot_detail_map'),
+                  points: data.geometry!.ring,
+                  height: 220,
+                ),
+              ],
               const SizedBox(height: AppSpacing.xl),
               _CyclesSection(plotId: plotId, strings: strings),
               const SizedBox(height: AppSpacing.xl),

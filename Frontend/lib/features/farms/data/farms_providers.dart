@@ -26,10 +26,17 @@ class FarmsController extends AsyncNotifier<List<Farm>> {
     String name, {
     String? village,
     int? adminAreaId,
+    Object? location = unchanged,
   }) async {
     return ref
         .read(farmsRepositoryProvider)
-        .createFarm(id, name, village: village, adminAreaId: adminAreaId);
+        .createFarm(
+          id,
+          name,
+          village: village,
+          adminAreaId: adminAreaId,
+          location: location,
+        );
   }
 
   Future<Farm> updateFarm(
@@ -37,10 +44,17 @@ class FarmsController extends AsyncNotifier<List<Farm>> {
     Object? name = unchanged,
     Object? village = unchanged,
     Object? adminAreaId = unchanged,
+    Object? location = unchanged,
   }) async {
     return ref
         .read(farmsRepositoryProvider)
-        .updateFarm(id, name: name, village: village, adminAreaId: adminAreaId);
+        .updateFarm(
+          id,
+          name: name,
+          village: village,
+          adminAreaId: adminAreaId,
+          location: location,
+        );
   }
 
   Future<void> deleteFarm(String id) async {
@@ -79,6 +93,7 @@ class FarmPlotsController extends AsyncNotifier<List<Plot>> {
     double? areaHa,
     SoilType? soilType,
     IrrigationType? irrigation,
+    Object? geometry = unchanged,
   }) async {
     return ref
         .read(farmsRepositoryProvider)
@@ -89,6 +104,7 @@ class FarmPlotsController extends AsyncNotifier<List<Plot>> {
           areaHa: areaHa,
           soilType: soilType,
           irrigation: irrigation,
+          geometry: geometry,
         );
   }
 
@@ -98,6 +114,7 @@ class FarmPlotsController extends AsyncNotifier<List<Plot>> {
     Object? areaHa = unchanged,
     Object? soilType = unchanged,
     Object? irrigation = unchanged,
+    Object? geometry = unchanged,
   }) async {
     final Plot plot = await ref
         .read(farmsRepositoryProvider)
@@ -107,6 +124,7 @@ class FarmPlotsController extends AsyncNotifier<List<Plot>> {
           areaHa: areaHa,
           soilType: soilType,
           irrigation: irrigation,
+          geometry: geometry,
         );
     ref.invalidate(plotProvider(id));
     return plot;

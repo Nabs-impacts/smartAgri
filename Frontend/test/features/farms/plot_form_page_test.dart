@@ -2,11 +2,15 @@ import 'dart:convert';
 
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
+import 'package:latlong2/latlong.dart';
 import 'package:smartagri/core/database/app_database.dart';
+import 'package:smartagri/core/location/location_service.dart';
 import 'package:smartagri/features/farms/domain/farm.dart';
 import 'package:smartagri/features/farms/domain/plot.dart';
+import 'package:smartagri/features/farms/domain/plot_geometry.dart';
 import 'package:smartagri/features/profile/data/me_repository.dart';
 
+import '../../core/location/fake_location_service.dart';
 import '../app_test_utils.dart';
 import 'farms_test_app.dart';
 import 'farms_test_data.dart';
@@ -42,6 +46,7 @@ Future<FarmsHarness> pumpPlotForm(
   WidgetTester tester, {
   FakeMeRepository? meRepository,
   List<Plot>? plots,
+  LocationService? locationService,
 }) async {
   await tester.binding.setSurfaceSize(const Size(900, 1600));
   addTearDown(() => tester.binding.setSurfaceSize(null));
@@ -51,6 +56,7 @@ Future<FarmsHarness> pumpPlotForm(
     farms: <Farm>[sampleFarm()],
     plots: <String, List<Plot>>{'farm-1': plots ?? <Plot>[]},
     meRepository: meRepository,
+    locationService: locationService,
   );
 }
 
@@ -161,18 +167,116 @@ void main() {
     );
   });
 
-  testWidgets('shows the map coming soon note', (WidgetTester tester) async {
+  testWidgets('draws a boundary and saves the computed area', (
+    WidgetTester tester,
+  ) async {
+    final FakeLocationService location = FakeLocationService(
+      results: <LocationResult>[
+        const LocationResult.success(
+          LocationPosition(latitude: 13.5, longitude: 2.1, accuracyMeters: 8),
+        ),
+        const LocationResult.success(
+          LocationPosition(latitude: 13.5, longitude: 2.101, accuracyMeters: 8),
+        ),
+        const LocationResult.success(
+          LocationPosition(
+            latitude: 13.501,
+            longitude: 2.101,
+            accuracyMeters: 8,
+          ),
+        ),
+      ],
+    );
+    final FarmsHarness harness = await pumpPlotForm(
+      tester,
+      locationService: location,
+    );
+    await enterName(tester, 'Parcelle dessinée');
+
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('plot_boundary_button')),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.byKey(const Key('plot_boundary_button')));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.byKey(const Key('boundary_add_position')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('location_explanation_continue')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('boundary_add_position')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('boundary_add_position')));
+    await tester.pumpAndSettle();
+    await tester.tap(find.byKey(const Key('boundary_finish')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('plot_calculated_area')), findsOneWidget);
+    expect(find.byKey(const Key('plot_area_field')), findsNothing);
+
+    await tapSave(tester);
+
+    final List<PendingChangeRow> outbox = await harness.database.getOutbox();
+    final Map<String, dynamic> data =
+        jsonDecode(outbox.single.payload) as Map<String, dynamic>;
+    expect(data['geom'], isNotNull);
+    expect(data['area_ha'], isA<num>());
+    expect((data['area_ha'] as num).toDouble(), greaterThan(0));
+  });
+
+  testWidgets('deletes an existing boundary and saves the manual area', (
+    WidgetTester tester,
+  ) async {
+    await tester.binding.setSurfaceSize(const Size(900, 1600));
+    addTearDown(() => tester.binding.setSurfaceSize(null));
+    final PlotGeometry geometry = PlotGeometry(<LatLng>[
+      const LatLng(13.5, 2.1),
+      const LatLng(13.5, 2.101),
+      const LatLng(13.501, 2.101),
+    ]);
+    final FarmsHarness harness = await pumpFarmsApp(
+      tester,
+      initialLocation: '/plots/plot-1/edit',
+      farms: <Farm>[sampleFarm()],
+      plots: <String, List<Plot>>{
+        'farm-1': <Plot>[samplePlot(geometry: geometry)],
+      },
+    );
+
+    await tester.scrollUntilVisible(
+      find.byKey(const Key('plot_boundary_button')),
+      200,
+      scrollable: find.byType(Scrollable).first,
+    );
+    await tester.tap(find.byKey(const Key('plot_boundary_button')));
+    await tester.pumpAndSettle();
+    await tester.ensureVisible(find.byKey(const Key('boundary_delete')));
+    await tester.tap(find.byKey(const Key('boundary_delete')));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('plot_area_field')), findsOneWidget);
+    await tapSave(tester);
+
+    final List<PendingChangeRow> outbox = await harness.database.getOutbox();
+    final Map<String, dynamic> data =
+        jsonDecode(outbox.single.payload) as Map<String, dynamic>;
+    expect(data['geom'], isNull);
+    expect(data['area_ha'], 2.5);
+  });
+
+  testWidgets('shows the map preview and the boundary button', (
+    WidgetTester tester,
+  ) async {
     await pumpPlotForm(tester);
 
     await tester.scrollUntilVisible(
-      find.byKey(const Key('plot_map_coming_soon')),
+      find.byKey(const Key('plot_boundary_button')),
       200,
       scrollable: find.byType(Scrollable).first,
     );
 
-    expect(
-      find.text('Le tracé de la parcelle sur la carte arrivera plus tard'),
-      findsOneWidget,
-    );
+    expect(find.byKey(const Key('plot_map_preview')), findsOneWidget);
+    expect(find.text('Tracer la parcelle'), findsOneWidget);
   });
 }

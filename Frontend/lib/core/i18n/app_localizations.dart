@@ -682,12 +682,6 @@ abstract class AppLocalizations {
   /// **'Irrigation'**
   String get plotIrrigationLabel;
 
-  /// No description provided for @plotMapComingSoon.
-  ///
-  /// In fr, this message translates to:
-  /// **'Le tracé de la parcelle sur la carte arrivera plus tard'**
-  String get plotMapComingSoon;
-
   /// No description provided for @plotDeleteTitle.
   ///
   /// In fr, this message translates to:
@@ -2325,6 +2319,252 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Les diagnostics sont dans l\'onglet Diagnostics.'**
   String get plotTimelineDiagnosticsHint;
+
+  /// No description provided for @plotBoundaryTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tracer la parcelle'**
+  String get plotBoundaryTitle;
+
+  /// No description provided for @plotBoundaryEditTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifier le tracé'**
+  String get plotBoundaryEditTitle;
+
+  /// No description provided for @plotBoundaryHint.
+  ///
+  /// In fr, this message translates to:
+  /// **'Appuyez sur la carte pour ajouter les sommets du contour.'**
+  String get plotBoundaryHint;
+
+  /// No description provided for @plotBoundaryAddPosition.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter ma position'**
+  String get plotBoundaryAddPosition;
+
+  /// No description provided for @plotBoundaryCenterPosition.
+  ///
+  /// In fr, this message translates to:
+  /// **'Centrer sur ma position'**
+  String get plotBoundaryCenterPosition;
+
+  /// No description provided for @plotBoundaryFinish.
+  ///
+  /// In fr, this message translates to:
+  /// **'Terminer'**
+  String get plotBoundaryFinish;
+
+  /// No description provided for @plotBoundaryDelete.
+  ///
+  /// In fr, this message translates to:
+  /// **'Supprimer le tracé'**
+  String get plotBoundaryDelete;
+
+  /// No description provided for @plotBoundaryUndo.
+  ///
+  /// In fr, this message translates to:
+  /// **'Annuler le dernier sommet'**
+  String get plotBoundaryUndo;
+
+  /// No description provided for @plotBoundaryClear.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tout effacer'**
+  String get plotBoundaryClear;
+
+  /// No description provided for @plotBoundaryVertexCount.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Aucun sommet} =1{1 sommet} other{{count} sommets}}'**
+  String plotBoundaryVertexCount(int count);
+
+  /// No description provided for @plotBoundaryArea.
+  ///
+  /// In fr, this message translates to:
+  /// **'≈ {area} ha'**
+  String plotBoundaryArea(String area);
+
+  /// No description provided for @plotBoundaryValid.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tracé valide.'**
+  String get plotBoundaryValid;
+
+  /// No description provided for @plotBoundaryTooFew.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajoutez au moins 3 sommets distincts.'**
+  String get plotBoundaryTooFew;
+
+  /// No description provided for @plotBoundarySelfIntersection.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le contour se croise. Corrigez le tracé.'**
+  String get plotBoundarySelfIntersection;
+
+  /// No description provided for @plotBoundaryTooMany.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le tracé ne doit pas dépasser 500 sommets.'**
+  String get plotBoundaryTooMany;
+
+  /// No description provided for @plotBoundaryZeroArea.
+  ///
+  /// In fr, this message translates to:
+  /// **'La surface du tracé est nulle.'**
+  String get plotBoundaryZeroArea;
+
+  /// No description provided for @plotBoundaryAreaTooLarge.
+  ///
+  /// In fr, this message translates to:
+  /// **'La surface ne doit pas dépasser 10 000 ha.'**
+  String get plotBoundaryAreaTooLarge;
+
+  /// No description provided for @plotBoundaryOutOfBounds.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le tracé contient des coordonnées hors limites.'**
+  String get plotBoundaryOutOfBounds;
+
+  /// No description provided for @plotBoundaryComplexLimit.
+  ///
+  /// In fr, this message translates to:
+  /// **'Cette limite est complexe : elle ne peut pas être modifiée dans l\'application.'**
+  String get plotBoundaryComplexLimit;
+
+  /// No description provided for @plotBoundaryOpen.
+  ///
+  /// In fr, this message translates to:
+  /// **'Tracer la parcelle'**
+  String get plotBoundaryOpen;
+
+  /// No description provided for @plotBoundaryModify.
+  ///
+  /// In fr, this message translates to:
+  /// **'Modifier le tracé'**
+  String get plotBoundaryModify;
+
+  /// No description provided for @plotAreaCalculated.
+  ///
+  /// In fr, this message translates to:
+  /// **'Superficie calculée : {area} (estimation, confirmée après synchronisation)'**
+  String plotAreaCalculated(String area);
+
+  /// No description provided for @mapAttribution.
+  ///
+  /// In fr, this message translates to:
+  /// **'© OpenStreetMap contributors'**
+  String get mapAttribution;
+
+  /// No description provided for @mapOffline.
+  ///
+  /// In fr, this message translates to:
+  /// **'Fond de carte indisponible hors connexion'**
+  String get mapOffline;
+
+  /// No description provided for @locationExplanation.
+  ///
+  /// In fr, this message translates to:
+  /// **'SmartAgri utilise votre position uniquement pour enregistrer les limites de votre parcelle.'**
+  String get locationExplanation;
+
+  /// No description provided for @locationContinue.
+  ///
+  /// In fr, this message translates to:
+  /// **'Continuer'**
+  String get locationContinue;
+
+  /// No description provided for @locationDenied.
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'accès à votre position a été refusé.'**
+  String get locationDenied;
+
+  /// No description provided for @locationDeniedForever.
+  ///
+  /// In fr, this message translates to:
+  /// **'L\'accès à votre position est refusé définitivement. Ouvrez les réglages de l\'application pour l\'autoriser.'**
+  String get locationDeniedForever;
+
+  /// No description provided for @locationServiceDisabled.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le service de localisation est désactivé. Activez-le pour utiliser votre position.'**
+  String get locationServiceDisabled;
+
+  /// No description provided for @locationUnsupported.
+  ///
+  /// In fr, this message translates to:
+  /// **'La géolocalisation n\'est pas prise en charge sur cet appareil.'**
+  String get locationUnsupported;
+
+  /// No description provided for @locationTimeout.
+  ///
+  /// In fr, this message translates to:
+  /// **'La position n\'a pas pu être obtenue à temps. Réessayez.'**
+  String get locationTimeout;
+
+  /// No description provided for @locationError.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible d\'obtenir votre position. Réessayez.'**
+  String get locationError;
+
+  /// No description provided for @locationAccuracy.
+  ///
+  /// In fr, this message translates to:
+  /// **'Précision : {meters} m'**
+  String locationAccuracy(String meters);
+
+  /// No description provided for @locationAccuracyWarning.
+  ///
+  /// In fr, this message translates to:
+  /// **'La précision est faible (plus de 30 m). Déplacez-vous vers un endroit dégagé.'**
+  String get locationAccuracyWarning;
+
+  /// No description provided for @locationOpenSettings.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ouvrir les réglages'**
+  String get locationOpenSettings;
+
+  /// No description provided for @locationSettingsUnavailable.
+  ///
+  /// In fr, this message translates to:
+  /// **'Impossible d\'ouvrir les réglages de l\'application.'**
+  String get locationSettingsUnavailable;
+
+  /// No description provided for @farmLocationLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Position de l\'exploitation'**
+  String get farmLocationLabel;
+
+  /// No description provided for @farmLocationUseCurrent.
+  ///
+  /// In fr, this message translates to:
+  /// **'Utiliser ma position actuelle'**
+  String get farmLocationUseCurrent;
+
+  /// No description provided for @farmLocationClear.
+  ///
+  /// In fr, this message translates to:
+  /// **'Effacer la position'**
+  String get farmLocationClear;
+
+  /// No description provided for @farmLocationRegistered.
+  ///
+  /// In fr, this message translates to:
+  /// **'Position enregistrée'**
+  String get farmLocationRegistered;
+
+  /// No description provided for @farmLocationHelp.
+  ///
+  /// In fr, this message translates to:
+  /// **'Position facultative, utilisée pour situer l\'exploitation.'**
+  String get farmLocationHelp;
 }
 
 class _AppLocalizationsDelegate
