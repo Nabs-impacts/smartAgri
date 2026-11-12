@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../tokens.dart';
+import '../app_palette.dart';
 
 class InfoText extends StatelessWidget {
   const InfoText(this.label, {super.key});
@@ -11,7 +12,7 @@ class InfoText extends StatelessWidget {
   Widget build(BuildContext context) {
     return Text(
       label,
-      style: AppTextStyles.label.copyWith(color: AppColors.tertiary),
+      style: AppTextStyles.label.copyWith(color: context.palette.tertiary),
     );
   }
 }

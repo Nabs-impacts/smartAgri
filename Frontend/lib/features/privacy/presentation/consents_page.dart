@@ -10,6 +10,7 @@ import '../../../design_system/components/app_card.dart';
 import '../../../design_system/components/app_error_banner.dart';
 import '../../../design_system/components/app_text_button.dart';
 import '../../../design_system/tokens.dart';
+import '../../../design_system/app_palette.dart';
 import '../../auth/domain/consent_choice.dart';
 import '../data/privacy_providers.dart';
 import '../data/privacy_repository.dart';
@@ -58,7 +59,7 @@ class _ConsentsPageState extends ConsumerState<ConsentsPage> {
     );
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(title: Text(strings.profilePrivacyConsents)),
       body: SafeArea(
         child: consents.when(
@@ -192,7 +193,9 @@ class _ReadOnlyRow extends StatelessWidget {
                 Text(
                   accepted ? acceptedLabel : rejectedLabel,
                   style: AppTextStyles.caption.copyWith(
-                    color: accepted ? AppColors.primary : AppColors.muted,
+                    color: accepted
+                        ? context.palette.primary
+                        : context.palette.muted,
                   ),
                 ),
               ],
@@ -234,7 +237,7 @@ class _SwitchRow extends StatelessWidget {
           Switch(
             key: switchKey,
             value: value,
-            activeThumbColor: AppColors.primary,
+            activeThumbColor: context.palette.primary,
             onChanged: onChanged,
           ),
         ],

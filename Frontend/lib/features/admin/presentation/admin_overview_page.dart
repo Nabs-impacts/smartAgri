@@ -9,6 +9,7 @@ import '../../../design_system/components/app_button.dart';
 import '../../../design_system/components/app_card.dart';
 import '../../../design_system/components/app_progress_bar.dart';
 import '../../../design_system/tokens.dart';
+import '../../../design_system/app_palette.dart';
 import '../data/stats_repository.dart';
 import '../domain/overview.dart';
 import 'admin_format.dart';
@@ -21,7 +22,7 @@ class AdminOverviewPage extends ConsumerWidget {
     final AppLocalizations strings = ref.watch(stringsProvider);
     final AsyncValue<Overview> overview = ref.watch(overviewProvider);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () => ref.refresh(overviewProvider.future),
@@ -38,11 +39,11 @@ class AdminOverviewPage extends ConsumerWidget {
               Text(strings.adminOverviewTitle, style: AppTextStyles.headline),
               const SizedBox(height: AppSpacing.xl),
               if (overview.isLoading && overview.value == null)
-                ..._skeleton()
+                ..._skeleton(context)
               else if (overview.hasError && overview.value == null)
                 _error(context, ref, strings, overview.error)
               else
-                ..._content(strings, overview.value!),
+                ..._content(context, strings, overview.value!),
             ],
           ),
         ),
@@ -50,21 +51,28 @@ class AdminOverviewPage extends ConsumerWidget {
     );
   }
 
-  List<Widget> _content(AppLocalizations strings, Overview overview) {
+  List<Widget> _content(
+    BuildContext context,
+    AppLocalizations strings,
+    Overview overview,
+  ) {
     return <Widget>[
       _kpiCard(
+        context,
         key: const Key('admin_kpi_active_users'),
         label: strings.adminActiveUsers,
         value: formatAdminNumber(overview.activeUsers30d),
       ),
       const SizedBox(height: AppSpacing.md),
       _kpiCard(
+        context,
         key: const Key('admin_kpi_diagnostics'),
         label: strings.adminDiagnostics,
         value: formatAdminNumber(overview.diagnostics30d),
       ),
       const SizedBox(height: AppSpacing.md),
       _kpiCard(
+        context,
         key: const Key('admin_kpi_area'),
         label: strings.adminTrackedArea,
         value: strings.adminHectares(formatAdminNumber(overview.trackedAreaHa)),
@@ -76,7 +84,7 @@ class AdminOverviewPage extends ConsumerWidget {
         child: Column(
           children: <Widget>[
             for (final RegionAdoption region in overview.adoption)
-              _adoptionRow(strings, overview.adoption, region),
+              _adoptionRow(context, strings, overview.adoption, region),
           ],
         ),
       ),
@@ -87,9 +95,9 @@ class AdminOverviewPage extends ConsumerWidget {
           children: <Widget>[
             Row(
               children: <Widget>[
-                const Icon(
+                Icon(
                   Icons.shield_outlined,
-                  color: AppColors.primary,
+                  color: context.palette.primary,
                   size: AppSizes.icon,
                 ),
                 const SizedBox(width: AppSpacing.sm),
@@ -106,7 +114,7 @@ class AdminOverviewPage extends ConsumerWidget {
             Text(
               strings.adminPrivacyBody,
               key: const Key('admin_privacy_body'),
-              style: AppTextStyles.body.copyWith(color: AppColors.muted),
+              style: AppTextStyles.body.copyWith(color: context.palette.muted),
             ),
           ],
         ),
@@ -114,7 +122,8 @@ class AdminOverviewPage extends ConsumerWidget {
     ];
   }
 
-  Widget _kpiCard({
+  Widget _kpiCard(
+    BuildContext context, {
     required Key key,
     required String label,
     required String value,
@@ -126,7 +135,7 @@ class AdminOverviewPage extends ConsumerWidget {
         children: <Widget>[
           Text(
             label,
-            style: AppTextStyles.caption.copyWith(color: AppColors.muted),
+            style: AppTextStyles.caption.copyWith(color: context.palette.muted),
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(value, style: AppTextStyles.headline),
@@ -136,6 +145,7 @@ class AdminOverviewPage extends ConsumerWidget {
   }
 
   Widget _adoptionRow(
+    BuildContext context,
     AppLocalizations strings,
     List<RegionAdoption> adoption,
     RegionAdoption region,
@@ -153,9 +163,9 @@ class AdminOverviewPage extends ConsumerWidget {
         padding: const EdgeInsets.only(bottom: AppSpacing.lg),
         child: Row(
           children: <Widget>[
-            const Icon(
+            Icon(
               Icons.lock_outline,
-              color: AppColors.muted,
+              color: context.palette.muted,
               size: AppSizes.smallIcon,
             ),
             const SizedBox(width: AppSpacing.sm),
@@ -169,7 +179,7 @@ class AdminOverviewPage extends ConsumerWidget {
                     strings.adminMaskedRegion,
                     key: Key('admin_adoption_masked_${region.regionId}'),
                     style: AppTextStyles.caption.copyWith(
-                      color: AppColors.muted,
+                      color: context.palette.muted,
                     ),
                   ),
                 ],
@@ -195,7 +205,7 @@ class AdminOverviewPage extends ConsumerWidget {
               formatAdminNumber(region.plots ?? 0),
             ),
             key: Key('admin_adoption_values_${region.regionId}'),
-            style: AppTextStyles.caption.copyWith(color: AppColors.muted),
+            style: AppTextStyles.caption.copyWith(color: context.palette.muted),
           ),
           const SizedBox(height: AppSpacing.sm),
           AppProgressBar(
@@ -207,13 +217,13 @@ class AdminOverviewPage extends ConsumerWidget {
     );
   }
 
-  List<Widget> _skeleton() {
+  List<Widget> _skeleton(BuildContext context) {
     return <Widget>[
       Container(
         key: const Key('admin_overview_skeleton'),
         height: 92,
-        decoration: const BoxDecoration(
-          color: AppColors.inputFill,
+        decoration: BoxDecoration(
+          color: context.palette.inputFill,
           borderRadius: AppRadii.cardBorder,
         ),
       ),
@@ -221,8 +231,8 @@ class AdminOverviewPage extends ConsumerWidget {
       for (int index = 0; index < 3; index++) ...<Widget>[
         Container(
           height: 92,
-          decoration: const BoxDecoration(
-            color: AppColors.inputFill,
+          decoration: BoxDecoration(
+            color: context.palette.inputFill,
             borderRadius: AppRadii.cardBorder,
           ),
         ),
@@ -242,9 +252,9 @@ class AdminOverviewPage extends ConsumerWidget {
       child: Column(
         children: <Widget>[
           if (forbidden) ...<Widget>[
-            const Icon(
+            Icon(
               Icons.lock_outline,
-              color: AppColors.muted,
+              color: context.palette.muted,
               size: AppSizes.icon,
             ),
             const SizedBox(height: AppSpacing.sm),

@@ -17,6 +17,7 @@ import '../../../design_system/components/app_text_button.dart';
 import '../../../design_system/components/app_text_field.dart';
 import '../../../design_system/components/language_switcher.dart';
 import '../../../design_system/tokens.dart';
+import '../../../design_system/app_palette.dart';
 import '../domain/auth_error_messages.dart';
 import '../domain/auth_purpose.dart';
 import '../domain/consent_choice.dart';
@@ -115,7 +116,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
     final double width = max(200, MediaQuery.sizeOf(context).width * 0.6);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.fromLTRB(
@@ -189,9 +190,9 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                       inputFormatters: const <NigerPhoneInputFormatter>[
                         NigerPhoneInputFormatter(),
                       ],
-                      suffixIcon: const Icon(
+                      suffixIcon: Icon(
                         Icons.phone_outlined,
-                        color: AppColors.muted,
+                        color: context.palette.muted,
                         size: AppSizes.icon,
                       ),
                       validator: (String? value) =>

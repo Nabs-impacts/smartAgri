@@ -11,6 +11,7 @@ import '../../../design_system/components/app_card.dart';
 import '../../../design_system/components/app_status_chip.dart';
 import '../../../design_system/components/app_text_button.dart';
 import '../../../design_system/tokens.dart';
+import '../../../design_system/app_palette.dart';
 import '../../catalog/data/catalog_repository.dart';
 import '../../farms/data/farms_providers.dart';
 import '../../farms/presentation/farm_display.dart';
@@ -45,7 +46,7 @@ class _CycleDetailPageState extends ConsumerState<CycleDetailPage> {
     final AppLocalizations strings = ref.watch(stringsProvider);
     final AsyncValue<Cycle> cycle = ref.watch(cycleProvider(widget.cycleId));
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(
         title: Text(strings.plotCyclesTitle),
         actions: <Widget>[
@@ -75,8 +76,8 @@ class _CycleDetailPageState extends ConsumerState<CycleDetailPage> {
       ),
       body: SafeArea(
         child: cycle.when(
-          loading: () => const Center(
-            child: CircularProgressIndicator(color: AppColors.primary),
+          loading: () => Center(
+            child: CircularProgressIndicator(color: context.palette.primary),
           ),
           error: (Object error, StackTrace stackTrace) => _NotFoundView(
             strings: strings,
@@ -177,7 +178,7 @@ class _CycleDetailPageState extends ConsumerState<CycleDetailPage> {
               _comparison!.sampleSize,
             ),
             key: const Key('cycle_comparison'),
-            style: AppTextStyles.caption.copyWith(color: AppColors.muted),
+            style: AppTextStyles.caption.copyWith(color: context.palette.muted),
           ),
         ],
         const SizedBox(height: AppSpacing.xl),
@@ -188,7 +189,7 @@ class _CycleDetailPageState extends ConsumerState<CycleDetailPage> {
             child: Text(
               strings.cycleJournalEmpty,
               key: const Key('cycle_journal_empty'),
-              style: AppTextStyles.body.copyWith(color: AppColors.muted),
+              style: AppTextStyles.body.copyWith(color: context.palette.muted),
               textAlign: TextAlign.center,
             ),
           )
@@ -470,7 +471,7 @@ class _CycleHeader extends StatelessWidget {
             const SizedBox(height: AppSpacing.sm),
             Text(
               cycle.notes!,
-              style: AppTextStyles.body.copyWith(color: AppColors.muted),
+              style: AppTextStyles.body.copyWith(color: context.palette.muted),
             ),
           ],
         ],
@@ -530,13 +531,15 @@ class CycleSummaryCard extends StatelessWidget {
             label: strings.cycleSummaryMargin,
             value: formatXof(summary.marginXof),
             valueKey: const Key('summary_margin'),
-            valueColor: negative ? AppColors.danger : AppColors.primary,
+            valueColor: negative
+                ? context.palette.danger
+                : context.palette.primary,
           ),
           const SizedBox(height: AppSpacing.sm),
           Text(
             strings.cycleSummaryLocal,
             key: const Key('summary_local'),
-            style: AppTextStyles.caption.copyWith(color: AppColors.muted),
+            style: AppTextStyles.caption.copyWith(color: context.palette.muted),
           ),
         ],
       ),
@@ -566,14 +569,14 @@ class _SummaryRow extends StatelessWidget {
           Expanded(
             child: Text(
               label,
-              style: AppTextStyles.body.copyWith(color: AppColors.muted),
+              style: AppTextStyles.body.copyWith(color: context.palette.muted),
             ),
           ),
           Text(
             value,
             key: valueKey,
             style: AppTextStyles.label.copyWith(
-              color: valueColor ?? AppColors.ink,
+              color: valueColor ?? context.palette.ink,
             ),
           ),
         ],
@@ -608,13 +611,13 @@ class _JournalTile extends StatelessWidget {
             Container(
               width: 44,
               height: 44,
-              decoration: const BoxDecoration(
-                color: AppColors.surface,
+              decoration: BoxDecoration(
+                color: context.palette.surface,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 content.icon,
-                color: AppColors.tertiary,
+                color: context.palette.tertiary,
                 size: AppSizes.icon,
               ),
             ),
@@ -628,7 +631,7 @@ class _JournalTile extends StatelessWidget {
                   Text(
                     formatLongDate(entry.date),
                     style: AppTextStyles.caption.copyWith(
-                      color: AppColors.muted,
+                      color: context.palette.muted,
                     ),
                   ),
                   if (content.details.isNotEmpty) ...<Widget>[
@@ -645,9 +648,9 @@ class _JournalTile extends StatelessWidget {
               key: Key('journal_delete_${entry.id}'),
               tooltip: strings.farmDelete,
               onPressed: onDelete,
-              icon: const Icon(
+              icon: Icon(
                 Icons.delete_outline,
-                color: AppColors.danger,
+                color: context.palette.danger,
                 size: AppSizes.icon,
               ),
             ),

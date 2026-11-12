@@ -15,6 +15,7 @@ import '../../../design_system/components/app_photo_tile.dart';
 import '../../../design_system/components/app_progress_bar.dart';
 import '../../../design_system/components/app_status_chip.dart';
 import '../../../design_system/tokens.dart';
+import '../../../design_system/app_palette.dart';
 import '../data/diagnostic_watcher.dart';
 import '../data/diagnostics_history_provider.dart';
 import '../data/diagnostics_repository.dart';
@@ -53,7 +54,7 @@ class _DiagnosticResultPageState extends ConsumerState<DiagnosticResultPage> {
     final Diagnostic? diagnostic = state?.diagnostic;
     final bool demo = ref.watch(diagnosticDemoBannerProvider);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(
         title: Text(strings.diagnosticResultTitle),
         actions: <Widget>[
@@ -234,21 +235,23 @@ class _DemoBanner extends StatelessWidget {
         vertical: AppSpacing.md,
       ),
       decoration: BoxDecoration(
-        color: AppColors.primaryContainer,
+        color: context.palette.primaryContainer,
         borderRadius: AppRadii.smallBorder,
       ),
       child: Row(
         children: <Widget>[
-          const Icon(
+          Icon(
             Icons.info_outline,
-            color: AppColors.primary,
+            color: context.palette.primary,
             size: AppSizes.icon,
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
               strings.diagnosticDemoBanner,
-              style: AppTextStyles.body.copyWith(color: AppColors.primary),
+              style: AppTextStyles.body.copyWith(
+                color: context.palette.primary,
+              ),
             ),
           ),
         ],
@@ -331,7 +334,7 @@ class _ProcessingView extends StatelessWidget {
         const SizedBox(height: AppSpacing.sm),
         Text(
           strings.diagnosticProcessingHint,
-          style: AppTextStyles.body.copyWith(color: AppColors.muted),
+          style: AppTextStyles.body.copyWith(color: context.palette.muted),
           textAlign: TextAlign.center,
         ),
         if (medias.isNotEmpty) ...<Widget>[
@@ -438,13 +441,13 @@ class _DoneView extends StatelessWidget {
                       _percent(others[index].confidence),
                     ),
                     style: AppTextStyles.caption.copyWith(
-                      color: AppColors.muted,
+                      color: context.palette.muted,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.xs),
                   AppProgressBar(
                     value: others[index].confidence,
-                    color: AppColors.secondary,
+                    color: context.palette.secondary,
                   ),
                 ],
               ],
@@ -469,7 +472,7 @@ class _DoneView extends StatelessWidget {
                     strings.diagnosticFeedbackThanks,
                     key: const Key('diagnostic_feedback_thanks'),
                     style: AppTextStyles.label.copyWith(
-                      color: AppColors.primary,
+                      color: context.palette.primary,
                     ),
                   )
                 else ...<Widget>[
@@ -510,7 +513,7 @@ class _DoneView extends StatelessWidget {
         Text(
           strings.diagnosticTechnician,
           key: const Key('diagnostic_technician'),
-          style: AppTextStyles.caption.copyWith(color: AppColors.muted),
+          style: AppTextStyles.caption.copyWith(color: context.palette.muted),
         ),
       ],
     );
@@ -575,9 +578,9 @@ class _ExpertView extends StatelessWidget {
             children: <Widget>[
               Row(
                 children: <Widget>[
-                  const Icon(
+                  Icon(
                     Icons.verified_user_outlined,
-                    color: AppColors.secondary,
+                    color: context.palette.secondary,
                     size: AppSizes.icon,
                   ),
                   const SizedBox(width: AppSpacing.sm),
@@ -593,7 +596,9 @@ class _ExpertView extends StatelessWidget {
               const SizedBox(height: AppSpacing.md),
               Text(
                 strings.diagnosticProvisional,
-                style: AppTextStyles.caption.copyWith(color: AppColors.muted),
+                style: AppTextStyles.caption.copyWith(
+                  color: context.palette.muted,
+                ),
               ),
               for (final Prediction prediction
                   in diagnostic.predictions) ...<Widget>[
@@ -602,12 +607,14 @@ class _ExpertView extends StatelessWidget {
                 const SizedBox(height: AppSpacing.xs),
                 Text(
                   strings.diagnosticConfidence(_percent(prediction.confidence)),
-                  style: AppTextStyles.caption.copyWith(color: AppColors.muted),
+                  style: AppTextStyles.caption.copyWith(
+                    color: context.palette.muted,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 AppProgressBar(
                   value: prediction.confidence,
-                  color: AppColors.secondary,
+                  color: context.palette.secondary,
                 ),
               ],
             ],
@@ -617,7 +624,7 @@ class _ExpertView extends StatelessWidget {
         Text(
           strings.diagnosticTechnician,
           key: const Key('diagnostic_technician'),
-          style: AppTextStyles.caption.copyWith(color: AppColors.muted),
+          style: AppTextStyles.caption.copyWith(color: context.palette.muted),
         ),
       ],
     );
@@ -680,7 +687,7 @@ class _TimeoutView extends StatelessWidget {
         AppCard(
           child: Column(
             children: <Widget>[
-              const Icon(Icons.schedule, color: AppColors.secondary, size: 32),
+              Icon(Icons.schedule, color: context.palette.secondary, size: 32),
               const SizedBox(height: AppSpacing.md),
               Text(
                 strings.diagnosticTimeout,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../tokens.dart';
+import '../app_palette.dart';
 
 class AppSearchField extends StatelessWidget {
   const AppSearchField({
@@ -23,16 +24,16 @@ class AppSearchField extends StatelessWidget {
       onChanged: onChanged,
       onSubmitted: onSubmitted,
       textInputAction: TextInputAction.search,
-      style: AppTextStyles.body,
-      cursorColor: AppColors.primary,
+      style: AppTextStyles.body.copyWith(color: context.palette.ink),
+      cursorColor: context.palette.primary,
       decoration: InputDecoration(
         filled: true,
-        fillColor: AppColors.surface,
+        fillColor: context.palette.surface,
         hintText: hintText,
-        hintStyle: AppTextStyles.body.copyWith(color: AppColors.muted),
-        prefixIcon: const Icon(
+        hintStyle: AppTextStyles.body.copyWith(color: context.palette.muted),
+        prefixIcon: Icon(
           Icons.search,
-          color: AppColors.muted,
+          color: context.palette.muted,
           size: AppSizes.icon,
         ),
         prefixIconConstraints: const BoxConstraints(
@@ -51,10 +52,10 @@ class AppSearchField extends StatelessWidget {
           borderRadius: AppRadii.pillBorder,
           borderSide: BorderSide.none,
         ),
-        focusedBorder: const OutlineInputBorder(
+        focusedBorder: OutlineInputBorder(
           borderRadius: AppRadii.pillBorder,
           borderSide: BorderSide(
-            color: AppColors.primary,
+            color: context.palette.primary,
             width: AppSizes.focusBorder,
           ),
         ),

@@ -12,6 +12,7 @@ import '../../../design_system/components/app_error_banner.dart';
 import '../../../design_system/components/app_status_banner.dart';
 import '../../../design_system/components/app_text_button.dart';
 import '../../../design_system/tokens.dart';
+import '../../../design_system/app_palette.dart';
 import '../domain/plot_geometry.dart';
 import 'boundary_editor_controller.dart';
 import 'farm_display.dart';
@@ -191,7 +192,7 @@ class _PlotBoundaryEditorPageState
         }
       },
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: context.palette.background,
         appBar: AppBar(
           automaticallyImplyLeading: false,
           leading: IconButton(
@@ -224,9 +225,9 @@ class _PlotBoundaryEditorPageState
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(AppSpacing.lg),
-                decoration: const BoxDecoration(
-                  color: AppColors.white,
-                  border: Border(top: BorderSide(color: AppColors.line)),
+                decoration: BoxDecoration(
+                  color: context.palette.surfaceRaised,
+                  border: Border(top: BorderSide(color: context.palette.line)),
                 ),
                 child: readOnly
                     ? Column(
@@ -275,15 +276,15 @@ class _PlotBoundaryEditorPageState
                             key: const Key('boundary_validation'),
                             style: AppTextStyles.caption.copyWith(
                               color: validation == null
-                                  ? AppColors.tertiary
-                                  : AppColors.danger,
+                                  ? context.palette.tertiary
+                                  : context.palette.danger,
                             ),
                           ),
                           const SizedBox(height: AppSpacing.sm),
                           Text(
                             strings.plotBoundaryHint,
                             style: AppTextStyles.caption.copyWith(
-                              color: AppColors.muted,
+                              color: context.palette.muted,
                             ),
                           ),
                           if (_position != null) ...<Widget>[
@@ -301,7 +302,7 @@ class _PlotBoundaryEditorPageState
                                 strings.locationAccuracyWarning,
                                 key: const Key('boundary_accuracy_warning'),
                                 style: AppTextStyles.caption.copyWith(
-                                  color: AppColors.accentBrown,
+                                  color: context.palette.accent,
                                 ),
                               ),
                             ],

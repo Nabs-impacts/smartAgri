@@ -8,6 +8,7 @@ import '../../../design_system/components/app_card.dart';
 import '../../../design_system/components/app_error_banner.dart';
 import '../../../design_system/components/app_text_button.dart';
 import '../../../design_system/tokens.dart';
+import '../../../design_system/app_palette.dart';
 import '../../catalog/data/catalog_repository.dart';
 import '../data/cycles_providers.dart';
 import '../domain/cycle.dart';
@@ -27,12 +28,12 @@ class PlotTimelinePage extends ConsumerWidget {
       plotTimelineProvider(plotId),
     );
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(title: Text(strings.plotTimelineTitle)),
       body: SafeArea(
         child: timeline.when(
-          loading: () => const Center(
-            child: CircularProgressIndicator(color: AppColors.primary),
+          loading: () => Center(
+            child: CircularProgressIndicator(color: context.palette.primary),
           ),
           error: (Object error, StackTrace stackTrace) => Center(
             child: Padding(
@@ -77,7 +78,7 @@ class _TimelineList extends StatelessWidget {
       Text(
         strings.plotTimelineDiagnosticsHint,
         key: const Key('timeline_diagnostics_hint'),
-        style: AppTextStyles.caption.copyWith(color: AppColors.muted),
+        style: AppTextStyles.caption.copyWith(color: context.palette.muted),
       ),
       const SizedBox(height: AppSpacing.lg),
     ];
@@ -87,7 +88,7 @@ class _TimelineList extends StatelessWidget {
           child: Text(
             strings.plotTimelineEmpty,
             key: const Key('timeline_empty'),
-            style: AppTextStyles.body.copyWith(color: AppColors.muted),
+            style: AppTextStyles.body.copyWith(color: context.palette.muted),
             textAlign: TextAlign.center,
           ),
         ),
@@ -169,13 +170,13 @@ class _TimelineRow extends ConsumerWidget {
             Container(
               width: 44,
               height: 44,
-              decoration: const BoxDecoration(
-                color: AppColors.surface,
+              decoration: BoxDecoration(
+                color: context.palette.surface,
                 shape: BoxShape.circle,
               ),
               child: Icon(
                 timelineEntryIcon(entry),
-                color: AppColors.tertiary,
+                color: context.palette.tertiary,
                 size: AppSizes.icon,
               ),
             ),
@@ -195,7 +196,7 @@ class _TimelineRow extends ConsumerWidget {
                   Text(
                     formatLongDate(entry.date),
                     style: AppTextStyles.caption.copyWith(
-                      color: AppColors.muted,
+                      color: context.palette.muted,
                     ),
                   ),
                   if (details.isNotEmpty) ...<Widget>[
@@ -205,9 +206,9 @@ class _TimelineRow extends ConsumerWidget {
                 ],
               ),
             ),
-            const Icon(
+            Icon(
               Icons.chevron_right,
-              color: AppColors.muted,
+              color: context.palette.muted,
               size: AppSizes.icon,
             ),
           ],

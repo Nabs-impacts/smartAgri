@@ -12,6 +12,7 @@ import '../../../design_system/components/app_error_banner.dart';
 import '../../../design_system/components/app_otp_field.dart';
 import '../../../design_system/components/app_text_button.dart';
 import '../../../design_system/tokens.dart';
+import '../../../design_system/app_palette.dart';
 import '../domain/auth_error_messages.dart';
 import '../domain/auth_purpose.dart';
 import '../domain/otp_args.dart';
@@ -119,7 +120,7 @@ class _OtpPageState extends ConsumerState<OtpPage> {
     final bool login = widget.args.purpose == AuthPurpose.login;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.xl),
@@ -144,7 +145,9 @@ class _OtpPageState extends ConsumerState<OtpPage> {
               const SizedBox(height: AppSpacing.sm),
               Text(
                 strings.otpInstructions(maskPhone(widget.args.phone)),
-                style: AppTextStyles.body.copyWith(color: AppColors.muted),
+                style: AppTextStyles.body.copyWith(
+                  color: context.palette.muted,
+                ),
                 textAlign: TextAlign.center,
               ),
               const SizedBox(height: AppSpacing.xl),

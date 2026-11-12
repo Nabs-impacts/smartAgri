@@ -11,6 +11,7 @@ import '../../../design_system/components/app_card.dart';
 import '../../../design_system/components/app_error_banner.dart';
 import '../../../design_system/components/app_text_field.dart';
 import '../../../design_system/tokens.dart';
+import '../../../design_system/app_palette.dart';
 import '../data/privacy_repository.dart';
 
 class DeleteAccountPage extends ConsumerStatefulWidget {
@@ -78,7 +79,7 @@ class _DeleteAccountPageState extends ConsumerState<DeleteAccountPage> {
     final AppLocalizations strings = ref.watch(stringsProvider);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(title: Text(strings.privacyDeleteTitle)),
       body: SafeArea(
         child: ListView(
@@ -122,9 +123,9 @@ class _DeleteAccountPageState extends ConsumerState<DeleteAccountPage> {
         children: <Widget>[
           Row(
             children: <Widget>[
-              const Icon(
+              Icon(
                 Icons.warning_amber_rounded,
-                color: AppColors.danger,
+                color: context.palette.danger,
                 size: AppSizes.icon,
               ),
               const SizedBox(width: AppSpacing.sm),
@@ -141,13 +142,13 @@ class _DeleteAccountPageState extends ConsumerState<DeleteAccountPage> {
           _bullet(strings.privacyDeleteErasedMedia),
           _bullet(strings.privacyDeleteErasedFinal),
           const SizedBox(height: AppSpacing.lg),
-          const Divider(color: AppColors.line),
+          Divider(color: context.palette.line),
           const SizedBox(height: AppSpacing.md),
           Row(
             children: <Widget>[
-              const Icon(
+              Icon(
                 Icons.lock_outline,
-                color: AppColors.primary,
+                color: context.palette.primary,
                 size: AppSizes.icon,
               ),
               const SizedBox(width: AppSpacing.sm),
@@ -172,9 +173,9 @@ class _DeleteAccountPageState extends ConsumerState<DeleteAccountPage> {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: <Widget>[
-          const Padding(
+          Padding(
             padding: EdgeInsets.only(top: AppSpacing.sm),
-            child: Icon(Icons.circle, size: 6, color: AppColors.muted),
+            child: Icon(Icons.circle, size: 6, color: context.palette.muted),
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(child: Text(text, style: AppTextStyles.body)),

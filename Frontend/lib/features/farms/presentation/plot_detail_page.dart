@@ -9,6 +9,7 @@ import '../../../design_system/components/app_error_banner.dart';
 import '../../../design_system/components/app_status_chip.dart';
 import '../../../design_system/components/app_text_button.dart';
 import '../../../design_system/tokens.dart';
+import '../../../design_system/app_palette.dart';
 import '../../catalog/data/catalog_repository.dart';
 import '../../cycles/data/cycles_providers.dart';
 import '../../cycles/domain/cycle.dart';
@@ -29,7 +30,7 @@ class PlotDetailPage extends ConsumerWidget {
     final AppLocalizations strings = ref.watch(stringsProvider);
     final AsyncValue<Plot> plot = ref.watch(plotProvider(plotId));
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(
         title: Text(strings.plotDetailsTitle),
         actions: <Widget>[
@@ -59,8 +60,8 @@ class PlotDetailPage extends ConsumerWidget {
       ),
       body: SafeArea(
         child: plot.when(
-          loading: () => const Center(
-            child: CircularProgressIndicator(color: AppColors.primary),
+          loading: () => Center(
+            child: CircularProgressIndicator(color: context.palette.primary),
           ),
           error: (Object error, StackTrace stackTrace) => Center(
             child: Padding(
@@ -209,10 +210,10 @@ class _CyclesSection extends ConsumerWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         cycles.when(
-          loading: () => const Center(
+          loading: () => Center(
             child: Padding(
               padding: EdgeInsets.all(AppSpacing.lg),
-              child: CircularProgressIndicator(color: AppColors.primary),
+              child: CircularProgressIndicator(color: context.palette.primary),
             ),
           ),
           error: (Object error, StackTrace stackTrace) => Column(
@@ -235,7 +236,9 @@ class _CyclesSection extends ConsumerWidget {
                 child: Text(
                   strings.plotCyclesEmpty,
                   key: const Key('plot_cycles_empty'),
-                  style: AppTextStyles.body.copyWith(color: AppColors.muted),
+                  style: AppTextStyles.body.copyWith(
+                    color: context.palette.muted,
+                  ),
                   textAlign: TextAlign.center,
                 ),
               );
@@ -306,7 +309,9 @@ class _CycleTile extends ConsumerWidget {
               Text(
                 '${strings.cycleSowingDate} : '
                 '${formatLongDate(cycle.sowingDate!)}',
-                style: AppTextStyles.caption.copyWith(color: AppColors.muted),
+                style: AppTextStyles.caption.copyWith(
+                  color: context.palette.muted,
+                ),
               ),
             ],
             if (cycle.expectedHarvestDate != null) ...<Widget>[
@@ -314,7 +319,9 @@ class _CycleTile extends ConsumerWidget {
               Text(
                 '${strings.cycleExpectedHarvestDate} : '
                 '${formatLongDate(cycle.expectedHarvestDate!)}',
-                style: AppTextStyles.caption.copyWith(color: AppColors.muted),
+                style: AppTextStyles.caption.copyWith(
+                  color: context.palette.muted,
+                ),
               ),
             ],
           ],
@@ -340,7 +347,7 @@ class _ComingSoonSection extends StatelessWidget {
           const SizedBox(height: AppSpacing.sm),
           Text(
             message,
-            style: AppTextStyles.body.copyWith(color: AppColors.muted),
+            style: AppTextStyles.body.copyWith(color: context.palette.muted),
           ),
         ],
       ),

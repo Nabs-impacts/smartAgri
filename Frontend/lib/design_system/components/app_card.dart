@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../tokens.dart';
+import '../app_palette.dart';
 
 class AppCard extends StatelessWidget {
   const AppCard({
@@ -16,11 +17,11 @@ class AppCard extends StatelessWidget {
   Widget build(BuildContext context) {
     return Container(
       padding: padding,
-      decoration: const BoxDecoration(
-        color: AppColors.white,
+      decoration: BoxDecoration(
+        color: context.palette.surfaceRaised,
         borderRadius: AppRadii.cardBorder,
         border: Border.fromBorderSide(
-          BorderSide(color: AppColors.line, width: AppSizes.border),
+          BorderSide(color: context.palette.line, width: AppSizes.border),
         ),
         boxShadow: AppShadows.card,
       ),

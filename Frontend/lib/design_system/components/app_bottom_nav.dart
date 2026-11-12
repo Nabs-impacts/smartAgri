@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../tokens.dart';
+import '../app_palette.dart';
 
 class AppNavItem {
   const AppNavItem({required this.icon, required this.label});
@@ -26,8 +27,8 @@ class AppBottomNav extends StatelessWidget {
     return Container(
       height: AppSizes.navHeight,
       padding: const EdgeInsets.all(AppSpacing.sm),
-      decoration: const BoxDecoration(
-        color: AppColors.surface,
+      decoration: BoxDecoration(
+        color: context.palette.surface,
         borderRadius: AppRadii.pillBorder,
         boxShadow: AppShadows.card,
       ),
@@ -51,13 +52,15 @@ class AppBottomNav extends StatelessWidget {
                     height: AppSizes.navCircle,
                     decoration: BoxDecoration(
                       color: selected
-                          ? AppColors.primary
-                          : AppColors.transparent,
+                          ? context.palette.primary
+                          : Colors.transparent,
                       shape: BoxShape.circle,
                     ),
                     child: Icon(
                       item.icon,
-                      color: selected ? AppColors.white : AppColors.muted,
+                      color: selected
+                          ? context.palette.onPrimary
+                          : context.palette.muted,
                       size: AppSizes.icon,
                     ),
                   ),

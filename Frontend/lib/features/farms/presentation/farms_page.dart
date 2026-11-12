@@ -13,6 +13,7 @@ import '../../../design_system/components/app_card.dart';
 import '../../../design_system/components/app_error_banner.dart';
 import '../../../design_system/components/app_text_button.dart';
 import '../../../design_system/tokens.dart';
+import '../../../design_system/app_palette.dart';
 import '../../catalog/data/catalog_repository.dart';
 import '../../catalog/domain/admin_area.dart';
 import '../data/farms_providers.dart';
@@ -36,7 +37,7 @@ class FarmsPage extends ConsumerWidget {
         ref.watch(adminAreasProvider).value ?? <AdminArea>[];
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(title: Text(strings.farmsTitle)),
       body: SafeArea(
         child: RefreshIndicator(
@@ -64,7 +65,7 @@ class FarmsPage extends ConsumerWidget {
               ),
               const SizedBox(height: AppSpacing.xl),
               if ((farms.isLoading && farms.value == null) || firstSyncLoading)
-                ..._skeleton()
+                ..._skeleton(context)
               else if (farms.hasError && farms.value == null)
                 _error(context, ref, strings, farms.error)
               else if (farmsValue.isEmpty)
@@ -72,7 +73,9 @@ class FarmsPage extends ConsumerWidget {
                   child: Text(
                     strings.farmsEmpty,
                     key: const Key('farms_empty'),
-                    style: AppTextStyles.body.copyWith(color: AppColors.muted),
+                    style: AppTextStyles.body.copyWith(
+                      color: context.palette.muted,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 )
@@ -92,14 +95,14 @@ class FarmsPage extends ConsumerWidget {
     );
   }
 
-  List<Widget> _skeleton() {
+  List<Widget> _skeleton(BuildContext context) {
     return <Widget>[
       for (int index = 0; index < 3; index++) ...<Widget>[
         Container(
           key: Key('farms_skeleton_$index'),
           height: 84,
-          decoration: const BoxDecoration(
-            color: AppColors.inputFill,
+          decoration: BoxDecoration(
+            color: context.palette.inputFill,
             borderRadius: AppRadii.cardBorder,
           ),
         ),
@@ -157,13 +160,13 @@ class _FarmTile extends StatelessWidget {
             Container(
               width: 44,
               height: 44,
-              decoration: const BoxDecoration(
-                color: AppColors.primaryContainer,
+              decoration: BoxDecoration(
+                color: context.palette.primaryContainer,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.agriculture_outlined,
-                color: AppColors.primary,
+                color: context.palette.primary,
                 size: AppSizes.icon,
               ),
             ),
@@ -183,16 +186,16 @@ class _FarmTile extends StatelessWidget {
                     Text(
                       region!,
                       style: AppTextStyles.caption.copyWith(
-                        color: AppColors.muted,
+                        color: context.palette.muted,
                       ),
                     ),
                   ],
                 ],
               ),
             ),
-            const Icon(
+            Icon(
               Icons.chevron_right,
-              color: AppColors.muted,
+              color: context.palette.muted,
               size: AppSizes.icon,
             ),
           ],

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../tokens.dart';
+import '../app_palette.dart';
 
 class AppSelectOption<T> {
   const AppSelectOption({required this.value, required this.label});
@@ -57,11 +58,11 @@ class AppSelectField<T> extends StatelessWidget {
           child: Opacity(
             opacity: _enabled ? 1 : AppOpacity.disabled,
             child: Material(
-              color: AppColors.inputFill,
+              color: context.palette.inputFill,
               shape: RoundedRectangleBorder(
                 borderRadius: AppRadii.pillBorder,
                 side: hasError
-                    ? const BorderSide(color: AppColors.danger)
+                    ? BorderSide(color: context.palette.danger)
                     : BorderSide.none,
               ),
               clipBehavior: Clip.antiAlias,
@@ -80,17 +81,17 @@ class AppSelectField<T> extends StatelessWidget {
                             selected?.label ?? hintText,
                             style: AppTextStyles.body.copyWith(
                               color: selected == null
-                                  ? AppColors.muted
-                                  : AppColors.ink,
+                                  ? context.palette.muted
+                                  : context.palette.ink,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         const SizedBox(width: AppSpacing.sm),
-                        const Icon(
+                        Icon(
                           Icons.keyboard_arrow_down,
-                          color: AppColors.muted,
+                          color: context.palette.muted,
                           size: AppSizes.icon,
                         ),
                       ],
@@ -109,7 +110,9 @@ class AppSelectField<T> extends StatelessWidget {
             ),
             child: Text(
               errorText!,
-              style: AppTextStyles.caption.copyWith(color: AppColors.danger),
+              style: AppTextStyles.caption.copyWith(
+                color: context.palette.danger,
+              ),
             ),
           ),
       ],
@@ -120,7 +123,7 @@ class AppSelectField<T> extends StatelessWidget {
     final _SelectResult<T>? result =
         await showModalBottomSheet<_SelectResult<T>>(
           context: context,
-          backgroundColor: AppColors.white,
+          backgroundColor: context.palette.surfaceRaised,
           shape: const RoundedRectangleBorder(
             borderRadius: BorderRadius.vertical(
               top: Radius.circular(AppRadii.card),
@@ -139,7 +142,12 @@ class AppSelectField<T> extends StatelessWidget {
                       AppSpacing.xl,
                       AppSpacing.md,
                     ),
-                    child: Text(hintText, style: AppTextStyles.title),
+                    child: Text(
+                      hintText,
+                      style: AppTextStyles.title.copyWith(
+                        color: context.palette.ink,
+                      ),
+                    ),
                   ),
                   if (allowEmpty)
                     _OptionTile<T>(
@@ -200,14 +208,16 @@ class _OptionTile<T> extends StatelessWidget {
                     label,
                     style: AppTextStyles.body.copyWith(
                       fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
-                      color: selected ? AppColors.primary : AppColors.ink,
+                      color: selected
+                          ? context.palette.primary
+                          : context.palette.ink,
                     ),
                   ),
                 ),
                 if (selected)
-                  const Icon(
+                  Icon(
                     Icons.check,
-                    color: AppColors.primary,
+                    color: context.palette.primary,
                     size: AppSizes.icon,
                   ),
               ],

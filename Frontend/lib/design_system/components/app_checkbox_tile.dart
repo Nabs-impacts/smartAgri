@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../tokens.dart';
+import '../app_palette.dart';
 
 class AppCheckboxTile extends StatelessWidget {
   const AppCheckboxTile({
@@ -39,18 +40,20 @@ class AppCheckboxTile extends StatelessWidget {
                   width: 22,
                   height: 22,
                   decoration: BoxDecoration(
-                    color: value ? AppColors.primary : AppColors.transparent,
+                    color: value ? context.palette.primary : Colors.transparent,
                     borderRadius: AppRadii.smallBorder,
                     border: Border.all(
-                      color: value ? AppColors.primary : AppColors.line,
+                      color: value
+                          ? context.palette.primary
+                          : context.palette.line,
                       width: AppSizes.border,
                     ),
                   ),
                   child: value
-                      ? const Icon(
+                      ? Icon(
                           Icons.check,
                           size: AppSizes.smallIcon,
-                          color: AppColors.white,
+                          color: context.palette.onPrimary,
                         )
                       : null,
                 ),
@@ -59,7 +62,7 @@ class AppCheckboxTile extends StatelessWidget {
                   child: Text(
                     label,
                     style: AppTextStyles.body.copyWith(
-                      color: AppColors.ink,
+                      color: context.palette.ink,
                       fontWeight: FontWeight.w500,
                     ),
                     maxLines: maxLines,

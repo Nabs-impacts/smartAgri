@@ -16,6 +16,7 @@ import '../../../design_system/components/app_select_field.dart';
 import '../../../design_system/components/app_text_button.dart';
 import '../../../design_system/components/app_text_field.dart';
 import '../../../design_system/tokens.dart';
+import '../../../design_system/app_palette.dart';
 import '../../catalog/data/catalog_repository.dart';
 import '../../catalog/domain/admin_area.dart';
 import '../data/farms_providers.dart';
@@ -46,14 +47,14 @@ class FarmFormPage extends ConsumerWidget {
       return _FarmForm(strings: strings, farm: farm);
     }
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(title: Text(strings.farmEditTitle)),
       body: SafeArea(
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.xl),
             child: farms.isLoading
-                ? const CircularProgressIndicator(color: AppColors.primary)
+                ? CircularProgressIndicator(color: context.palette.primary)
                 : Column(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
@@ -261,7 +262,7 @@ class _FarmFormState extends ConsumerState<_FarmForm> {
         .toList();
     final bool editing = widget.farm != null;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(
         title: Text(
           editing
@@ -325,8 +326,8 @@ class _FarmFormState extends ConsumerState<_FarmForm> {
                 key: const Key('farm_location_status'),
                 style: AppTextStyles.body.copyWith(
                   color: _location == null
-                      ? AppColors.muted
-                      : AppColors.tertiary,
+                      ? context.palette.muted
+                      : context.palette.tertiary,
                 ),
               ),
               if (_locationAccuracy != null) ...<Widget>[
@@ -335,14 +336,16 @@ class _FarmFormState extends ConsumerState<_FarmForm> {
                   widget.strings.locationAccuracy(
                     _locationAccuracy!.toStringAsFixed(0),
                   ),
-                  style: AppTextStyles.caption.copyWith(color: AppColors.muted),
+                  style: AppTextStyles.caption.copyWith(
+                    color: context.palette.muted,
+                  ),
                 ),
                 if (_locationAccuracy! > 30) ...<Widget>[
                   const SizedBox(height: AppSpacing.xs),
                   Text(
                     widget.strings.locationAccuracyWarning,
                     style: AppTextStyles.caption.copyWith(
-                      color: AppColors.accentBrown,
+                      color: context.palette.accent,
                     ),
                   ),
                 ],

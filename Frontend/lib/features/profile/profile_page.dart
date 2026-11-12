@@ -11,12 +11,15 @@ import '../../core/network/api_exception.dart';
 import '../../core/phone/niger_phone.dart';
 import '../../core/sync/sync_providers.dart';
 import '../../core/sync/sync_status.dart';
+import '../../core/theme/theme_mode_controller.dart';
 import '../../design_system/components/app_button.dart';
 import '../../design_system/components/app_card.dart';
+import '../../design_system/components/app_choice_chips.dart';
 import '../../design_system/components/app_progress_bar.dart';
 import '../../design_system/components/app_text_button.dart';
 import '../../design_system/components/language_switcher.dart';
 import '../../design_system/tokens.dart';
+import '../../design_system/app_palette.dart';
 import '../auth/data/auth_repository.dart';
 import '../auth/domain/user_profile.dart';
 import '../privacy/data/data_exporter.dart';
@@ -35,7 +38,7 @@ class ProfilePage extends ConsumerWidget {
     final MeData? data = me.value;
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () => ref.read(meProvider.notifier).refresh(),
@@ -50,18 +53,18 @@ class ProfilePage extends ConsumerWidget {
             ),
             children: <Widget>[
               if (data == null && me.isLoading)
-                ..._skeleton()
+                ..._skeleton(context)
               else if (data == null && me.hasError)
                 _error(context, ref, strings, me.error)
               else if (data != null) ...<Widget>[
-                _header(strings, data.user),
+                _header(context, strings, data.user),
                 if (stale) ...<Widget>[
                   const SizedBox(height: AppSpacing.sm),
                   Text(
                     strings.profileCachedData,
                     key: const Key('profile_cached'),
                     style: AppTextStyles.caption.copyWith(
-                      color: AppColors.muted,
+                      color: context.palette.muted,
                     ),
                   ),
                 ],
@@ -69,7 +72,7 @@ class ProfilePage extends ConsumerWidget {
                 _languageSection(ref, strings),
                 if (!data.user.isAdmin) ...<Widget>[
                   const SizedBox(height: AppSpacing.xl),
-                  _usageSection(strings, data.quotas),
+                  _usageSection(context, strings, data.quotas),
                   const SizedBox(height: AppSpacing.xl),
                   InkWell(
                     key: const Key('profile_diagnostics'),
@@ -79,9 +82,9 @@ class ProfilePage extends ConsumerWidget {
                       padding: const EdgeInsets.all(AppSpacing.md),
                       child: Row(
                         children: <Widget>[
-                          const Icon(
+                          Icon(
                             Icons.eco_outlined,
-                            color: AppColors.primary,
+                            color: context.palette.primary,
                             size: AppSizes.icon,
                           ),
                           const SizedBox(width: AppSpacing.md),
@@ -91,9 +94,9 @@ class ProfilePage extends ConsumerWidget {
                               style: AppTextStyles.label,
                             ),
                           ),
-                          const Icon(
+                          Icon(
                             Icons.chevron_right,
-                            color: AppColors.muted,
+                            color: context.palette.muted,
                             size: AppSizes.icon,
                           ),
                         ],
@@ -105,6 +108,8 @@ class ProfilePage extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.xl),
                   _SyncSection(strings: strings),
                 ],
+                const SizedBox(height: AppSpacing.xl),
+                _appearanceSection(ref, strings),
                 const SizedBox(height: AppSpacing.lg),
                 SizedBox(
                   width: double.infinity,
@@ -123,14 +128,14 @@ class ProfilePage extends ConsumerWidget {
     );
   }
 
-  List<Widget> _skeleton() {
+  List<Widget> _skeleton(BuildContext context) {
     return <Widget>[
       Center(
         child: Container(
           width: 72,
           height: 72,
-          decoration: const BoxDecoration(
-            color: AppColors.inputFill,
+          decoration: BoxDecoration(
+            color: context.palette.inputFill,
             shape: BoxShape.circle,
           ),
         ),
@@ -140,8 +145,8 @@ class ProfilePage extends ConsumerWidget {
         child: Container(
           width: 160,
           height: 20,
-          decoration: const BoxDecoration(
-            color: AppColors.inputFill,
+          decoration: BoxDecoration(
+            color: context.palette.inputFill,
             borderRadius: AppRadii.smallBorder,
           ),
         ),
@@ -150,8 +155,8 @@ class ProfilePage extends ConsumerWidget {
       for (int index = 0; index < 3; index++) ...<Widget>[
         Container(
           height: 52,
-          decoration: const BoxDecoration(
-            color: AppColors.inputFill,
+          decoration: BoxDecoration(
+            color: context.palette.inputFill,
             borderRadius: AppRadii.smallBorder,
           ),
         ),
@@ -185,21 +190,25 @@ class ProfilePage extends ConsumerWidget {
     );
   }
 
-  Widget _header(AppLocalizations strings, UserProfile user) {
+  Widget _header(
+    BuildContext context,
+    AppLocalizations strings,
+    UserProfile user,
+  ) {
     return Column(
       children: <Widget>[
         Container(
           width: 72,
           height: 72,
           alignment: Alignment.center,
-          decoration: const BoxDecoration(
-            color: AppColors.primaryContainer,
+          decoration: BoxDecoration(
+            color: context.palette.primaryContainer,
             shape: BoxShape.circle,
           ),
           child: Text(
             _initials(user.fullName),
             key: const Key('profile_initials'),
-            style: AppTextStyles.title.copyWith(color: AppColors.ink),
+            style: AppTextStyles.title.copyWith(color: context.palette.ink),
           ),
         ),
         const SizedBox(height: AppSpacing.md),
@@ -212,7 +221,7 @@ class ProfilePage extends ConsumerWidget {
         Text(
           _formatPhone(user.phone),
           key: const Key('profile_phone'),
-          style: AppTextStyles.body.copyWith(color: AppColors.muted),
+          style: AppTextStyles.body.copyWith(color: context.palette.muted),
           textAlign: TextAlign.center,
         ),
       ],
@@ -235,7 +244,42 @@ class ProfilePage extends ConsumerWidget {
     );
   }
 
-  Widget _usageSection(AppLocalizations strings, List<Quota> quotas) {
+  Widget _appearanceSection(WidgetRef ref, AppLocalizations strings) {
+    final ThemeMode mode = ref.watch(themeModeControllerProvider);
+    return Column(
+      key: const Key('profile_appearance'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(strings.appearanceTitle, style: AppTextStyles.title),
+        const SizedBox(height: AppSpacing.md),
+        AppChoiceChips<ThemeMode>(
+          options: <AppChoiceOption<ThemeMode>>[
+            AppChoiceOption<ThemeMode>(
+              value: ThemeMode.system,
+              label: strings.appearanceSystem,
+            ),
+            AppChoiceOption<ThemeMode>(
+              value: ThemeMode.light,
+              label: strings.appearanceLight,
+            ),
+            AppChoiceOption<ThemeMode>(
+              value: ThemeMode.dark,
+              label: strings.appearanceDark,
+            ),
+          ],
+          value: mode,
+          onChanged: (ThemeMode value) =>
+              ref.read(themeModeControllerProvider.notifier).set(value),
+        ),
+      ],
+    );
+  }
+
+  Widget _usageSection(
+    BuildContext context,
+    AppLocalizations strings,
+    List<Quota> quotas,
+  ) {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
@@ -360,7 +404,7 @@ class _SyncSection extends ConsumerWidget {
                     formatLastSync(strings, snapshot.lastSyncAt, now),
                     key: const Key('profile_sync_last'),
                     style: AppTextStyles.caption.copyWith(
-                      color: AppColors.muted,
+                      color: context.palette.muted,
                     ),
                   ),
                 ],
@@ -385,15 +429,15 @@ class _SyncSection extends ConsumerWidget {
                         strings.syncFailedCount(snapshot.failedCount),
                         style: AppTextStyles.body.copyWith(
                           color: snapshot.failedCount > 0
-                              ? AppColors.danger
-                              : AppColors.ink,
+                              ? context.palette.danger
+                              : context.palette.ink,
                         ),
                       ),
                     ),
                     if (snapshot.failedCount > 0)
-                      const Icon(
+                      Icon(
                         Icons.chevron_right,
-                        color: AppColors.danger,
+                        color: context.palette.danger,
                         size: AppSizes.icon,
                       ),
                   ],
@@ -451,27 +495,29 @@ class _QuotaRow extends StatelessWidget {
                 ratio == null
                     ? strings.profileUnlimited
                     : '${quota.used} / ${quota.limit}',
-                style: AppTextStyles.caption.copyWith(color: AppColors.muted),
+                style: AppTextStyles.caption.copyWith(
+                  color: context.palette.muted,
+                ),
               ),
             ],
           ),
           if (ratio != null) ...<Widget>[
             const SizedBox(height: AppSpacing.sm),
-            AppProgressBar(value: ratio, color: _color(ratio)),
+            AppProgressBar(value: ratio, color: _color(context, ratio)),
           ],
         ],
       ),
     );
   }
 
-  Color _color(double ratio) {
+  Color _color(BuildContext context, double ratio) {
     if (ratio < 0.7) {
-      return AppColors.tertiary;
+      return context.palette.tertiary;
     }
     if (ratio < 1) {
-      return AppColors.secondary;
+      return context.palette.secondary;
     }
-    return AppColors.danger;
+    return context.palette.danger;
   }
 }
 
@@ -538,12 +584,12 @@ class _PrivacySectionState extends ConsumerState<_PrivacySection> {
           label: widget.strings.profilePrivacyExport,
           onTap: _exporting ? null : _export,
           trailing: _exporting
-              ? const SizedBox(
+              ? SizedBox(
                   width: AppSizes.loadingIndicator,
                   height: AppSizes.loadingIndicator,
                   child: CircularProgressIndicator(
                     strokeWidth: AppSizes.loadingStroke,
-                    color: AppColors.primary,
+                    color: context.palette.primary,
                   ),
                 )
               : null,
@@ -579,7 +625,9 @@ class _PrivacyRow extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color color = danger ? AppColors.danger : AppColors.primary;
+    final Color color = danger
+        ? context.palette.danger
+        : context.palette.primary;
     return InkWell(
       borderRadius: AppRadii.cardBorder,
       onTap: onTap,
@@ -593,14 +641,14 @@ class _PrivacyRow extends StatelessWidget {
               child: Text(
                 label,
                 style: AppTextStyles.label.copyWith(
-                  color: danger ? AppColors.danger : AppColors.ink,
+                  color: danger ? context.palette.danger : context.palette.ink,
                 ),
               ),
             ),
             trailing ??
-                const Icon(
+                Icon(
                   Icons.chevron_right,
-                  color: AppColors.muted,
+                  color: context.palette.muted,
                   size: AppSizes.icon,
                 ),
           ],

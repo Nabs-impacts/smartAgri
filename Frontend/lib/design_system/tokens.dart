@@ -86,30 +86,25 @@ abstract final class AppTextStyles {
     fontFamily: AppTypography.fontFamily,
     fontSize: 28,
     fontWeight: FontWeight.w800,
-    color: AppColors.ink,
   );
   static const TextStyle title = TextStyle(
     fontFamily: AppTypography.fontFamily,
     fontSize: 20,
     fontWeight: FontWeight.w700,
-    color: AppColors.ink,
   );
   static const TextStyle body = TextStyle(
     fontFamily: AppTypography.fontFamily,
     fontSize: 15,
     fontWeight: FontWeight.w400,
-    color: AppColors.ink,
   );
   static const TextStyle label = TextStyle(
     fontFamily: AppTypography.fontFamily,
     fontSize: 13,
     fontWeight: FontWeight.w600,
-    color: AppColors.ink,
   );
   static const TextStyle caption = TextStyle(
     fontFamily: AppTypography.fontFamily,
     fontSize: 12,
     fontWeight: FontWeight.w500,
-    color: AppColors.ink,
   );
 }

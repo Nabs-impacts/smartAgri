@@ -18,6 +18,7 @@ import '../../../design_system/components/app_photo_tile.dart';
 import '../../../design_system/components/app_progress_bar.dart';
 import '../../../design_system/components/app_select_field.dart';
 import '../../../design_system/tokens.dart';
+import '../../../design_system/app_palette.dart';
 import '../../catalog/data/catalog_repository.dart';
 import '../../catalog/domain/crop.dart';
 import '../../farms/data/farms_providers.dart';
@@ -84,7 +85,7 @@ class _DiagnosticNewPageState extends ConsumerState<DiagnosticNewPage> {
         }
       },
       child: Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: context.palette.background,
         appBar: AppBar(title: Text(strings.diagnosticNewTitle)),
         body: SafeArea(
           child: ListView(
@@ -246,13 +247,13 @@ class _DiagnosticNewPageState extends ConsumerState<DiagnosticNewPage> {
                           .removePhoto(photo.mediaId),
               ),
               if (photo.status == FlowPhotoStatus.uploaded)
-                const Positioned(
+                Positioned(
                   left: AppSpacing.xs,
                   bottom: AppSpacing.xs,
                   child: Icon(
                     Icons.check_circle,
                     key: Key('diagnostic_photo_uploaded'),
-                    color: AppColors.tertiary,
+                    color: context.palette.tertiary,
                     size: AppSizes.icon,
                   ),
                 ),
@@ -379,9 +380,9 @@ class _Tip extends StatelessWidget {
     return Row(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
-        const Icon(
+        Icon(
           Icons.check_circle_outline,
-          color: AppColors.tertiary,
+          color: context.palette.tertiary,
           size: AppSizes.icon,
         ),
         const SizedBox(width: AppSpacing.sm),

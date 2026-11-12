@@ -9,6 +9,7 @@ import '../../../core/i18n/language_controller.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/network_providers.dart';
 import '../../../core/session/session_controller.dart';
+import '../../../core/theme/theme_mode_controller.dart';
 import '../../../core/storage/token_store.dart';
 import '../../auth/data/pending_consents_store.dart';
 import '../../auth/domain/consent_choice.dart';
@@ -168,7 +169,11 @@ class PrivacyRepository {
     await pendingConsentsStore.clear();
     final List<String> keys = preferences
         .getKeys()
-        .where((String key) => key != LanguageController.storageKey)
+        .where(
+          (String key) =>
+              key != LanguageController.storageKey &&
+              key != ThemeModeController.storageKey,
+        )
         .toList();
     for (final String key in keys) {
       await preferences.remove(key);

@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 
 import '../tokens.dart';
+import '../app_palette.dart';
 
 enum AppStatusBannerTone { info, warning, error }
 
@@ -23,25 +24,25 @@ class AppStatusBanner extends StatelessWidget {
   final String? actionLabel;
   final VoidCallback? onAction;
 
-  Color get _background {
+  Color _background(AppPalette palette) {
     switch (tone) {
       case AppStatusBannerTone.info:
-        return AppColors.primaryContainer;
+        return palette.primaryContainer;
       case AppStatusBannerTone.warning:
-        return AppColors.secondaryContainer;
+        return palette.secondaryContainer;
       case AppStatusBannerTone.error:
-        return const Color(0xFFFFEBEE);
+        return palette.dangerContainer;
     }
   }
 
-  Color get _foreground {
+  Color _foreground(AppPalette palette) {
     switch (tone) {
       case AppStatusBannerTone.info:
-        return AppColors.ink;
+        return palette.onPrimaryContainer;
       case AppStatusBannerTone.warning:
-        return AppColors.accentBrown;
+        return palette.accent;
       case AppStatusBannerTone.error:
-        return AppColors.danger;
+        return palette.onDangerContainer;
     }
   }
 
@@ -58,31 +59,33 @@ class AppStatusBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppPalette palette = context.palette;
+    final Color foreground = _foreground(palette);
     final Widget content = Container(
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.lg,
         vertical: AppSpacing.md,
       ),
       decoration: BoxDecoration(
-        color: _background,
+        color: _background(palette),
         borderRadius: AppRadii.smallBorder,
       ),
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: <Widget>[
-          Icon(icon ?? _icon, color: _foreground, size: AppSizes.icon),
+          Icon(icon ?? _icon, color: foreground, size: AppSizes.icon),
           const SizedBox(width: AppSpacing.sm),
           Expanded(
             child: Text(
               message,
-              style: AppTextStyles.body.copyWith(color: _foreground),
+              style: AppTextStyles.body.copyWith(color: foreground),
             ),
           ),
           if (actionLabel != null) ...<Widget>[
             const SizedBox(width: AppSpacing.sm),
             TextButton(
               onPressed: onAction,
-              style: TextButton.styleFrom(foregroundColor: _foreground),
+              style: TextButton.styleFrom(foregroundColor: foreground),
               child: Text(actionLabel!),
             ),
           ],

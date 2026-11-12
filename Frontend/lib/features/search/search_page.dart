@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/i18n/app_localizations.dart';
 import '../../core/i18n/strings_provider.dart';
 import '../../design_system/tokens.dart';
+import '../../design_system/app_palette.dart';
 
 class SearchPage extends ConsumerWidget {
   const SearchPage({super.key});
@@ -12,7 +13,7 @@ class SearchPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLocalizations strings = ref.watch(stringsProvider);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       body: SafeArea(
         child: Center(
           child: Column(
@@ -22,7 +23,9 @@ class SearchPage extends ConsumerWidget {
               const SizedBox(height: AppSpacing.sm),
               Text(
                 strings.searchComingSoon,
-                style: AppTextStyles.body.copyWith(color: AppColors.muted),
+                style: AppTextStyles.body.copyWith(
+                  color: context.palette.muted,
+                ),
               ),
             ],
           ),

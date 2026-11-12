@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../tokens.dart';
+import '../app_palette.dart';
 
 enum AppIconButtonVariant {
   square,
@@ -25,36 +26,39 @@ class AppIconButton extends StatelessWidget {
   final VoidCallback? onPressed;
   final AppIconButtonVariant variant;
 
-  Color get _background {
+  Color _background(AppPalette palette) {
     switch (variant) {
       case AppIconButtonVariant.square:
       case AppIconButtonVariant.primary:
-        return AppColors.primary;
+        return palette.primary;
       case AppIconButtonVariant.accentBrown:
-        return AppColors.accentBrown;
+        return palette.accent;
       case AppIconButtonVariant.tertiary:
-        return AppColors.tertiary;
+        return palette.tertiary;
       case AppIconButtonVariant.danger:
-        return AppColors.danger;
+        return palette.danger;
       case AppIconButtonVariant.dangerOutline:
-        return AppColors.transparent;
+        return Colors.transparent;
     }
   }
 
-  Color get _foreground {
+  Color _foreground(AppPalette palette) {
     if (variant == AppIconButtonVariant.dangerOutline) {
-      return AppColors.danger;
+      return palette.danger;
     }
-    return AppColors.white;
+    if (variant == AppIconButtonVariant.danger) {
+      return palette.onDanger;
+    }
+    return palette.onPrimary;
   }
 
-  ShapeBorder get _shape {
+  ShapeBorder _shape(AppPalette palette) {
     if (variant == AppIconButtonVariant.square) {
       return const RoundedRectangleBorder(borderRadius: AppRadii.smallBorder);
     }
     if (variant == AppIconButtonVariant.dangerOutline) {
-      return const CircleBorder(
-        side: BorderSide(color: AppColors.danger, width: AppSizes.border),
+      return CircleBorder(
+        side: BorderSide(color: palette.danger, width: AppSizes.border),
       );
     }
     return const CircleBorder();
@@ -62,6 +66,7 @@ class AppIconButton extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppPalette palette = context.palette;
     final bool enabled = onPressed != null;
     return Tooltip(
       message: tooltip,
@@ -72,16 +77,20 @@ class AppIconButton extends StatelessWidget {
         child: Opacity(
           opacity: enabled ? 1 : AppOpacity.disabled,
           child: Material(
-            color: _background,
-            shape: _shape,
+            color: _background(palette),
+            shape: _shape(palette),
             clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: onPressed,
-              customBorder: _shape,
+              customBorder: _shape(palette),
               child: SizedBox(
                 width: AppSizes.iconButton,
                 height: AppSizes.iconButton,
-                child: Icon(icon, color: _foreground, size: AppSizes.icon),
+                child: Icon(
+                  icon,
+                  color: _foreground(palette),
+                  size: AppSizes.icon,
+                ),
               ),
             ),
           ),

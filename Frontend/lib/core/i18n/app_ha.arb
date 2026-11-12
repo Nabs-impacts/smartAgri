@@ -610,5 +610,9 @@
   "farmLocationUseCurrent": "Utiliser ma position actuelle",
   "farmLocationClear": "Effacer la position",
   "farmLocationRegistered": "Position enregistrée",
-  "farmLocationHelp": "Position facultative, utilisée pour situer l'exploitation."
+  "farmLocationHelp": "Position facultative, utilisée pour situer l'exploitation.",
+  "appearanceTitle": "Apparence",
+  "appearanceSystem": "Automatique",
+  "appearanceLight": "Clair",
+  "appearanceDark": "Sombre"
 }

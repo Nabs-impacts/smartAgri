@@ -1405,4 +1405,16 @@ class AppLocalizationsHa extends AppLocalizations {
   @override
   String get farmLocationHelp =>
       'Position facultative, utilisée pour situer l\'exploitation.';
+
+  @override
+  String get appearanceTitle => 'Apparence';
+
+  @override
+  String get appearanceSystem => 'Automatique';
+
+  @override
+  String get appearanceLight => 'Clair';
+
+  @override
+  String get appearanceDark => 'Sombre';
 }

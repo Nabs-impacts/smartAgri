@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../tokens.dart';
+import '../app_palette.dart';
 
 enum AppButtonVariant { primary, secondary, inverted, outlined }
 
@@ -26,39 +27,42 @@ class AppButton extends StatelessWidget {
 
   bool get _enabled => onPressed != null && !loading;
 
-  Color get _background {
+  Color _background(AppPalette palette) {
     switch (variant) {
       case AppButtonVariant.primary:
-        return AppColors.primary;
+        return palette.primary;
       case AppButtonVariant.secondary:
-        return AppColors.surface;
+        return palette.surface;
       case AppButtonVariant.inverted:
-        return AppColors.inverted;
+        return palette.inverted;
       case AppButtonVariant.outlined:
-        return AppColors.transparent;
+        return Colors.transparent;
     }
   }
 
-  Color get _foreground {
+  Color _foreground(AppPalette palette) {
     switch (variant) {
       case AppButtonVariant.primary:
+        return palette.onPrimary;
       case AppButtonVariant.inverted:
-        return AppColors.white;
+        return palette.onInverted;
       case AppButtonVariant.secondary:
       case AppButtonVariant.outlined:
-        return AppColors.ink;
+        return palette.ink;
     }
   }
 
-  BorderSide get _border {
+  BorderSide _border(AppPalette palette) {
     if (variant == AppButtonVariant.outlined) {
-      return const BorderSide(color: AppColors.line);
+      return BorderSide(color: palette.line);
     }
     return BorderSide.none;
   }
 
   @override
   Widget build(BuildContext context) {
+    final AppPalette palette = context.palette;
+    final Color foreground = _foreground(palette);
     final double height = size == AppButtonSize.regular
         ? AppSizes.buttonRegular
         : AppSizes.buttonCompact;
@@ -67,10 +71,10 @@ class AppButton extends StatelessWidget {
         : AppSpacing.lg;
     final TextStyle textStyle = size == AppButtonSize.regular
         ? AppTextStyles.body.copyWith(
-            color: _foreground,
+            color: foreground,
             fontWeight: FontWeight.w700,
           )
-        : AppTextStyles.label.copyWith(color: _foreground);
+        : AppTextStyles.label.copyWith(color: foreground);
 
     final Widget content = loading
         ? SizedBox(
@@ -78,7 +82,7 @@ class AppButton extends StatelessWidget {
             height: AppSizes.loadingIndicator,
             child: CircularProgressIndicator(
               strokeWidth: AppSizes.loadingStroke,
-              color: _foreground,
+              color: foreground,
             ),
           )
         : Row(
@@ -88,7 +92,7 @@ class AppButton extends StatelessWidget {
               if (icon != null) ...<Widget>[
                 IconTheme.merge(
                   data: IconThemeData(
-                    color: _foreground,
+                    color: foreground,
                     size: AppSizes.buttonIcon,
                   ),
                   child: icon!,
@@ -113,10 +117,10 @@ class AppButton extends StatelessWidget {
       child: Opacity(
         opacity: _enabled || loading ? 1 : AppOpacity.disabled,
         child: Material(
-          color: _background,
+          color: _background(palette),
           shape: RoundedRectangleBorder(
             borderRadius: AppRadii.pillBorder,
-            side: _border,
+            side: _border(palette),
           ),
           clipBehavior: Clip.antiAlias,
           child: InkWell(

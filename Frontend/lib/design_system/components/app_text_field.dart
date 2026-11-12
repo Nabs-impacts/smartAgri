@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../tokens.dart';
+import '../app_palette.dart';
 
 class AppTextField extends StatefulWidget {
   const AppTextField({
@@ -71,7 +72,7 @@ class _AppTextFieldState extends State<AppTextField> {
         onPressed: () => setState(() => _obscured = !_obscured),
         icon: Icon(
           _obscured ? Icons.visibility_outlined : Icons.visibility_off_outlined,
-          color: AppColors.muted,
+          color: context.palette.muted,
           size: AppSizes.icon,
         ),
       );
@@ -103,17 +104,23 @@ class _AppTextFieldState extends State<AppTextField> {
           autofillHints: widget.autofillHints,
           maxLines: widget.maxLines,
           inputFormatters: widget.inputFormatters,
-          cursorColor: AppColors.primary,
-          style: AppTextStyles.body,
+          cursorColor: context.palette.primary,
+          style: AppTextStyles.body.copyWith(color: context.palette.ink),
           decoration: InputDecoration(
             filled: true,
-            fillColor: AppColors.inputFill,
+            fillColor: context.palette.inputFill,
             hintText: widget.hintText,
-            hintStyle: AppTextStyles.body.copyWith(color: AppColors.muted),
+            hintStyle: AppTextStyles.body.copyWith(
+              color: context.palette.muted,
+            ),
             prefixText: widget.prefixText,
-            prefixStyle: AppTextStyles.body.copyWith(color: AppColors.muted),
+            prefixStyle: AppTextStyles.body.copyWith(
+              color: context.palette.muted,
+            ),
             errorText: widget.errorText,
-            errorStyle: AppTextStyles.caption.copyWith(color: AppColors.danger),
+            errorStyle: AppTextStyles.caption.copyWith(
+              color: context.palette.danger,
+            ),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.xl,
               vertical: AppSpacing.lg,
@@ -126,21 +133,21 @@ class _AppTextFieldState extends State<AppTextField> {
             border: baseBorder,
             enabledBorder: baseBorder,
             disabledBorder: baseBorder,
-            focusedBorder: const OutlineInputBorder(
+            focusedBorder: OutlineInputBorder(
               borderRadius: AppRadii.pillBorder,
               borderSide: BorderSide(
-                color: AppColors.primary,
+                color: context.palette.primary,
                 width: AppSizes.focusBorder,
               ),
             ),
-            errorBorder: const OutlineInputBorder(
+            errorBorder: OutlineInputBorder(
               borderRadius: AppRadii.pillBorder,
-              borderSide: BorderSide(color: AppColors.danger),
+              borderSide: BorderSide(color: context.palette.danger),
             ),
-            focusedErrorBorder: const OutlineInputBorder(
+            focusedErrorBorder: OutlineInputBorder(
               borderRadius: AppRadii.pillBorder,
               borderSide: BorderSide(
-                color: AppColors.danger,
+                color: context.palette.danger,
                 width: AppSizes.focusBorder,
               ),
             ),

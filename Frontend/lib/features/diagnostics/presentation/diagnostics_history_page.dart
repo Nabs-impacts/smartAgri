@@ -9,6 +9,7 @@ import '../../../core/network/api_exception.dart';
 import '../../../design_system/components/app_button.dart';
 import '../../../design_system/components/app_card.dart';
 import '../../../design_system/tokens.dart';
+import '../../../design_system/app_palette.dart';
 import '../data/diagnostics_history_provider.dart';
 import '../domain/diagnostic_summary.dart';
 import 'diagnostic_row.dart';
@@ -31,7 +32,7 @@ class _DiagnosticsHistoryPageState
     );
     final DiagnosticsHistoryState? state = history.value;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(title: Text(strings.diagnosticsHistoryTitle)),
       body: SafeArea(
         child: state == null && history.isLoading
@@ -99,8 +100,8 @@ class _DiagnosticsHistoryPageState
           itemCount: itemCount,
           itemBuilder: (BuildContext context, int index) {
             if (index >= state.items.length) {
-              return const Padding(
-                padding: EdgeInsets.symmetric(vertical: AppSpacing.lg),
+              return Padding(
+                padding: const EdgeInsets.symmetric(vertical: AppSpacing.lg),
                 child: Center(
                   child: SizedBox(
                     key: Key('diagnostics_history_loading_more'),
@@ -108,7 +109,7 @@ class _DiagnosticsHistoryPageState
                     height: AppSizes.loadingIndicator,
                     child: CircularProgressIndicator(
                       strokeWidth: AppSizes.loadingStroke,
-                      color: AppColors.primary,
+                      color: context.palette.primary,
                     ),
                   ),
                 ),
@@ -188,8 +189,8 @@ class _Skeleton extends StatelessWidget {
         for (int index = 0; index < 6; index++) ...<Widget>[
           Container(
             height: 104,
-            decoration: const BoxDecoration(
-              color: AppColors.inputFill,
+            decoration: BoxDecoration(
+              color: context.palette.inputFill,
               borderRadius: AppRadii.cardBorder,
             ),
           ),

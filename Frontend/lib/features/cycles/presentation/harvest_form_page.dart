@@ -13,6 +13,7 @@ import '../../../design_system/components/app_error_banner.dart';
 import '../../../design_system/components/app_text_button.dart';
 import '../../../design_system/components/app_text_field.dart';
 import '../../../design_system/tokens.dart';
+import '../../../design_system/app_palette.dart';
 import '../data/cycles_providers.dart';
 import '../domain/cycle.dart';
 import '../domain/cycle_exception.dart';
@@ -82,11 +83,11 @@ class _LoadingScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(title: Text(strings.harvestCreateTitle)),
-      body: const SafeArea(
+      body: SafeArea(
         child: Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
+          child: CircularProgressIndicator(color: context.palette.primary),
         ),
       ),
     );
@@ -109,7 +110,7 @@ class _NotFoundScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(title: Text(strings.harvestEditTitle)),
       body: SafeArea(
         child: Center(
@@ -214,7 +215,7 @@ class _HarvestFormState extends ConsumerState<_HarvestForm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(
         title: Text(
           _editing
@@ -315,7 +316,9 @@ class _HarvestFormState extends ConsumerState<_HarvestForm> {
                   formatXof(_estimatedRevenue),
                 ),
                 key: const Key('harvest_revenue'),
-                style: AppTextStyles.label.copyWith(color: AppColors.tertiary),
+                style: AppTextStyles.label.copyWith(
+                  color: context.palette.tertiary,
+                ),
               ),
               if (_canCloseCycle) ...<Widget>[
                 const SizedBox(height: AppSpacing.lg),

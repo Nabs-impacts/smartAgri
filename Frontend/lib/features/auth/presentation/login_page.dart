@@ -18,6 +18,7 @@ import '../../../design_system/components/app_text_button.dart';
 import '../../../design_system/components/app_text_field.dart';
 import '../../../design_system/components/language_switcher.dart';
 import '../../../design_system/tokens.dart';
+import '../../../design_system/app_palette.dart';
 import '../domain/auth_error_messages.dart';
 import '../domain/auth_purpose.dart';
 import '../domain/otp_args.dart';
@@ -109,7 +110,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
     final double width = max(200, MediaQuery.sizeOf(context).width * 0.6);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       body: SafeArea(
         child: LayoutBuilder(
           builder: (BuildContext context, BoxConstraints constraints) {
@@ -176,7 +177,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                             strings.loginPhoneNotVerifiedHint,
                             key: const Key('login_verify_hint'),
                             style: AppTextStyles.body.copyWith(
-                              color: AppColors.muted,
+                              color: context.palette.muted,
                             ),
                           ),
                         ),
@@ -213,9 +214,9 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                                 setState(() => _phoneError = null);
                               }
                             },
-                            suffixIcon: const Icon(
+                            suffixIcon: Icon(
                               Icons.phone_outlined,
-                              color: AppColors.muted,
+                              color: context.palette.muted,
                               size: AppSizes.icon,
                             ),
                             validator: (String? value) =>

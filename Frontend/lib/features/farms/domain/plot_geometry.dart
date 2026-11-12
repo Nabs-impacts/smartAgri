@@ -81,7 +81,11 @@ class PlotGeometry {
     }
     final int vertexCount =
         ring.length +
-        holes.fold<int>(0, (int sum, List<LatLng> hole) => sum + hole.length);
+        1 +
+        holes.fold<int>(
+          0,
+          (int sum, List<LatLng> hole) => sum + hole.length + 1,
+        );
     if (vertexCount > maxPlotVertices) {
       return PlotGeometryError.tooManyVertices;
     }

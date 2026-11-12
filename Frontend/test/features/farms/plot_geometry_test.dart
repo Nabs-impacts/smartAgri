@@ -111,10 +111,12 @@ void main() {
     expect(geometry.validate(), PlotGeometryError.selfIntersection);
   });
 
-  test('rejects more than 500 vertices', () {
-    final PlotGeometry geometry = PlotGeometry(circle(501));
-
-    expect(geometry.validate(), PlotGeometryError.tooManyVertices);
+  test('counts the closing vertex against the 500 vertex limit', () {
+    expect(
+      PlotGeometry(circle(500)).validate(),
+      PlotGeometryError.tooManyVertices,
+    );
+    expect(PlotGeometry(circle(499)).validate(), isNull);
   });
 
   test('rejects a null area', () {

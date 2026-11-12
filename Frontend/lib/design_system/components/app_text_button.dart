@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../tokens.dart';
+import '../app_palette.dart';
 
 enum AppTextButtonVariant { primary, muted }
 
@@ -18,17 +19,18 @@ class AppTextButton extends StatelessWidget {
 
   bool get _enabled => onPressed != null;
 
-  Color get _color {
+  Color _color(AppPalette palette) {
     switch (variant) {
       case AppTextButtonVariant.primary:
-        return AppColors.primary;
+        return palette.primary;
       case AppTextButtonVariant.muted:
-        return AppColors.muted;
+        return palette.muted;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final AppPalette palette = context.palette;
     return Semantics(
       button: true,
       enabled: _enabled,
@@ -49,7 +51,7 @@ class AppTextButton extends StatelessWidget {
                 widthFactor: 1,
                 child: Text(
                   label,
-                  style: AppTextStyles.label.copyWith(color: _color),
+                  style: AppTextStyles.label.copyWith(color: _color(palette)),
                   maxLines: 1,
                   overflow: TextOverflow.ellipsis,
                 ),

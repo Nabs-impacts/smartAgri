@@ -7,6 +7,7 @@ import '../../../core/i18n/app_localizations.dart';
 import '../../../core/i18n/strings_provider.dart';
 import '../../../core/map/map_config.dart';
 import '../../../design_system/tokens.dart';
+import '../../../design_system/app_palette.dart';
 
 const LatLng nigerCenter = LatLng(17.6078, 8.0817);
 
@@ -70,7 +71,7 @@ class _PlotMapState extends ConsumerState<PlotMap> {
         initialZoom: zoom,
         initialCameraFit: fit,
         maxZoom: MapConfig.maxZoom,
-        backgroundColor: AppColors.surface,
+        backgroundColor: context.palette.surface,
         interactionOptions: InteractionOptions(
           flags: widget.interactive
               ? InteractiveFlag.all
@@ -87,8 +88,8 @@ class _PlotMapState extends ConsumerState<PlotMap> {
             polygons: <Polygon<Object>>[
               Polygon<Object>(
                 points: points,
-                color: AppColors.primary.withValues(alpha: 0.18),
-                borderColor: AppColors.primary,
+                color: context.palette.primary.withValues(alpha: 0.18),
+                borderColor: context.palette.primary,
                 borderStrokeWidth: 2,
               ),
             ],
@@ -100,8 +101,8 @@ class _PlotMapState extends ConsumerState<PlotMap> {
                 CircleMarker<Object>(
                   point: point,
                   radius: 7,
-                  color: AppColors.secondary,
-                  borderColor: AppColors.white,
+                  color: context.palette.secondary,
+                  borderColor: Colors.white,
                   borderStrokeWidth: 2,
                 ),
             ],
@@ -120,14 +121,16 @@ class _PlotMapState extends ConsumerState<PlotMap> {
                 horizontal: AppSpacing.sm,
                 vertical: AppSpacing.xs,
               ),
-              decoration: const BoxDecoration(
-                color: AppColors.white,
+              decoration: BoxDecoration(
+                color: context.palette.surfaceRaised,
                 borderRadius: AppRadii.smallBorder,
               ),
               child: Text(
                 strings.mapAttribution,
                 key: const Key('map_attribution'),
-                style: AppTextStyles.caption.copyWith(color: AppColors.muted),
+                style: AppTextStyles.caption.copyWith(
+                  color: context.palette.muted,
+                ),
               ),
             ),
           ),
@@ -143,15 +146,17 @@ class _PlotMapState extends ConsumerState<PlotMap> {
                   horizontal: AppSpacing.sm,
                   vertical: AppSpacing.xs,
                 ),
-                decoration: const BoxDecoration(
-                  color: AppColors.white,
+                decoration: BoxDecoration(
+                  color: context.palette.surfaceRaised,
                   borderRadius: AppRadii.smallBorder,
                 ),
                 child: Text(
                   strings.mapOffline,
                   key: const Key('map_offline'),
                   textAlign: TextAlign.center,
-                  style: AppTextStyles.caption.copyWith(color: AppColors.muted),
+                  style: AppTextStyles.caption.copyWith(
+                    color: context.palette.muted,
+                  ),
                 ),
               ),
             ),

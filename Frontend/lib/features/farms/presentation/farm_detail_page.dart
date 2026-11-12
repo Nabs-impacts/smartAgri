@@ -10,6 +10,7 @@ import '../../../design_system/components/app_card.dart';
 import '../../../design_system/components/app_error_banner.dart';
 import '../../../design_system/components/app_text_button.dart';
 import '../../../design_system/tokens.dart';
+import '../../../design_system/app_palette.dart';
 import '../../catalog/data/catalog_repository.dart';
 import '../../catalog/domain/admin_area.dart';
 import '../data/farms_providers.dart';
@@ -35,14 +36,14 @@ class FarmDetailPage extends ConsumerWidget {
     }
     if (farm == null) {
       return Scaffold(
-        backgroundColor: AppColors.background,
+        backgroundColor: context.palette.background,
         appBar: AppBar(title: Text(strings.farmDetailsTitle)),
         body: SafeArea(
           child: Center(
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.xl),
               child: farms.isLoading
-                  ? const CircularProgressIndicator(color: AppColors.primary)
+                  ? CircularProgressIndicator(color: context.palette.primary)
                   : Column(
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
@@ -74,7 +75,7 @@ class FarmDetailPage extends ConsumerWidget {
       farmPlotsProvider(currentFarm.id),
     );
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(
         title: Text(currentFarm.name),
         actions: <Widget>[
@@ -134,7 +135,7 @@ class FarmDetailPage extends ConsumerWidget {
                       Text(
                         farmRegionName(currentFarm, areas)!,
                         style: AppTextStyles.caption.copyWith(
-                          color: AppColors.muted,
+                          color: context.palette.muted,
                         ),
                       ),
                     ],
@@ -157,10 +158,12 @@ class FarmDetailPage extends ConsumerWidget {
               ),
               const SizedBox(height: AppSpacing.md),
               if (plots.isLoading && plots.value == null)
-                const Center(
+                Center(
                   child: Padding(
                     padding: EdgeInsets.all(AppSpacing.lg),
-                    child: CircularProgressIndicator(color: AppColors.primary),
+                    child: CircularProgressIndicator(
+                      color: context.palette.primary,
+                    ),
                   ),
                 )
               else if (plots.hasError && plots.value == null)
@@ -192,7 +195,9 @@ class FarmDetailPage extends ConsumerWidget {
                   child: Text(
                     strings.plotsEmpty,
                     key: const Key('farm_plots_empty'),
-                    style: AppTextStyles.body.copyWith(color: AppColors.muted),
+                    style: AppTextStyles.body.copyWith(
+                      color: context.palette.muted,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 )
@@ -271,13 +276,13 @@ class _PlotTile extends StatelessWidget {
             Container(
               width: 44,
               height: 44,
-              decoration: const BoxDecoration(
-                color: AppColors.surface,
+              decoration: BoxDecoration(
+                color: context.palette.surface,
                 shape: BoxShape.circle,
               ),
-              child: const Icon(
+              child: Icon(
                 Icons.landscape_outlined,
-                color: AppColors.tertiary,
+                color: context.palette.tertiary,
                 size: AppSizes.icon,
               ),
             ),
@@ -292,16 +297,16 @@ class _PlotTile extends StatelessWidget {
                     Text(
                       details.join(' · '),
                       style: AppTextStyles.caption.copyWith(
-                        color: AppColors.muted,
+                        color: context.palette.muted,
                       ),
                     ),
                   ],
                 ],
               ),
             ),
-            const Icon(
+            Icon(
               Icons.chevron_right,
-              color: AppColors.muted,
+              color: context.palette.muted,
               size: AppSizes.icon,
             ),
           ],

@@ -15,6 +15,7 @@ import '../../../design_system/components/app_select_field.dart';
 import '../../../design_system/components/app_text_button.dart';
 import '../../../design_system/components/app_text_field.dart';
 import '../../../design_system/tokens.dart';
+import '../../../design_system/app_palette.dart';
 import '../../catalog/data/catalog_repository.dart';
 import '../../catalog/domain/crop.dart';
 import '../data/cycles_providers.dart';
@@ -44,14 +45,14 @@ class CycleFormPage extends ConsumerWidget {
       );
     }
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(title: Text(strings.cycleEditTitle)),
       body: SafeArea(
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.xl),
             child: cycle.isLoading
-                ? const CircularProgressIndicator(color: AppColors.primary)
+                ? CircularProgressIndicator(color: context.palette.primary)
                 : Column(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
@@ -159,7 +160,7 @@ class _CycleFormState extends ConsumerState<_CycleForm> {
       );
     }
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(
         title: Text(
           _editing
@@ -253,7 +254,9 @@ class _CycleFormState extends ConsumerState<_CycleForm> {
               const SizedBox(height: AppSpacing.xs),
               Text(
                 widget.strings.cycleExpectedHarvestHelp,
-                style: AppTextStyles.caption.copyWith(color: AppColors.muted),
+                style: AppTextStyles.caption.copyWith(
+                  color: context.palette.muted,
+                ),
               ),
               const SizedBox(height: AppSpacing.lg),
               AppTextField(

@@ -3,6 +3,7 @@ import 'dart:typed_data';
 import 'package:flutter/material.dart';
 
 import '../tokens.dart';
+import '../app_palette.dart';
 
 class AppPhotoTile extends StatelessWidget {
   const AppPhotoTile({
@@ -45,17 +46,17 @@ class AppPhotoTile extends StatelessWidget {
           width: size,
           height: size,
           child: Material(
-            color: AppColors.inputFill,
+            color: context.palette.inputFill,
             borderRadius: AppRadii.cardBorder,
             clipBehavior: Clip.antiAlias,
             child: InkWell(
               onTap: onAdd,
               child: CustomPaint(
-                painter: const _DashedBorderPainter(),
-                child: const Center(
+                painter: _DashedBorderPainter(color: context.palette.line),
+                child: Center(
                   child: Icon(
                     Icons.photo_camera_outlined,
-                    color: AppColors.primary,
+                    color: context.palette.primary,
                     size: AppSizes.icon,
                   ),
                 ),
@@ -75,11 +76,11 @@ class AppPhotoTile extends StatelessWidget {
             child: ClipRRect(
               borderRadius: AppRadii.cardBorder,
               child: Container(
-                color: AppColors.surface,
+                color: context.palette.surface,
                 child: provider == null
-                    ? const Icon(
+                    ? Icon(
                         Icons.image_outlined,
-                        color: AppColors.muted,
+                        color: context.palette.muted,
                         size: AppSizes.icon,
                       )
                     : Image(
@@ -91,10 +92,10 @@ class AppPhotoTile extends StatelessWidget {
                               BuildContext context,
                               Object error,
                               StackTrace? stackTrace,
-                            ) => const Center(
+                            ) => Center(
                               child: Icon(
                                 Icons.broken_image_outlined,
-                                color: AppColors.muted,
+                                color: context.palette.muted,
                                 size: AppSizes.icon,
                               ),
                             ),
@@ -106,16 +107,16 @@ class AppPhotoTile extends StatelessWidget {
             Positioned.fill(
               child: DecoratedBox(
                 decoration: BoxDecoration(
-                  color: AppColors.ink.withValues(alpha: 0.35),
+                  color: context.palette.ink.withValues(alpha: 0.35),
                   borderRadius: AppRadii.cardBorder,
                 ),
-                child: const Center(
+                child: Center(
                   child: SizedBox(
                     width: AppSizes.loadingIndicator,
                     height: AppSizes.loadingIndicator,
                     child: CircularProgressIndicator(
                       strokeWidth: AppSizes.loadingStroke,
-                      color: AppColors.white,
+                      color: context.palette.onInverted,
                     ),
                   ),
                 ),
@@ -126,17 +127,17 @@ class AppPhotoTile extends StatelessWidget {
               top: AppSpacing.xs,
               right: AppSpacing.xs,
               child: Material(
-                color: AppColors.white,
+                color: context.palette.surfaceRaised,
                 shape: const CircleBorder(),
                 child: InkWell(
                   key: const Key('photo_tile_delete'),
                   customBorder: const CircleBorder(),
                   onTap: onDelete,
-                  child: const Padding(
-                    padding: EdgeInsets.all(AppSpacing.xs),
+                  child: Padding(
+                    padding: const EdgeInsets.all(AppSpacing.xs),
                     child: Icon(
                       Icons.close,
-                      color: AppColors.danger,
+                      color: context.palette.danger,
                       size: AppSizes.smallIcon,
                     ),
                   ),
@@ -150,12 +151,14 @@ class AppPhotoTile extends StatelessWidget {
 }
 
 class _DashedBorderPainter extends CustomPainter {
-  const _DashedBorderPainter();
+  const _DashedBorderPainter({required this.color});
+
+  final Color color;
 
   @override
   void paint(Canvas canvas, Size size) {
     final Paint paint = Paint()
-      ..color = AppColors.line
+      ..color = color
       ..style = PaintingStyle.stroke
       ..strokeWidth = 1.5;
     final RRect border = RRect.fromRectAndRadius(
@@ -174,5 +177,6 @@ class _DashedBorderPainter extends CustomPainter {
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant _DashedBorderPainter oldDelegate) =>
+      oldDelegate.color != color;
 }

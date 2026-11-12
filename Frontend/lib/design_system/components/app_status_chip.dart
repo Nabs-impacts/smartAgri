@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../tokens.dart';
+import '../app_palette.dart';
 
 enum AppStatusChipVariant { success, warning, danger, neutral }
 
@@ -14,34 +15,35 @@ class AppStatusChip extends StatelessWidget {
   final String label;
   final AppStatusChipVariant variant;
 
-  Color get _background {
+  Color _background(AppPalette palette) {
     switch (variant) {
       case AppStatusChipVariant.success:
-        return const Color(0xFFE3F2E4);
+        return palette.successContainer;
       case AppStatusChipVariant.warning:
-        return const Color(0xFFFFF0E0);
+        return palette.warningContainer;
       case AppStatusChipVariant.danger:
-        return const Color(0xFFFFE9E9);
+        return palette.dangerChipContainer;
       case AppStatusChipVariant.neutral:
-        return AppColors.surface;
+        return palette.surface;
     }
   }
 
-  Color get _foreground {
+  Color _foreground(AppPalette palette) {
     switch (variant) {
       case AppStatusChipVariant.success:
-        return AppColors.primary;
+        return palette.onSuccessContainer;
       case AppStatusChipVariant.warning:
-        return AppColors.secondary;
+        return palette.onWarningContainer;
       case AppStatusChipVariant.danger:
-        return AppColors.danger;
+        return palette.onDangerContainer;
       case AppStatusChipVariant.neutral:
-        return AppColors.muted;
+        return palette.muted;
     }
   }
 
   @override
   Widget build(BuildContext context) {
+    final AppPalette palette = context.palette;
     return Container(
       key: Key('status_chip_${variant.name}'),
       padding: const EdgeInsets.symmetric(
@@ -49,12 +51,12 @@ class AppStatusChip extends StatelessWidget {
         vertical: AppSpacing.xs,
       ),
       decoration: BoxDecoration(
-        color: _background,
+        color: _background(palette),
         borderRadius: AppRadii.pillBorder,
       ),
       child: Text(
         label,
-        style: AppTextStyles.label.copyWith(color: _foreground),
+        style: AppTextStyles.label.copyWith(color: _foreground(palette)),
       ),
     );
   }

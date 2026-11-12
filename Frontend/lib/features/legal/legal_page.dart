@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/i18n/app_localizations.dart';
 import '../../core/i18n/strings_provider.dart';
 import '../../design_system/tokens.dart';
+import '../../design_system/app_palette.dart';
 
 enum LegalDocument { terms, privacy }
 
@@ -26,7 +27,7 @@ class LegalPage extends ConsumerWidget {
           ];
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(title: Text(title)),
       body: SafeArea(
         child: SingleChildScrollView(
@@ -37,16 +38,16 @@ class LegalPage extends ConsumerWidget {
               Container(
                 width: double.infinity,
                 padding: const EdgeInsets.all(AppSpacing.lg),
-                decoration: const BoxDecoration(
-                  color: AppColors.secondaryContainer,
+                decoration: BoxDecoration(
+                  color: context.palette.secondaryContainer,
                   borderRadius: AppRadii.cardBorder,
                 ),
                 child: Row(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
-                    const Icon(
+                    Icon(
                       Icons.info_outline,
-                      color: AppColors.accentBrown,
+                      color: context.palette.accent,
                       size: AppSizes.icon,
                     ),
                     const SizedBox(width: AppSpacing.sm),
@@ -54,7 +55,7 @@ class LegalPage extends ConsumerWidget {
                       child: Text(
                         strings.legalProvisionalBanner,
                         style: AppTextStyles.body.copyWith(
-                          color: AppColors.accentBrown,
+                          color: context.palette.accent,
                           fontWeight: FontWeight.w600,
                         ),
                       ),

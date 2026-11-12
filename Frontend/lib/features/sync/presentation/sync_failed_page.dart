@@ -10,6 +10,7 @@ import '../../../design_system/components/app_button.dart';
 import '../../../design_system/components/app_card.dart';
 import '../../../design_system/components/app_text_button.dart';
 import '../../../design_system/tokens.dart';
+import '../../../design_system/app_palette.dart';
 
 class SyncFailedPage extends ConsumerWidget {
   const SyncFailedPage({super.key});
@@ -21,7 +22,7 @@ class SyncFailedPage extends ConsumerWidget {
       failedChangesProvider,
     );
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(title: Text(strings.syncFailedTitle)),
       body: SafeArea(
         child: changes.when(
@@ -154,12 +155,16 @@ class _FailedChangeTileState extends ConsumerState<_FailedChangeTile> {
               Expanded(
                 child: Text(
                   _entityLabel(),
-                  style: AppTextStyles.label.copyWith(color: AppColors.muted),
+                  style: AppTextStyles.label.copyWith(
+                    color: context.palette.muted,
+                  ),
                 ),
               ),
               Text(
                 _operationLabel(),
-                style: AppTextStyles.caption.copyWith(color: AppColors.muted),
+                style: AppTextStyles.caption.copyWith(
+                  color: context.palette.muted,
+                ),
               ),
             ],
           ),
@@ -178,7 +183,7 @@ class _FailedChangeTileState extends ConsumerState<_FailedChangeTile> {
           const SizedBox(height: AppSpacing.sm),
           Text(
             error,
-            style: AppTextStyles.body.copyWith(color: AppColors.danger),
+            style: AppTextStyles.body.copyWith(color: context.palette.danger),
           ),
           const SizedBox(height: AppSpacing.md),
           Row(

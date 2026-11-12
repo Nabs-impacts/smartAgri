@@ -14,6 +14,7 @@ import '../../../design_system/components/app_text_button.dart';
 import '../../../design_system/components/app_text_field.dart';
 import '../../../design_system/components/info_text.dart';
 import '../../../design_system/tokens.dart';
+import '../../../design_system/app_palette.dart';
 import '../domain/auth_error_messages.dart';
 import 'forgot_password_controller.dart';
 
@@ -155,7 +156,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
     });
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       body: SafeArea(
         child: SingleChildScrollView(
           padding: const EdgeInsets.all(AppSpacing.xl),
@@ -187,7 +188,9 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
                 const SizedBox(height: AppSpacing.sm),
                 Text(
                   strings.forgotPasswordInstructions,
-                  style: AppTextStyles.body.copyWith(color: AppColors.muted),
+                  style: AppTextStyles.body.copyWith(
+                    color: context.palette.muted,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.xl),
                 if (state.error != null &&
@@ -229,9 +232,9 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
             inputFormatters: const <NigerPhoneInputFormatter>[
               NigerPhoneInputFormatter(),
             ],
-            suffixIcon: const Icon(
+            suffixIcon: Icon(
               Icons.phone_outlined,
-              color: AppColors.muted,
+              color: context.palette.muted,
               size: AppSizes.icon,
             ),
             validator: (String? value) => _validatePhone(strings, value),
@@ -331,9 +334,9 @@ class _SuccessView extends StatelessWidget {
     return Column(
       children: <Widget>[
         const SizedBox(height: AppSpacing.xxl),
-        const Icon(
+        Icon(
           Icons.check_circle_outline,
-          color: AppColors.tertiary,
+          color: context.palette.tertiary,
           size: 64,
         ),
         const SizedBox(height: AppSpacing.lg),

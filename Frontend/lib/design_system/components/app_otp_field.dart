@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
 import '../tokens.dart';
+import '../app_palette.dart';
 
 class AppOtpField extends StatefulWidget {
   const AppOtpField({
@@ -141,10 +142,10 @@ class AppOtpFieldState extends State<AppOtpField> {
   Widget _buildBox(int index) {
     final bool focused = _focusNodes[index].hasFocus;
     final Color borderColor = widget.error
-        ? AppColors.danger
+        ? context.palette.danger
         : focused
-        ? AppColors.primary
-        : AppColors.transparent;
+        ? context.palette.primary
+        : Colors.transparent;
     final double borderWidth = focused || widget.error
         ? AppSizes.focusBorder
         : AppSizes.border;
@@ -154,7 +155,7 @@ class AppOtpFieldState extends State<AppOtpField> {
         duration: AppDurations.fast,
         height: 56,
         decoration: BoxDecoration(
-          color: AppColors.inputFill,
+          color: context.palette.inputFill,
           borderRadius: BorderRadius.circular(14),
           border: Border.all(color: borderColor, width: borderWidth),
         ),
@@ -168,8 +169,8 @@ class AppOtpFieldState extends State<AppOtpField> {
               ? TextInputAction.done
               : TextInputAction.next,
           textAlign: TextAlign.center,
-          style: AppTextStyles.title,
-          cursorColor: AppColors.primary,
+          style: AppTextStyles.title.copyWith(color: context.palette.ink),
+          cursorColor: context.palette.primary,
           autofillHints: index == 0
               ? const <String>[AutofillHints.oneTimeCode]
               : null,

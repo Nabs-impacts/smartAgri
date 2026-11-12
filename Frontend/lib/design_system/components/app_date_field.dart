@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 
 import '../tokens.dart';
+import '../app_palette.dart';
 
 class AppDateField extends StatelessWidget {
   const AppDateField({
@@ -43,11 +44,11 @@ class AppDateField extends StatelessWidget {
           child: Opacity(
             opacity: _enabled ? 1 : AppOpacity.disabled,
             child: Material(
-              color: AppColors.inputFill,
+              color: context.palette.inputFill,
               shape: RoundedRectangleBorder(
                 borderRadius: AppRadii.pillBorder,
                 side: hasError
-                    ? const BorderSide(color: AppColors.danger)
+                    ? BorderSide(color: context.palette.danger)
                     : BorderSide.none,
               ),
               clipBehavior: Clip.antiAlias,
@@ -70,16 +71,16 @@ class AppDateField extends StatelessWidget {
                                   current == null ? hintText : _format(current),
                                   style: AppTextStyles.body.copyWith(
                                     color: current == null
-                                        ? AppColors.muted
-                                        : AppColors.ink,
+                                        ? context.palette.muted
+                                        : context.palette.ink,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
-                              const Icon(
+                              Icon(
                                 Icons.calendar_today_outlined,
-                                color: AppColors.muted,
+                                color: context.palette.muted,
                                 size: AppSizes.icon,
                               ),
                             ],
@@ -91,9 +92,9 @@ class AppDateField extends StatelessWidget {
                       IconButton(
                         tooltip: clearTooltip,
                         onPressed: _enabled ? () => onChanged!(null) : null,
-                        icon: const Icon(
+                        icon: Icon(
                           Icons.close,
-                          color: AppColors.muted,
+                          color: context.palette.muted,
                           size: AppSizes.icon,
                         ),
                       ),
@@ -111,7 +112,9 @@ class AppDateField extends StatelessWidget {
             ),
             child: Text(
               errorText!,
-              style: AppTextStyles.caption.copyWith(color: AppColors.danger),
+              style: AppTextStyles.caption.copyWith(
+                color: context.palette.danger,
+              ),
             ),
           ),
       ],

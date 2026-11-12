@@ -14,6 +14,7 @@ import '../../../design_system/components/app_error_banner.dart';
 import '../../../design_system/components/app_text_button.dart';
 import '../../../design_system/components/app_text_field.dart';
 import '../../../design_system/tokens.dart';
+import '../../../design_system/app_palette.dart';
 import '../data/farms_providers.dart';
 import '../data/farms_repository.dart';
 import '../domain/farms_exception.dart';
@@ -44,14 +45,14 @@ class PlotFormPage extends ConsumerWidget {
       );
     }
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(title: Text(strings.plotEditTitle)),
       body: SafeArea(
         child: Center(
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.xl),
             child: plot.isLoading
-                ? const CircularProgressIndicator(color: AppColors.primary)
+                ? CircularProgressIndicator(color: context.palette.primary)
                 : Column(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
@@ -201,7 +202,7 @@ class _PlotFormState extends ConsumerState<_PlotForm> {
   Widget build(BuildContext context) {
     final bool editing = widget.plot != null;
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(
         title: Text(
           editing
@@ -251,7 +252,9 @@ class _PlotFormState extends ConsumerState<_PlotForm> {
                 const SizedBox(height: AppSpacing.xs),
                 Text(
                   widget.strings.plotAreaLabel,
-                  style: AppTextStyles.caption.copyWith(color: AppColors.muted),
+                  style: AppTextStyles.caption.copyWith(
+                    color: context.palette.muted,
+                  ),
                 ),
               ] else
                 Text(

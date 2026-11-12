@@ -16,6 +16,7 @@ import '../../design_system/components/info_text.dart';
 import '../../design_system/components/info_tile.dart';
 import '../../design_system/components/language_switcher.dart';
 import '../../design_system/tokens.dart';
+import '../../design_system/app_palette.dart';
 import '../auth/domain/user_profile.dart';
 import '../catalog/data/catalog_repository.dart';
 import '../catalog/domain/admin_area.dart';
@@ -49,7 +50,7 @@ class HomePage extends ConsumerWidget {
     final String temperature = _number(weather.temperatureC);
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () => _refresh(ref),
@@ -93,11 +94,11 @@ class HomePage extends ConsumerWidget {
               Text(
                 firstName,
                 key: const Key('home_first_name'),
-                style: const TextStyle(
+                style: TextStyle(
                   fontFamily: AppTypography.fontFamily,
                   fontSize: 34,
                   fontWeight: FontWeight.w800,
-                  color: AppColors.ink,
+                  color: context.palette.ink,
                   height: 1.1,
                 ),
               ),
@@ -112,13 +113,13 @@ class HomePage extends ConsumerWidget {
                         Container(
                           width: 56,
                           height: 56,
-                          decoration: const BoxDecoration(
-                            color: AppColors.surface,
+                          decoration: BoxDecoration(
+                            color: context.palette.surface,
                             shape: BoxShape.circle,
                           ),
-                          child: const Icon(
+                          child: Icon(
                             Icons.wb_sunny_outlined,
-                            color: AppColors.secondary,
+                            color: context.palette.secondary,
                             size: 28,
                           ),
                         ),
@@ -130,7 +131,7 @@ class HomePage extends ConsumerWidget {
                               Text(
                                 '$temperature°',
                                 style: AppTextStyles.headline.copyWith(
-                                  color: AppColors.danger,
+                                  color: context.palette.danger,
                                 ),
                               ),
                               const SizedBox(height: AppSpacing.xs),
@@ -161,7 +162,9 @@ class HomePage extends ConsumerWidget {
               const SizedBox(height: AppSpacing.sm),
               Text(
                 strings.homeDemoData,
-                style: AppTextStyles.caption.copyWith(color: AppColors.muted),
+                style: AppTextStyles.caption.copyWith(
+                  color: context.palette.muted,
+                ),
               ),
               const SizedBox(height: AppSpacing.xl),
               _farmsSection(context, ref, strings, farms, areas),
@@ -218,11 +221,13 @@ class HomePage extends ConsumerWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         if (diagnostics.isLoading && diagnostics.value == null)
-          const AppCard(
+          AppCard(
             child: SizedBox(
               height: 48,
               child: Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
+                child: CircularProgressIndicator(
+                  color: context.palette.primary,
+                ),
               ),
             ),
           )
@@ -292,11 +297,13 @@ class HomePage extends ConsumerWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         if (farms.isLoading && farms.value == null)
-          const AppCard(
+          AppCard(
             child: SizedBox(
               height: 48,
               child: Center(
-                child: CircularProgressIndicator(color: AppColors.primary),
+                child: CircularProgressIndicator(
+                  color: context.palette.primary,
+                ),
               ),
             ),
           )
@@ -403,9 +410,9 @@ class _HomeFarmTile extends StatelessWidget {
         padding: const EdgeInsets.all(AppSpacing.md),
         child: Row(
           children: <Widget>[
-            const Icon(
+            Icon(
               Icons.agriculture_outlined,
-              color: AppColors.primary,
+              color: context.palette.primary,
               size: AppSizes.icon,
             ),
             const SizedBox(width: AppSpacing.md),
@@ -420,7 +427,7 @@ class _HomeFarmTile extends StatelessWidget {
                     Text(
                       region!,
                       style: AppTextStyles.caption.copyWith(
-                        color: AppColors.muted,
+                        color: context.palette.muted,
                       ),
                     ),
                 ],

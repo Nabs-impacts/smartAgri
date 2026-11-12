@@ -8,6 +8,7 @@ import '../../../core/i18n/strings_provider.dart';
 import '../../../design_system/components/app_card.dart';
 import '../../../design_system/components/app_status_chip.dart';
 import '../../../design_system/tokens.dart';
+import '../../../design_system/app_palette.dart';
 import '../domain/diagnostic_status.dart';
 import '../domain/diagnostic_summary.dart';
 import '../domain/severity.dart';
@@ -55,7 +56,7 @@ class DiagnosticRow extends ConsumerWidget {
                     formatDiagnosticDate(summary.createdAt),
                     key: Key('diagnostic_row_date_${summary.id}'),
                     style: AppTextStyles.caption.copyWith(
-                      color: AppColors.muted,
+                      color: context.palette.muted,
                     ),
                   ),
                   const SizedBox(height: AppSpacing.sm),
@@ -82,9 +83,9 @@ class DiagnosticRow extends ConsumerWidget {
             if (onDelete != null)
               PopupMenuButton<String>(
                 key: Key('diagnostic_row_menu_${summary.id}'),
-                icon: const Icon(
+                icon: Icon(
                   Icons.more_vert,
-                  color: AppColors.muted,
+                  color: context.palette.muted,
                   size: AppSizes.icon,
                 ),
                 onSelected: (String value) {
@@ -167,13 +168,13 @@ class _Thumbnail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Widget child = url == null || url!.trim().isEmpty
-        ? const Icon(Icons.eco_outlined, color: AppColors.primary, size: 28)
+        ? Icon(Icons.eco_outlined, color: context.palette.primary, size: 28)
         : Image.network(
             url!,
             fit: BoxFit.cover,
-            errorBuilder: (_, _, _) => const Icon(
+            errorBuilder: (_, _, _) => Icon(
               Icons.eco_outlined,
-              color: AppColors.primary,
+              color: context.palette.primary,
               size: 28,
             ),
           );
@@ -183,7 +184,7 @@ class _Thumbnail extends StatelessWidget {
         width: 56,
         height: 56,
         alignment: Alignment.center,
-        color: AppColors.primaryContainer,
+        color: context.palette.primaryContainer,
         child: child,
       ),
     );

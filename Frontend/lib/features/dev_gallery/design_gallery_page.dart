@@ -21,6 +21,7 @@ import '../../design_system/components/info_text.dart';
 import '../../design_system/components/info_tile.dart';
 import '../../design_system/components/language_switcher.dart';
 import '../../design_system/tokens.dart';
+import '../../design_system/app_palette.dart';
 
 class DesignGalleryPage extends StatefulWidget {
   const DesignGalleryPage({super.key});
@@ -196,9 +197,9 @@ class _DesignGalleryPageState extends State<DesignGalleryPage> {
               const _SectionTitle('Progression'),
               const AppProgressBar(value: 0.25),
               const SizedBox(height: AppSpacing.md),
-              const AppProgressBar(value: 0.55, color: AppColors.secondary),
+              AppProgressBar(value: 0.55, color: context.palette.secondary),
               const SizedBox(height: AppSpacing.md),
-              const AppProgressBar(value: 0.85, color: AppColors.tertiary),
+              AppProgressBar(value: 0.85, color: context.palette.tertiary),
               const SizedBox(height: AppSpacing.xl),
               const _SectionTitle('Navigation'),
               AppBottomNav(

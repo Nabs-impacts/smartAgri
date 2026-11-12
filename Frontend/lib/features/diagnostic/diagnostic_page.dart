@@ -4,6 +4,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import '../../core/i18n/app_localizations.dart';
 import '../../core/i18n/strings_provider.dart';
 import '../../design_system/tokens.dart';
+import '../../design_system/app_palette.dart';
 
 class DiagnosticPage extends ConsumerWidget {
   const DiagnosticPage({super.key});
@@ -12,7 +13,7 @@ class DiagnosticPage extends ConsumerWidget {
   Widget build(BuildContext context, WidgetRef ref) {
     final AppLocalizations strings = ref.watch(stringsProvider);
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       body: SafeArea(
         child: Center(
           child: Padding(

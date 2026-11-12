@@ -1,17 +1,18 @@
 import 'package:flutter/material.dart';
 
 import '../tokens.dart';
+import '../app_palette.dart';
 
 class AppProgressBar extends StatelessWidget {
   const AppProgressBar({
     required this.value,
-    this.color = AppColors.primary,
+    this.color,
     this.label,
     super.key,
   });
 
   final double value;
-  final Color color;
+  final Color? color;
   final String? label;
 
   @override
@@ -24,8 +25,8 @@ class AppProgressBar extends StatelessWidget {
         child: LinearProgressIndicator(
           value: value.clamp(0, 1),
           minHeight: AppSizes.progress,
-          color: color,
-          backgroundColor: AppColors.line,
+          color: color ?? context.palette.primary,
+          backgroundColor: context.palette.line,
         ),
       ),
     );

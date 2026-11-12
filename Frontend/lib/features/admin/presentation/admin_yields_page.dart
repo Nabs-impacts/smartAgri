@@ -13,6 +13,7 @@ import '../../../design_system/components/app_choice_chips.dart';
 import '../../../design_system/components/app_progress_bar.dart';
 import '../../../design_system/components/app_select_field.dart';
 import '../../../design_system/tokens.dart';
+import '../../../design_system/app_palette.dart';
 import '../../catalog/data/catalog_repository.dart';
 import '../../catalog/domain/admin_area.dart';
 import '../../catalog/domain/crop.dart';
@@ -43,7 +44,7 @@ class AdminYieldsPage extends ConsumerWidget {
     ];
 
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () => ref.refresh(yieldsProvider.future),
@@ -59,7 +60,7 @@ class AdminYieldsPage extends ConsumerWidget {
             children: <Widget>[
               Text(strings.adminYieldsTitle, style: AppTextStyles.headline),
               const SizedBox(height: AppSpacing.xl),
-              _filterLabel(strings.adminFilterCrop),
+              _filterLabel(context, strings.adminFilterCrop),
               const SizedBox(height: AppSpacing.xs),
               AppSelectField<int>(
                 key: const Key('admin_yields_crop'),
@@ -79,7 +80,7 @@ class AdminYieldsPage extends ConsumerWidget {
                     ref.read(yieldsFilterProvider.notifier).setCrop(value),
               ),
               const SizedBox(height: AppSpacing.md),
-              _filterLabel(strings.adminFilterRegion),
+              _filterLabel(context, strings.adminFilterRegion),
               const SizedBox(height: AppSpacing.xs),
               AppSelectField<int>(
                 key: const Key('admin_yields_region'),
@@ -99,7 +100,7 @@ class AdminYieldsPage extends ConsumerWidget {
                     ref.read(yieldsFilterProvider.notifier).setRegion(value),
               ),
               const SizedBox(height: AppSpacing.md),
-              _filterLabel(strings.adminFilterSeason),
+              _filterLabel(context, strings.adminFilterSeason),
               const SizedBox(height: AppSpacing.xs),
               AppChoiceChips<SeasonType?>(
                 value: filter.seasonType,
@@ -121,7 +122,7 @@ class AdminYieldsPage extends ConsumerWidget {
                     ref.read(yieldsFilterProvider.notifier).setSeason(value),
               ),
               const SizedBox(height: AppSpacing.md),
-              _filterLabel(strings.adminFilterYear),
+              _filterLabel(context, strings.adminFilterYear),
               const SizedBox(height: AppSpacing.xs),
               AppSelectField<int>(
                 key: const Key('admin_yields_year'),
@@ -140,20 +141,22 @@ class AdminYieldsPage extends ConsumerWidget {
               ),
               const SizedBox(height: AppSpacing.xl),
               if (yields.isLoading && yields.value == null)
-                ..._skeleton()
+                ..._skeleton(context)
               else if (yields.hasError && yields.value == null)
-                _error(ref, strings, yields.error)
+                _error(context, ref, strings, yields.error)
               else if ((yields.value ?? const <YieldCell>[]).isEmpty)
                 AppCard(
                   child: Text(
                     strings.adminYieldEmpty,
                     key: const Key('admin_yields_empty'),
-                    style: AppTextStyles.body.copyWith(color: AppColors.muted),
+                    style: AppTextStyles.body.copyWith(
+                      color: context.palette.muted,
+                    ),
                     textAlign: TextAlign.center,
                   ),
                 )
               else
-                ..._cards(strings, yields.value!),
+                ..._cards(context, strings, yields.value!),
             ],
           ),
         ),
@@ -161,14 +164,18 @@ class AdminYieldsPage extends ConsumerWidget {
     );
   }
 
-  Widget _filterLabel(String label) {
+  Widget _filterLabel(BuildContext context, String label) {
     return Text(
       label,
-      style: AppTextStyles.caption.copyWith(color: AppColors.muted),
+      style: AppTextStyles.caption.copyWith(color: context.palette.muted),
     );
   }
 
-  List<Widget> _cards(AppLocalizations strings, List<YieldCell> cells) {
+  List<Widget> _cards(
+    BuildContext context,
+    AppLocalizations strings,
+    List<YieldCell> cells,
+  ) {
     final Map<int, double> maxByCrop = <int, double>{};
     for (final YieldCell cell in cells) {
       if (cell.masked) {
@@ -183,14 +190,19 @@ class AdminYieldsPage extends ConsumerWidget {
     return <Widget>[
       for (final YieldCell cell in cells) ...<Widget>[
         cell.masked
-            ? _maskedCard(strings, cell)
-            : _yieldCard(strings, cell, maxByCrop[cell.cropId] ?? 0),
+            ? _maskedCard(context, strings, cell)
+            : _yieldCard(context, strings, cell, maxByCrop[cell.cropId] ?? 0),
         const SizedBox(height: AppSpacing.md),
       ],
     ];
   }
 
-  Widget _yieldCard(AppLocalizations strings, YieldCell cell, double maxYield) {
+  Widget _yieldCard(
+    BuildContext context,
+    AppLocalizations strings,
+    YieldCell cell,
+    double maxYield,
+  ) {
     final double avg = cell.avgYieldKgPerHa ?? 0;
     final double ratio = maxYield <= 0 ? 0 : avg / maxYield;
     final String season = cell.seasonType == SeasonType.rainy
@@ -210,7 +222,7 @@ class AdminYieldsPage extends ConsumerWidget {
           const SizedBox(height: AppSpacing.xs),
           Text(
             strings.adminYieldSeason(season, '${cell.seasonYear}'),
-            style: AppTextStyles.caption.copyWith(color: AppColors.muted),
+            style: AppTextStyles.caption.copyWith(color: context.palette.muted),
           ),
           const SizedBox(height: AppSpacing.md),
           Text(
@@ -231,7 +243,7 @@ class AdminYieldsPage extends ConsumerWidget {
               formatAdminNumber(cell.minYieldKgPerHa ?? 0),
               formatAdminNumber(cell.maxYieldKgPerHa ?? 0),
             ),
-            style: AppTextStyles.caption.copyWith(color: AppColors.muted),
+            style: AppTextStyles.caption.copyWith(color: context.palette.muted),
           ),
           const SizedBox(height: AppSpacing.xs),
           Text(
@@ -239,31 +251,35 @@ class AdminYieldsPage extends ConsumerWidget {
               formatAdminNumber(cell.cycles ?? 0),
               formatAdminNumber(cell.farmers ?? 0),
             ),
-            style: AppTextStyles.caption.copyWith(color: AppColors.muted),
+            style: AppTextStyles.caption.copyWith(color: context.palette.muted),
           ),
         ],
       ),
     );
   }
 
-  Widget _maskedCard(AppLocalizations strings, YieldCell cell) {
+  Widget _maskedCard(
+    BuildContext context,
+    AppLocalizations strings,
+    YieldCell cell,
+  ) {
     return Container(
       key: Key(
         'admin_yield_masked_${cell.cropId}_${cell.regionId}_${cell.seasonYear}_${cell.seasonType.apiCode}',
       ),
-      padding: const EdgeInsets.all(AppSpacing.lg),
-      decoration: const BoxDecoration(
-        color: AppColors.inputFill,
+      padding: EdgeInsets.all(AppSpacing.lg),
+      decoration: BoxDecoration(
+        color: context.palette.inputFill,
         borderRadius: AppRadii.cardBorder,
         border: Border.fromBorderSide(
-          BorderSide(color: AppColors.line, width: AppSizes.border),
+          BorderSide(color: context.palette.line, width: AppSizes.border),
         ),
       ),
       child: Row(
         children: <Widget>[
-          const Icon(
+          Icon(
             Icons.lock_outline,
-            color: AppColors.muted,
+            color: context.palette.muted,
             size: AppSizes.icon,
           ),
           const SizedBox(width: AppSpacing.md),
@@ -273,7 +289,9 @@ class AdminYieldsPage extends ConsumerWidget {
               children: <Widget>[
                 Text(
                   strings.adminYieldTitle(cell.cropName, cell.regionName),
-                  style: AppTextStyles.body.copyWith(color: AppColors.muted),
+                  style: AppTextStyles.body.copyWith(
+                    color: context.palette.muted,
+                  ),
                 ),
                 const SizedBox(height: AppSpacing.xs),
                 Text(
@@ -281,7 +299,9 @@ class AdminYieldsPage extends ConsumerWidget {
                   key: Key(
                     'admin_yield_masked_text_${cell.cropId}_${cell.regionId}',
                   ),
-                  style: AppTextStyles.caption.copyWith(color: AppColors.muted),
+                  style: AppTextStyles.caption.copyWith(
+                    color: context.palette.muted,
+                  ),
                 ),
               ],
             ),
@@ -291,13 +311,13 @@ class AdminYieldsPage extends ConsumerWidget {
     );
   }
 
-  List<Widget> _skeleton() {
+  List<Widget> _skeleton(BuildContext context) {
     return <Widget>[
       Container(
         key: const Key('admin_yields_skeleton'),
         height: 160,
-        decoration: const BoxDecoration(
-          color: AppColors.inputFill,
+        decoration: BoxDecoration(
+          color: context.palette.inputFill,
           borderRadius: AppRadii.cardBorder,
         ),
       ),
@@ -305,8 +325,8 @@ class AdminYieldsPage extends ConsumerWidget {
       for (int index = 0; index < 2; index++) ...<Widget>[
         Container(
           height: 160,
-          decoration: const BoxDecoration(
-            color: AppColors.inputFill,
+          decoration: BoxDecoration(
+            color: context.palette.inputFill,
             borderRadius: AppRadii.cardBorder,
           ),
         ),
@@ -315,15 +335,20 @@ class AdminYieldsPage extends ConsumerWidget {
     ];
   }
 
-  Widget _error(WidgetRef ref, AppLocalizations strings, Object? error) {
+  Widget _error(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations strings,
+    Object? error,
+  ) {
     final bool forbidden = error is ApiException && error.statusCode == 403;
     return AppCard(
       child: Column(
         children: <Widget>[
           if (forbidden) ...<Widget>[
-            const Icon(
+            Icon(
               Icons.lock_outline,
-              color: AppColors.muted,
+              color: context.palette.muted,
               size: AppSizes.icon,
             ),
             const SizedBox(height: AppSpacing.sm),

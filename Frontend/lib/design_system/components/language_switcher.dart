@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import '../../core/i18n/app_language.dart';
 import '../tokens.dart';
+import '../app_palette.dart';
 
 class LanguageSwitcher extends StatelessWidget {
   const LanguageSwitcher({
@@ -34,14 +35,14 @@ class LanguageSwitcher extends StatelessWidget {
                       width: AppSizes.languageCircle,
                       height: AppSizes.languageCircle,
                       alignment: Alignment.center,
-                      decoration: const BoxDecoration(
-                        color: AppColors.primary,
+                      decoration: BoxDecoration(
+                        color: context.palette.primary,
                         shape: BoxShape.circle,
                       ),
                       child: Text(
                         language.label,
                         style: AppTextStyles.label.copyWith(
-                          color: AppColors.white,
+                          color: context.palette.onPrimary,
                           fontWeight: FontWeight.w800,
                         ),
                       ),
@@ -51,14 +52,14 @@ class LanguageSwitcher extends StatelessWidget {
                         horizontal: AppSpacing.md,
                         vertical: AppSpacing.sm,
                       ),
-                      decoration: const BoxDecoration(
-                        color: AppColors.inputFill,
+                      decoration: BoxDecoration(
+                        color: context.palette.inputFill,
                         borderRadius: AppRadii.pillBorder,
                       ),
                       child: Text(
                         language.label,
                         style: AppTextStyles.label.copyWith(
-                          color: AppColors.primary,
+                          color: context.palette.primary,
                         ),
                       ),
                     ),

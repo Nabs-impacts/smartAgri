@@ -12,6 +12,7 @@ import '../../../design_system/components/app_error_banner.dart';
 import '../../../design_system/components/app_text_button.dart';
 import '../../../design_system/components/app_text_field.dart';
 import '../../../design_system/tokens.dart';
+import '../../../design_system/app_palette.dart';
 import '../data/cycles_providers.dart';
 import '../domain/activity.dart';
 import '../domain/activity_type.dart';
@@ -81,11 +82,11 @@ class _LoadingScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(title: Text(strings.activityCreateTitle)),
-      body: const SafeArea(
+      body: SafeArea(
         child: Center(
-          child: CircularProgressIndicator(color: AppColors.primary),
+          child: CircularProgressIndicator(color: context.palette.primary),
         ),
       ),
     );
@@ -108,7 +109,7 @@ class _NotFoundScaffold extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(title: Text(strings.activityEditTitle)),
       body: SafeArea(
         child: Center(
@@ -207,7 +208,7 @@ class _ActivityFormState extends ConsumerState<_ActivityForm> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: AppColors.background,
+      backgroundColor: context.palette.background,
       appBar: AppBar(
         title: Text(
           _editing
