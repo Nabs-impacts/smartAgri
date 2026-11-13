@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../tokens.dart';
+import '../app_icons.dart';
 import '../app_palette.dart';
+import '../tokens.dart';
 
 class AppSelectOption<T> {
   const AppSelectOption({required this.value, required this.label});
@@ -45,12 +46,23 @@ class AppSelectField<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppPalette palette = context.palette;
     final bool hasError = errorText != null && errorText!.isNotEmpty;
     final AppSelectOption<T>? selected = _selected;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.only(
+            left: AppSpacing.lg,
+            bottom: AppSizes.fieldLabelGap,
+          ),
+          child: Text(
+            hintText,
+            style: AppTextStyles.label.copyWith(color: palette.muted),
+          ),
+        ),
         Semantics(
           button: true,
           enabled: _enabled,
@@ -58,11 +70,11 @@ class AppSelectField<T> extends StatelessWidget {
           child: Opacity(
             opacity: _enabled ? 1 : AppOpacity.disabled,
             child: Material(
-              color: context.palette.inputFill,
+              color: palette.inputFill,
               shape: RoundedRectangleBorder(
                 borderRadius: AppRadii.pillBorder,
                 side: hasError
-                    ? BorderSide(color: context.palette.danger)
+                    ? BorderSide(color: palette.danger)
                     : BorderSide.none,
               ),
               clipBehavior: Clip.antiAlias,
@@ -78,11 +90,11 @@ class AppSelectField<T> extends StatelessWidget {
                       children: <Widget>[
                         Expanded(
                           child: Text(
-                            selected?.label ?? hintText,
+                            selected?.label ?? '',
                             style: AppTextStyles.body.copyWith(
                               color: selected == null
-                                  ? context.palette.muted
-                                  : context.palette.ink,
+                                  ? palette.muted
+                                  : palette.ink,
                             ),
                             maxLines: 1,
                             overflow: TextOverflow.ellipsis,
@@ -90,8 +102,8 @@ class AppSelectField<T> extends StatelessWidget {
                         ),
                         const SizedBox(width: AppSpacing.sm),
                         Icon(
-                          Icons.keyboard_arrow_down,
-                          color: context.palette.muted,
+                          AppIcons.chevronDown,
+                          color: palette.muted,
                           size: AppSizes.icon,
                         ),
                       ],
@@ -110,9 +122,7 @@ class AppSelectField<T> extends StatelessWidget {
             ),
             child: Text(
               errorText!,
-              style: AppTextStyles.caption.copyWith(
-                color: context.palette.danger,
-              ),
+              style: AppTextStyles.caption.copyWith(color: palette.danger),
             ),
           ),
       ],
@@ -120,14 +130,13 @@ class AppSelectField<T> extends StatelessWidget {
   }
 
   Future<void> _open(BuildContext context) async {
+    final AppPalette palette = context.palette;
     final _SelectResult<T>? result =
         await showModalBottomSheet<_SelectResult<T>>(
           context: context,
-          backgroundColor: context.palette.surfaceRaised,
+          backgroundColor: palette.surfaceHigh,
           shape: const RoundedRectangleBorder(
-            borderRadius: BorderRadius.vertical(
-              top: Radius.circular(AppRadii.card),
-            ),
+            borderRadius: AppRadii.sheetTopBorder,
           ),
           builder: (BuildContext context) {
             return SafeArea(
@@ -189,6 +198,7 @@ class _OptionTile<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppPalette palette = context.palette;
     return Semantics(
       selected: selected,
       button: true,
@@ -208,16 +218,14 @@ class _OptionTile<T> extends StatelessWidget {
                     label,
                     style: AppTextStyles.body.copyWith(
                       fontWeight: selected ? FontWeight.w700 : FontWeight.w400,
-                      color: selected
-                          ? context.palette.primary
-                          : context.palette.ink,
+                      color: selected ? palette.primary : palette.ink,
                     ),
                   ),
                 ),
                 if (selected)
                   Icon(
-                    Icons.check,
-                    color: context.palette.primary,
+                    AppIcons.check,
+                    color: palette.primary,
                     size: AppSizes.icon,
                   ),
               ],

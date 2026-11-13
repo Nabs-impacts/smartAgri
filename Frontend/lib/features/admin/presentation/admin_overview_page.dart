@@ -13,6 +13,7 @@ import '../../../design_system/app_palette.dart';
 import '../data/stats_repository.dart';
 import '../domain/overview.dart';
 import 'admin_format.dart';
+import '../../../design_system/app_icons.dart';
 
 class AdminOverviewPage extends ConsumerWidget {
   const AdminOverviewPage({super.key});
@@ -96,7 +97,7 @@ class AdminOverviewPage extends ConsumerWidget {
             Row(
               children: <Widget>[
                 Icon(
-                  Icons.shield_outlined,
+                  AppIcons.privacy,
                   color: context.palette.primary,
                   size: AppSizes.icon,
                 ),
@@ -164,7 +165,7 @@ class AdminOverviewPage extends ConsumerWidget {
         child: Row(
           children: <Widget>[
             Icon(
-              Icons.lock_outline,
+              AppIcons.lock,
               color: context.palette.muted,
               size: AppSizes.smallIcon,
             ),
@@ -253,7 +254,7 @@ class AdminOverviewPage extends ConsumerWidget {
         children: <Widget>[
           if (forbidden) ...<Widget>[
             Icon(
-              Icons.lock_outline,
+              AppIcons.lock,
               color: context.palette.muted,
               size: AppSizes.icon,
             ),

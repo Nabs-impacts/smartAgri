@@ -210,6 +210,10 @@ void main() {
     );
     expect(find.text('Position enregistrée'), findsNothing);
 
+    await tester.ensureVisible(
+      find.byKey(const Key('farm_location_open_settings')),
+    );
+    await tester.pump();
     await tester.tap(find.byKey(const Key('farm_location_open_settings')));
     await tester.pumpAndSettle();
 

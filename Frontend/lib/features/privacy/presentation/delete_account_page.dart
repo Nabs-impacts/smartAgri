@@ -13,6 +13,7 @@ import '../../../design_system/components/app_text_field.dart';
 import '../../../design_system/tokens.dart';
 import '../../../design_system/app_palette.dart';
 import '../data/privacy_repository.dart';
+import '../../../design_system/app_icons.dart';
 
 class DeleteAccountPage extends ConsumerStatefulWidget {
   const DeleteAccountPage({super.key});
@@ -124,7 +125,7 @@ class _DeleteAccountPageState extends ConsumerState<DeleteAccountPage> {
           Row(
             children: <Widget>[
               Icon(
-                Icons.warning_amber_rounded,
+                AppIcons.warning,
                 color: context.palette.danger,
                 size: AppSizes.icon,
               ),
@@ -147,7 +148,7 @@ class _DeleteAccountPageState extends ConsumerState<DeleteAccountPage> {
           Row(
             children: <Widget>[
               Icon(
-                Icons.lock_outline,
+                AppIcons.lock,
                 color: context.palette.primary,
                 size: AppSizes.icon,
               ),
@@ -175,7 +176,7 @@ class _DeleteAccountPageState extends ConsumerState<DeleteAccountPage> {
         children: <Widget>[
           Padding(
             padding: EdgeInsets.only(top: AppSpacing.sm),
-            child: Icon(Icons.circle, size: 6, color: context.palette.muted),
+            child: Icon(AppIcons.circle, size: 6, color: context.palette.muted),
           ),
           const SizedBox(width: AppSpacing.sm),
           Expanded(child: Text(text, style: AppTextStyles.body)),

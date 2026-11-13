@@ -29,6 +29,7 @@ import '../farms/presentation/farm_display.dart';
 import '../profile/data/me_repository.dart';
 import '../weather/data/weather_repository.dart';
 import '../weather/domain/weather.dart';
+import '../../design_system/app_icons.dart';
 
 class HomePage extends ConsumerWidget {
   const HomePage({super.key});
@@ -76,7 +77,7 @@ class HomePage extends ConsumerWidget {
                   const SizedBox(width: AppSpacing.sm),
                   AppIconButton(
                     key: const Key('home_profile'),
-                    icon: Icons.person_outline,
+                    icon: AppIcons.profile,
                     tooltip: strings.navProfile,
                     variant: AppIconButtonVariant.dangerOutline,
                     onPressed: () => context.go('/profile'),
@@ -118,7 +119,7 @@ class HomePage extends ConsumerWidget {
                             shape: BoxShape.circle,
                           ),
                           child: Icon(
-                            Icons.wb_sunny_outlined,
+                            AppIcons.sun,
                             color: context.palette.secondary,
                             size: 28,
                           ),
@@ -411,7 +412,7 @@ class _HomeFarmTile extends StatelessWidget {
         child: Row(
           children: <Widget>[
             Icon(
-              Icons.agriculture_outlined,
+              AppIcons.harvest,
               color: context.palette.primary,
               size: AppSizes.icon,
             ),

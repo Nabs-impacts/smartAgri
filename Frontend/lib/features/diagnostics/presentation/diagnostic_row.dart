@@ -12,6 +12,7 @@ import '../../../design_system/app_palette.dart';
 import '../domain/diagnostic_status.dart';
 import '../domain/diagnostic_summary.dart';
 import '../domain/severity.dart';
+import '../../../design_system/app_icons.dart';
 
 String formatDiagnosticDate(DateTime value) {
   return DateFormat('d MMM y, HH:mm', 'fr').format(value);
@@ -84,7 +85,7 @@ class DiagnosticRow extends ConsumerWidget {
               PopupMenuButton<String>(
                 key: Key('diagnostic_row_menu_${summary.id}'),
                 icon: Icon(
-                  Icons.more_vert,
+                  AppIcons.more,
                   color: context.palette.muted,
                   size: AppSizes.icon,
                 ),
@@ -168,15 +169,12 @@ class _Thumbnail extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final Widget child = url == null || url!.trim().isEmpty
-        ? Icon(Icons.eco_outlined, color: context.palette.primary, size: 28)
+        ? Icon(AppIcons.plant, color: context.palette.primary, size: 28)
         : Image.network(
             url!,
             fit: BoxFit.cover,
-            errorBuilder: (_, _, _) => Icon(
-              Icons.eco_outlined,
-              color: context.palette.primary,
-              size: 28,
-            ),
+            errorBuilder: (_, _, _) =>
+                Icon(AppIcons.plant, color: context.palette.primary, size: 28),
           );
     return ClipRRect(
       borderRadius: AppRadii.smallBorder,

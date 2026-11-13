@@ -9,6 +9,8 @@ import 'package:smartagri/features/admin/presentation/admin_yields_page.dart';
 import '../app_test_utils.dart';
 import 'fake_stats_repository.dart';
 
+import 'package:smartagri/design_system/app_icons.dart';
+
 Future<FakeStatsRepository> pumpYields(
   WidgetTester tester, {
   List<YieldCell>? yields,
@@ -143,7 +145,7 @@ void main() {
       ],
     );
 
-    expect(find.byIcon(Icons.lock_outline), findsOneWidget);
+    expect(find.byIcon(AppIcons.lock), findsOneWidget);
     expect(
       find.text(
         'Données masquées : échantillon trop petit pour protéger les agriculteurs',

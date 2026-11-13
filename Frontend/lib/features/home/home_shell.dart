@@ -8,6 +8,7 @@ import '../../design_system/components/app_bottom_nav.dart';
 import '../../design_system/tokens.dart';
 import '../profile/data/me_repository.dart';
 import '../sync/presentation/sync_banner.dart';
+import '../../design_system/app_icons.dart';
 
 class HomeShell extends ConsumerWidget {
   const HomeShell({required this.navigationShell, super.key});
@@ -19,9 +20,9 @@ class HomeShell extends ConsumerWidget {
     ref.watch(meProvider);
     final AppLocalizations strings = ref.watch(stringsProvider);
     final List<AppNavItem> items = <AppNavItem>[
-      AppNavItem(icon: Icons.home_outlined, label: strings.navHome),
-      AppNavItem(icon: Icons.search, label: strings.navSearch),
-      AppNavItem(icon: Icons.person_outline, label: strings.navProfile),
+      AppNavItem(icon: AppIcons.home, label: strings.navHome),
+      AppNavItem(icon: AppIcons.search, label: strings.navSearch),
+      AppNavItem(icon: AppIcons.profile, label: strings.navProfile),
     ];
     return Scaffold(
       body: Column(

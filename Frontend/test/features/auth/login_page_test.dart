@@ -12,6 +12,8 @@ import 'package:smartagri/features/auth/domain/otp_args.dart';
 
 import 'auth_test_harness.dart';
 
+import 'package:smartagri/design_system/app_icons.dart';
+
 Future<void> submitLogin(WidgetTester tester) async {
   await tester.tap(find.byKey(const Key('login_submit')));
   await tester.pumpAndSettle();
@@ -55,7 +57,7 @@ void main() {
     );
     expect(editable.obscureText, isTrue);
 
-    await tester.tap(find.byIcon(Icons.visibility_outlined));
+    await tester.tap(find.byIcon(AppIcons.visibility));
     await tester.pumpAndSettle();
 
     editable = tester.widget<EditableText>(
@@ -201,6 +203,8 @@ void main() {
   ) async {
     final AuthHarness harness = await pumpAuthApp(tester);
 
+    await tester.ensureVisible(find.byKey(const Key('login_register')));
+    await tester.pump();
     await tester.tap(find.byKey(const Key('login_register')));
     await tester.pumpAndSettle();
 
@@ -245,6 +249,8 @@ void main() {
     final AuthHarness harness = await pumpAuthApp(tester);
 
     await tester.enterText(fieldByKey('login_phone_field'), '123');
+    await tester.ensureVisible(find.byKey(const Key('login_sms_code')));
+    await tester.pump();
     await tester.tap(find.byKey(const Key('login_sms_code')));
     await tester.pumpAndSettle();
 
@@ -255,6 +261,8 @@ void main() {
     );
 
     await tester.enterText(fieldByKey('login_phone_field'), '90203040');
+    await tester.ensureVisible(find.byKey(const Key('login_sms_code')));
+    await tester.pump();
     await tester.tap(find.byKey(const Key('login_sms_code')));
     await tester.pump();
     await tester.pump(const Duration(milliseconds: 400));

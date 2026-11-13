@@ -26,6 +26,7 @@ import '../privacy/data/data_exporter.dart';
 import '../privacy/data/privacy_repository.dart';
 import '../sync/sync_format.dart';
 import 'data/me_repository.dart';
+import '../../design_system/app_icons.dart';
 
 class ProfilePage extends ConsumerWidget {
   const ProfilePage({super.key});
@@ -83,7 +84,7 @@ class ProfilePage extends ConsumerWidget {
                       child: Row(
                         children: <Widget>[
                           Icon(
-                            Icons.eco_outlined,
+                            AppIcons.plant,
                             color: context.palette.primary,
                             size: AppSizes.icon,
                           ),
@@ -95,7 +96,7 @@ class ProfilePage extends ConsumerWidget {
                             ),
                           ),
                           Icon(
-                            Icons.chevron_right,
+                            AppIcons.chevronRight,
                             color: context.palette.muted,
                             size: AppSizes.icon,
                           ),
@@ -436,7 +437,7 @@ class _SyncSection extends ConsumerWidget {
                     ),
                     if (snapshot.failedCount > 0)
                       Icon(
-                        Icons.chevron_right,
+                        AppIcons.chevronRight,
                         color: context.palette.danger,
                         size: AppSizes.icon,
                       ),
@@ -573,14 +574,14 @@ class _PrivacySectionState extends ConsumerState<_PrivacySection> {
         const SizedBox(height: AppSpacing.md),
         _PrivacyRow(
           key: const Key('profile_privacy_consents'),
-          icon: Icons.privacy_tip_outlined,
+          icon: AppIcons.privacy,
           label: widget.strings.profilePrivacyConsents,
           onTap: () => context.push('/privacy/consents'),
         ),
         const SizedBox(height: AppSpacing.md),
         _PrivacyRow(
           key: const Key('profile_privacy_export'),
-          icon: Icons.download_outlined,
+          icon: AppIcons.download,
           label: widget.strings.profilePrivacyExport,
           onTap: _exporting ? null : _export,
           trailing: _exporting
@@ -597,7 +598,7 @@ class _PrivacySectionState extends ConsumerState<_PrivacySection> {
         const SizedBox(height: AppSpacing.md),
         _PrivacyRow(
           key: const Key('profile_privacy_delete'),
-          icon: Icons.delete_outline,
+          icon: AppIcons.delete,
           label: widget.strings.profilePrivacyDelete,
           danger: true,
           onTap: () => context.push('/privacy/delete'),
@@ -647,7 +648,7 @@ class _PrivacyRow extends StatelessWidget {
             ),
             trailing ??
                 Icon(
-                  Icons.chevron_right,
+                  AppIcons.chevronRight,
                   color: context.palette.muted,
                   size: AppSizes.icon,
                 ),

@@ -5,9 +5,11 @@ import 'tokens.dart';
 @immutable
 class AppPalette extends ThemeExtension<AppPalette> {
   const AppPalette({
+    required this.brightness,
     required this.background,
     required this.surface,
     required this.surfaceRaised,
+    required this.surfaceHigh,
     required this.inputFill,
     required this.line,
     required this.ink,
@@ -20,6 +22,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
     required this.onSecondary,
     required this.secondaryContainer,
     required this.onSecondaryContainer,
+    required this.secondaryText,
     required this.tertiary,
     required this.danger,
     required this.onDanger,
@@ -36,9 +39,11 @@ class AppPalette extends ThemeExtension<AppPalette> {
     required this.dangerChipContainer,
   });
 
+  final Brightness brightness;
   final Color background;
   final Color surface;
   final Color surfaceRaised;
+  final Color surfaceHigh;
   final Color inputFill;
   final Color line;
   final Color ink;
@@ -51,6 +56,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
   final Color onSecondary;
   final Color secondaryContainer;
   final Color onSecondaryContainer;
+  final Color secondaryText;
   final Color tertiary;
   final Color danger;
   final Color onDanger;
@@ -66,64 +72,81 @@ class AppPalette extends ThemeExtension<AppPalette> {
   final Color onDangerContainer;
   final Color dangerChipContainer;
 
+  bool get isDark => brightness == Brightness.dark;
+
+  List<BoxShadow> get lowShadows =>
+      isDark ? AppElevation.none : AppElevation.low;
+
+  List<BoxShadow> get mediumShadows =>
+      isDark ? AppElevation.none : AppElevation.medium;
+
+  List<BoxShadow> get highShadows =>
+      isDark ? AppElevation.none : AppElevation.high;
+
   static const AppPalette light = AppPalette(
+    brightness: Brightness.light,
     background: AppColors.background,
     surface: AppColors.surface,
-    surfaceRaised: AppColors.white,
+    surfaceRaised: AppColors.surfaceRaised,
+    surfaceHigh: AppColors.surfaceHigh,
     inputFill: AppColors.inputFill,
     line: AppColors.line,
     ink: AppColors.ink,
     muted: AppColors.muted,
     primary: AppColors.primary,
-    onPrimary: AppColors.white,
+    onPrimary: AppColors.onPrimary,
     primaryContainer: AppColors.primaryContainer,
-    onPrimaryContainer: AppColors.ink,
+    onPrimaryContainer: AppColors.onPrimaryContainer,
     secondary: AppColors.secondary,
-    onSecondary: AppColors.white,
+    onSecondary: AppColors.ink,
     secondaryContainer: AppColors.secondaryContainer,
-    onSecondaryContainer: AppColors.ink,
+    onSecondaryContainer: AppColors.onSecondaryContainer,
+    secondaryText: AppColors.secondaryText,
     tertiary: AppColors.tertiary,
     danger: AppColors.danger,
-    onDanger: AppColors.white,
-    accent: AppColors.accentBrown,
+    onDanger: AppColors.onDanger,
+    accent: AppColors.accent,
     inverted: AppColors.inverted,
-    onInverted: AppColors.white,
+    onInverted: AppColors.onInverted,
     scrim: Color(0x66000000),
-    successContainer: Color(0xFFE3F2E4),
-    onSuccessContainer: AppColors.primary,
-    warningContainer: Color(0xFFFFF0E0),
-    onWarningContainer: AppColors.secondary,
-    dangerContainer: Color(0xFFFFEBEE),
-    onDangerContainer: AppColors.danger,
-    dangerChipContainer: Color(0xFFFFE9E9),
+    successContainer: AppColors.successContainer,
+    onSuccessContainer: AppColors.onSuccessContainer,
+    warningContainer: AppColors.warningContainer,
+    onWarningContainer: AppColors.onWarningContainer,
+    dangerContainer: AppColors.dangerContainer,
+    onDangerContainer: AppColors.onDangerContainer,
+    dangerChipContainer: AppColors.dangerChipContainer,
   );
 
   static const AppPalette dark = AppPalette(
-    background: Color(0xFF161814),
-    surface: Color(0xFF1F211C),
-    surfaceRaised: Color(0xFF262922),
-    inputFill: Color(0xFF2B2E27),
-    line: Color(0xFF707868),
+    brightness: Brightness.dark,
+    background: Color(0xFF121411),
+    surface: Color(0xFF1B1E1A),
+    surfaceRaised: Color(0xFF232721),
+    surfaceHigh: Color(0xFF2A2E27),
+    inputFill: Color(0xFF2A2E27),
+    line: Color(0xFF7A8274),
     ink: Color(0xFFF1F3ED),
     muted: Color(0xFFB4BAAC),
     primary: Color(0xFF8BD08F),
     onPrimary: Color(0xFF0E1B0F),
-    primaryContainer: Color(0xFF2B4A2E),
-    onPrimaryContainer: Color(0xFFE2F1DF),
-    secondary: Color(0xFFFFB27A),
-    onSecondary: Color(0xFF3B1A00),
-    secondaryContainer: Color(0xFF4A2D1B),
-    onSecondaryContainer: Color(0xFFFFE0CC),
-    tertiary: Color(0xFF82D18D),
+    primaryContainer: Color(0xFF1F3B24),
+    onPrimaryContainer: Color(0xFFD7F0E1),
+    secondary: Color(0xFFFF8A5C),
+    onSecondary: Color(0xFF2A1108),
+    secondaryContainer: Color(0xFF4A2414),
+    onSecondaryContainer: Color(0xFFFFD9C7),
+    secondaryText: Color(0xFFFF9E78),
+    tertiary: Color(0xFF9BDD9F),
     danger: Color(0xFFFF8A80),
     onDanger: Color(0xFF3A0907),
-    accent: Color(0xFFFFA07A),
+    accent: Color(0xFFFFB27A),
     inverted: Color(0xFFE8EAE3),
     onInverted: Color(0xFF171914),
     scrim: Color(0x99000000),
-    successContainer: Color(0xFF233A24),
+    successContainer: Color(0xFF1E3A24),
     onSuccessContainer: Color(0xFF9BDD9F),
-    warningContainer: Color(0xFF3B2C1C),
+    warningContainer: Color(0xFF3A281A),
     onWarningContainer: Color(0xFFFFC08A),
     dangerContainer: Color(0xFF3E2020),
     onDangerContainer: Color(0xFFFFB4AB),
@@ -132,9 +155,11 @@ class AppPalette extends ThemeExtension<AppPalette> {
 
   @override
   AppPalette copyWith({
+    Brightness? brightness,
     Color? background,
     Color? surface,
     Color? surfaceRaised,
+    Color? surfaceHigh,
     Color? inputFill,
     Color? line,
     Color? ink,
@@ -147,6 +172,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
     Color? onSecondary,
     Color? secondaryContainer,
     Color? onSecondaryContainer,
+    Color? secondaryText,
     Color? tertiary,
     Color? danger,
     Color? onDanger,
@@ -163,9 +189,11 @@ class AppPalette extends ThemeExtension<AppPalette> {
     Color? dangerChipContainer,
   }) {
     return AppPalette(
+      brightness: brightness ?? this.brightness,
       background: background ?? this.background,
       surface: surface ?? this.surface,
       surfaceRaised: surfaceRaised ?? this.surfaceRaised,
+      surfaceHigh: surfaceHigh ?? this.surfaceHigh,
       inputFill: inputFill ?? this.inputFill,
       line: line ?? this.line,
       ink: ink ?? this.ink,
@@ -178,6 +206,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
       onSecondary: onSecondary ?? this.onSecondary,
       secondaryContainer: secondaryContainer ?? this.secondaryContainer,
       onSecondaryContainer: onSecondaryContainer ?? this.onSecondaryContainer,
+      secondaryText: secondaryText ?? this.secondaryText,
       tertiary: tertiary ?? this.tertiary,
       danger: danger ?? this.danger,
       onDanger: onDanger ?? this.onDanger,
@@ -201,9 +230,11 @@ class AppPalette extends ThemeExtension<AppPalette> {
       return this;
     }
     return AppPalette(
+      brightness: t < 0.5 ? brightness : other.brightness,
       background: Color.lerp(background, other.background, t)!,
       surface: Color.lerp(surface, other.surface, t)!,
       surfaceRaised: Color.lerp(surfaceRaised, other.surfaceRaised, t)!,
+      surfaceHigh: Color.lerp(surfaceHigh, other.surfaceHigh, t)!,
       inputFill: Color.lerp(inputFill, other.inputFill, t)!,
       line: Color.lerp(line, other.line, t)!,
       ink: Color.lerp(ink, other.ink, t)!,
@@ -232,6 +263,7 @@ class AppPalette extends ThemeExtension<AppPalette> {
         other.onSecondaryContainer,
         t,
       )!,
+      secondaryText: Color.lerp(secondaryText, other.secondaryText, t)!,
       tertiary: Color.lerp(tertiary, other.tertiary, t)!,
       danger: Color.lerp(danger, other.danger, t)!,
       onDanger: Color.lerp(onDanger, other.onDanger, t)!,

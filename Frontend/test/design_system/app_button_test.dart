@@ -5,6 +5,8 @@ import 'package:smartagri/design_system/tokens.dart';
 
 import 'test_app.dart';
 
+import 'package:smartagri/design_system/app_icons.dart';
+
 void main() {
   testWidgets('renders the label and handles taps', (
     WidgetTester tester,
@@ -78,10 +80,10 @@ void main() {
       AppButton(
         label: 'Ajouter',
         onPressed: () {},
-        icon: const Icon(Icons.add),
+        icon: const Icon(AppIcons.add),
       ),
     );
 
-    expect(find.byIcon(Icons.add), findsOneWidget);
+    expect(find.byIcon(AppIcons.add), findsOneWidget);
   });
 }

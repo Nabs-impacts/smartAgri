@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../tokens.dart';
+import '../app_icons.dart';
 import '../app_palette.dart';
+import '../tokens.dart';
 
 class AppSearchField extends StatelessWidget {
   const AppSearchField({
@@ -28,11 +29,11 @@ class AppSearchField extends StatelessWidget {
       cursorColor: context.palette.primary,
       decoration: InputDecoration(
         filled: true,
-        fillColor: context.palette.surface,
+        fillColor: context.palette.inputFill,
         hintText: hintText,
         hintStyle: AppTextStyles.body.copyWith(color: context.palette.muted),
         prefixIcon: Icon(
-          Icons.search,
+          AppIcons.search,
           color: context.palette.muted,
           size: AppSizes.icon,
         ),

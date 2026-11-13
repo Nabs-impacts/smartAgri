@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../tokens.dart';
 import '../app_palette.dart';
+import '../tokens.dart';
 
 enum AppIconButtonVariant {
   square,
@@ -43,13 +43,17 @@ class AppIconButton extends StatelessWidget {
   }
 
   Color _foreground(AppPalette palette) {
-    if (variant == AppIconButtonVariant.dangerOutline) {
-      return palette.danger;
+    switch (variant) {
+      case AppIconButtonVariant.danger:
+        return palette.onDanger;
+      case AppIconButtonVariant.dangerOutline:
+        return palette.danger;
+      case AppIconButtonVariant.square:
+      case AppIconButtonVariant.primary:
+      case AppIconButtonVariant.accentBrown:
+      case AppIconButtonVariant.tertiary:
+        return palette.onPrimary;
     }
-    if (variant == AppIconButtonVariant.danger) {
-      return palette.onDanger;
-    }
-    return palette.onPrimary;
   }
 
   ShapeBorder _shape(AppPalette palette) {

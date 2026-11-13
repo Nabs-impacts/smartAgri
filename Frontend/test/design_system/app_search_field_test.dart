@@ -4,11 +4,13 @@ import 'package:smartagri/design_system/components/app_search_field.dart';
 
 import 'test_app.dart';
 
+import 'package:smartagri/design_system/app_icons.dart';
+
 void main() {
   testWidgets('renders the search icon and hint', (WidgetTester tester) async {
     await pumpComponent(tester, const AppSearchField());
 
-    expect(find.byIcon(Icons.search), findsOneWidget);
+    expect(find.byIcon(AppIcons.search), findsOneWidget);
     expect(find.text('Rechercher'), findsOneWidget);
   });
 

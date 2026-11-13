@@ -4,6 +4,8 @@ import 'package:smartagri/design_system/components/app_text_field.dart';
 
 import 'test_app.dart';
 
+import 'package:smartagri/design_system/app_icons.dart';
+
 void main() {
   testWidgets('renders the hint and accepts text', (WidgetTester tester) async {
     final TextEditingController controller = TextEditingController();
@@ -28,14 +30,14 @@ void main() {
       find.byType(EditableText),
     );
     expect(editable.obscureText, isTrue);
-    expect(find.byIcon(Icons.visibility_outlined), findsOneWidget);
+    expect(find.byIcon(AppIcons.visibility), findsOneWidget);
 
-    await tester.tap(find.byIcon(Icons.visibility_outlined));
+    await tester.tap(find.byIcon(AppIcons.visibility));
     await tester.pumpAndSettle();
 
     editable = tester.widget<EditableText>(find.byType(EditableText));
     expect(editable.obscureText, isFalse);
-    expect(find.byIcon(Icons.visibility_off_outlined), findsOneWidget);
+    expect(find.byIcon(AppIcons.visibilityOff), findsOneWidget);
   });
 
   testWidgets('shows the error message', (WidgetTester tester) async {
@@ -62,9 +64,12 @@ void main() {
   testWidgets('renders a custom suffix icon', (WidgetTester tester) async {
     await pumpComponent(
       tester,
-      const AppTextField(hintText: 'Recherche', suffixIcon: Icon(Icons.clear)),
+      const AppTextField(
+        hintText: 'Recherche',
+        suffixIcon: Icon(AppIcons.close),
+      ),
     );
 
-    expect(find.byIcon(Icons.clear), findsOneWidget);
+    expect(find.byIcon(AppIcons.close), findsOneWidget);
   });
 }

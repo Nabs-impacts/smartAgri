@@ -96,6 +96,6 @@ void main() {
     );
 
     final Size size = tester.getSize(find.byType(AppSelectField<String>));
-    expect(size.height, AppSizes.fieldHeight);
+    expect(size.height, greaterThanOrEqualTo(AppSizes.fieldHeight));
   });
 }

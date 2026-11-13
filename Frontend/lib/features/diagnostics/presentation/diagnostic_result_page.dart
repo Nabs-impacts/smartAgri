@@ -25,6 +25,7 @@ import '../domain/diagnostic_status.dart';
 import '../domain/prediction.dart';
 import '../domain/recommendation_info.dart';
 import '../domain/severity.dart';
+import '../../../design_system/app_icons.dart';
 
 final Provider<bool> diagnosticDemoBannerProvider = Provider<bool>(
   (Ref ref) => AppConfig.diagnosticDemoBanner,
@@ -60,7 +61,7 @@ class _DiagnosticResultPageState extends ConsumerState<DiagnosticResultPage> {
         actions: <Widget>[
           PopupMenuButton<String>(
             key: const Key('diagnostic_result_actions'),
-            icon: const Icon(Icons.more_vert),
+            icon: const Icon(AppIcons.more),
             onSelected: (String value) {
               if (value == 'delete') {
                 _confirmDelete(strings);
@@ -241,7 +242,7 @@ class _DemoBanner extends StatelessWidget {
       child: Row(
         children: <Widget>[
           Icon(
-            Icons.info_outline,
+            AppIcons.info,
             color: context.palette.primary,
             size: AppSizes.icon,
           ),
@@ -579,7 +580,7 @@ class _ExpertView extends StatelessWidget {
               Row(
                 children: <Widget>[
                   Icon(
-                    Icons.verified_user_outlined,
+                    AppIcons.verified,
                     color: context.palette.secondary,
                     size: AppSizes.icon,
                   ),
@@ -687,7 +688,7 @@ class _TimeoutView extends StatelessWidget {
         AppCard(
           child: Column(
             children: <Widget>[
-              Icon(Icons.schedule, color: context.palette.secondary, size: 32),
+              Icon(AppIcons.clock, color: context.palette.secondary, size: 32),
               const SizedBox(height: AppSpacing.md),
               Text(
                 strings.diagnosticTimeout,

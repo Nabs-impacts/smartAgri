@@ -17,6 +17,7 @@ import '../../../design_system/tokens.dart';
 import '../../../design_system/app_palette.dart';
 import '../domain/auth_error_messages.dart';
 import 'forgot_password_controller.dart';
+import '../../../design_system/app_icons.dart';
 
 class ForgotPasswordPage extends ConsumerStatefulWidget {
   const ForgotPasswordPage({super.key});
@@ -233,7 +234,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
               NigerPhoneInputFormatter(),
             ],
             suffixIcon: Icon(
-              Icons.phone_outlined,
+              AppIcons.phone,
               color: context.palette.muted,
               size: AppSizes.icon,
             ),
@@ -334,11 +335,7 @@ class _SuccessView extends StatelessWidget {
     return Column(
       children: <Widget>[
         const SizedBox(height: AppSpacing.xxl),
-        Icon(
-          Icons.check_circle_outline,
-          color: context.palette.tertiary,
-          size: 64,
-        ),
+        Icon(AppIcons.checkCircle, color: context.palette.tertiary, size: 64),
         const SizedBox(height: AppSpacing.lg),
         Text(
           strings.resetSuccess,

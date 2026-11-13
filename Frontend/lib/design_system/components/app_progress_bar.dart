@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../tokens.dart';
 import '../app_palette.dart';
+import '../tokens.dart';
 
 class AppProgressBar extends StatelessWidget {
   const AppProgressBar({
@@ -17,6 +17,7 @@ class AppProgressBar extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppPalette palette = context.palette;
     return Semantics(
       label: label,
       value: '${(value.clamp(0, 1) * 100).round()} %',
@@ -25,8 +26,8 @@ class AppProgressBar extends StatelessWidget {
         child: LinearProgressIndicator(
           value: value.clamp(0, 1),
           minHeight: AppSizes.progress,
-          color: color ?? context.palette.primary,
-          backgroundColor: context.palette.line,
+          color: color ?? palette.primary,
+          backgroundColor: palette.line,
         ),
       ),
     );

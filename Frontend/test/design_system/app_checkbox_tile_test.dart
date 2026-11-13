@@ -5,6 +5,8 @@ import 'package:smartagri/design_system/tokens.dart';
 
 import 'test_app.dart';
 
+import 'package:smartagri/design_system/app_icons.dart';
+
 void main() {
   testWidgets('renders the label and toggles the value', (
     WidgetTester tester,
@@ -20,7 +22,7 @@ void main() {
     );
 
     expect(find.text('Se souvenir de moi'), findsOneWidget);
-    expect(find.byIcon(Icons.check), findsOneWidget);
+    expect(find.byIcon(AppIcons.check), findsOneWidget);
 
     await tester.tap(find.byType(AppCheckboxTile));
     await tester.pumpAndSettle();
@@ -42,7 +44,7 @@ void main() {
 
     final Size size = tester.getSize(find.byType(AppCheckboxTile));
     expect(size.height, AppSizes.touchTarget);
-    expect(find.byIcon(Icons.check), findsNothing);
+    expect(find.byIcon(AppIcons.check), findsNothing);
   });
 
   testWidgets('is inert when onChanged is null', (WidgetTester tester) async {
@@ -54,6 +56,6 @@ void main() {
     await tester.tap(find.byType(AppCheckboxTile));
     await tester.pumpAndSettle();
 
-    expect(find.byIcon(Icons.check), findsOneWidget);
+    expect(find.byIcon(AppIcons.check), findsOneWidget);
   });
 }

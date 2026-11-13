@@ -17,6 +17,7 @@ import '../domain/plot_geometry.dart';
 import 'boundary_editor_controller.dart';
 import 'farm_display.dart';
 import 'plot_map.dart';
+import '../../../design_system/app_icons.dart';
 
 const Object boundaryUnchanged = Object();
 
@@ -199,7 +200,7 @@ class _PlotBoundaryEditorPageState
             key: const Key('boundary_close'),
             tooltip: strings.cancel,
             onPressed: () => _close(boundaryUnchanged),
-            icon: const Icon(Icons.close),
+            icon: const Icon(AppIcons.close),
           ),
           title: Text(
             widget.initialGeometry == null

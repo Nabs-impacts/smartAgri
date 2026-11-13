@@ -23,6 +23,7 @@ import '../domain/auth_purpose.dart';
 import '../domain/consent_choice.dart';
 import '../domain/otp_args.dart';
 import 'register_controller.dart';
+import '../../../design_system/app_icons.dart';
 
 class RegisterPage extends ConsumerStatefulWidget {
   const RegisterPage({super.key});
@@ -191,7 +192,7 @@ class _RegisterPageState extends ConsumerState<RegisterPage> {
                         NigerPhoneInputFormatter(),
                       ],
                       suffixIcon: Icon(
-                        Icons.phone_outlined,
+                        AppIcons.phone,
                         color: context.palette.muted,
                         size: AppSizes.icon,
                       ),

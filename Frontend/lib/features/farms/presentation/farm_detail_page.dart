@@ -17,6 +17,7 @@ import '../data/farms_providers.dart';
 import '../domain/farm.dart';
 import '../domain/plot.dart';
 import 'farm_display.dart';
+import '../../../design_system/app_icons.dart';
 
 class FarmDetailPage extends ConsumerWidget {
   const FarmDetailPage({required this.farmId, super.key});
@@ -81,7 +82,7 @@ class FarmDetailPage extends ConsumerWidget {
         actions: <Widget>[
           PopupMenuButton<String>(
             key: const Key('farm_actions'),
-            icon: const Icon(Icons.more_vert),
+            icon: const Icon(AppIcons.more),
             onSelected: (String value) {
               if (value == 'edit') {
                 context.go('/farms/${currentFarm.id}/edit');
@@ -281,7 +282,7 @@ class _PlotTile extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                Icons.landscape_outlined,
+                AppIcons.location,
                 color: context.palette.tertiary,
                 size: AppSizes.icon,
               ),
@@ -305,7 +306,7 @@ class _PlotTile extends StatelessWidget {
               ),
             ),
             Icon(
-              Icons.chevron_right,
+              AppIcons.chevronRight,
               color: context.palette.muted,
               size: AppSizes.icon,
             ),

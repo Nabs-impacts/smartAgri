@@ -15,6 +15,7 @@ import '../domain/cycle.dart';
 import '../domain/timeline_entry.dart';
 import 'cycle_display.dart';
 import 'cycle_format.dart';
+import '../../../design_system/app_icons.dart';
 
 class PlotTimelinePage extends ConsumerWidget {
   const PlotTimelinePage({required this.plotId, super.key});
@@ -207,7 +208,7 @@ class _TimelineRow extends ConsumerWidget {
               ),
             ),
             Icon(
-              Icons.chevron_right,
+              AppIcons.chevronRight,
               color: context.palette.muted,
               size: AppSizes.icon,
             ),

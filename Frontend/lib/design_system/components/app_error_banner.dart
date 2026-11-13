@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 
-import '../tokens.dart';
+import '../app_icons.dart';
 import '../app_palette.dart';
+import '../tokens.dart';
 
 class AppErrorBanner extends StatelessWidget {
   const AppErrorBanner({required this.message, super.key});
@@ -11,6 +12,7 @@ class AppErrorBanner extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppPalette palette = context.palette;
     return Semantics(
       container: true,
       role: SemanticsRole.alert,
@@ -21,24 +23,18 @@ class AppErrorBanner extends StatelessWidget {
           vertical: AppSpacing.md,
         ),
         decoration: BoxDecoration(
-          color: context.palette.dangerContainer,
-          borderRadius: const BorderRadius.all(Radius.circular(12)),
+          color: palette.dangerContainer,
+          borderRadius: AppRadii.smallBorder,
         ),
         child: Row(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: <Widget>[
-            Icon(
-              Icons.warning_amber_rounded,
-              color: context.palette.danger,
-              size: AppSizes.icon,
-            ),
+            Icon(AppIcons.warning, color: palette.danger, size: AppSizes.icon),
             const SizedBox(width: AppSpacing.sm),
             Flexible(
               child: Text(
                 message,
-                style: AppTextStyles.body.copyWith(
-                  color: context.palette.danger,
-                ),
+                style: AppTextStyles.body.copyWith(color: palette.danger),
               ),
             ),
           ],

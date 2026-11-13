@@ -61,7 +61,7 @@ void main() {
 
     expect(selected.color, AppColors.primary);
     expect(selectedText.style?.color, AppColors.white);
-    expect(unselected.color, AppColors.surface);
+    expect(unselected.color, AppColors.inputFill);
     expect(unselectedText.style?.color, AppColors.ink);
   });
 

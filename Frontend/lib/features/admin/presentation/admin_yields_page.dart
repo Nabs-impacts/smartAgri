@@ -20,6 +20,7 @@ import '../../catalog/domain/crop.dart';
 import '../data/stats_repository.dart';
 import '../domain/yield_cell.dart';
 import 'admin_format.dart';
+import '../../../design_system/app_icons.dart';
 
 class AdminYieldsPage extends ConsumerWidget {
   const AdminYieldsPage({super.key});
@@ -278,7 +279,7 @@ class AdminYieldsPage extends ConsumerWidget {
       child: Row(
         children: <Widget>[
           Icon(
-            Icons.lock_outline,
+            AppIcons.lock,
             color: context.palette.muted,
             size: AppSizes.icon,
           ),
@@ -347,7 +348,7 @@ class AdminYieldsPage extends ConsumerWidget {
         children: <Widget>[
           if (forbidden) ...<Widget>[
             Icon(
-              Icons.lock_outline,
+              AppIcons.lock,
               color: context.palette.muted,
               size: AppSizes.icon,
             ),

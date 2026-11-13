@@ -135,6 +135,8 @@ void main() {
       isNotNull,
     );
 
+    await tester.ensureVisible(find.byKey(const Key('forgot_resend')));
+    await tester.pump();
     await tester.tap(find.byKey(const Key('forgot_resend')));
     await tester.pumpAndSettle();
     expect(harness.repository.requestOtpCalls, 2);

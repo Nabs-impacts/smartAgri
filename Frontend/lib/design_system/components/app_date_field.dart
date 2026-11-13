@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../tokens.dart';
+import '../app_icons.dart';
 import '../app_palette.dart';
+import '../tokens.dart';
 
 class AppDateField extends StatelessWidget {
   const AppDateField({
@@ -31,12 +32,23 @@ class AppDateField extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppPalette palette = context.palette;
     final bool hasError = errorText != null && errorText!.isNotEmpty;
     final DateTime? current = value;
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
+        Padding(
+          padding: const EdgeInsets.only(
+            left: AppSpacing.lg,
+            bottom: AppSizes.fieldLabelGap,
+          ),
+          child: Text(
+            hintText,
+            style: AppTextStyles.label.copyWith(color: palette.muted),
+          ),
+        ),
         Semantics(
           button: true,
           enabled: _enabled,
@@ -44,11 +56,11 @@ class AppDateField extends StatelessWidget {
           child: Opacity(
             opacity: _enabled ? 1 : AppOpacity.disabled,
             child: Material(
-              color: context.palette.inputFill,
+              color: palette.inputFill,
               shape: RoundedRectangleBorder(
                 borderRadius: AppRadii.pillBorder,
                 side: hasError
-                    ? BorderSide(color: context.palette.danger)
+                    ? BorderSide(color: palette.danger)
                     : BorderSide.none,
               ),
               clipBehavior: Clip.antiAlias,
@@ -68,19 +80,19 @@ class AppDateField extends StatelessWidget {
                             children: <Widget>[
                               Expanded(
                                 child: Text(
-                                  current == null ? hintText : _format(current),
+                                  current == null ? '' : _format(current),
                                   style: AppTextStyles.body.copyWith(
                                     color: current == null
-                                        ? context.palette.muted
-                                        : context.palette.ink,
+                                        ? palette.muted
+                                        : palette.ink,
                                   ),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                 ),
                               ),
                               Icon(
-                                Icons.calendar_today_outlined,
-                                color: context.palette.muted,
+                                AppIcons.calendar,
+                                color: palette.muted,
                                 size: AppSizes.icon,
                               ),
                             ],
@@ -93,8 +105,8 @@ class AppDateField extends StatelessWidget {
                         tooltip: clearTooltip,
                         onPressed: _enabled ? () => onChanged!(null) : null,
                         icon: Icon(
-                          Icons.close,
-                          color: context.palette.muted,
+                          AppIcons.close,
+                          color: palette.muted,
                           size: AppSizes.icon,
                         ),
                       ),
@@ -112,9 +124,7 @@ class AppDateField extends StatelessWidget {
             ),
             child: Text(
               errorText!,
-              style: AppTextStyles.caption.copyWith(
-                color: context.palette.danger,
-              ),
+              style: AppTextStyles.caption.copyWith(color: palette.danger),
             ),
           ),
       ],

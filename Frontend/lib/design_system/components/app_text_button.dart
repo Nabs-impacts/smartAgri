@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../tokens.dart';
 import '../app_palette.dart';
+import '../tokens.dart';
 
 enum AppTextButtonVariant { primary, muted }
 
@@ -39,7 +39,7 @@ class AppTextButton extends StatelessWidget {
         opacity: _enabled ? 1 : AppOpacity.disabled,
         child: InkWell(
           onTap: onPressed,
-          borderRadius: AppRadii.smallBorder,
+          borderRadius: AppRadii.pillBorder,
           child: ConstrainedBox(
             constraints: const BoxConstraints(minHeight: AppSizes.touchTarget),
             child: Padding(

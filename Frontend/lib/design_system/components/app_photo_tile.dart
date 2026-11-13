@@ -2,8 +2,9 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
-import '../tokens.dart';
+import '../app_icons.dart';
 import '../app_palette.dart';
+import '../tokens.dart';
 
 class AppPhotoTile extends StatelessWidget {
   const AppPhotoTile({
@@ -55,7 +56,7 @@ class AppPhotoTile extends StatelessWidget {
                 painter: _DashedBorderPainter(color: context.palette.line),
                 child: Center(
                   child: Icon(
-                    Icons.photo_camera_outlined,
+                    AppIcons.camera,
                     color: context.palette.primary,
                     size: AppSizes.icon,
                   ),
@@ -79,7 +80,7 @@ class AppPhotoTile extends StatelessWidget {
                 color: context.palette.surface,
                 child: provider == null
                     ? Icon(
-                        Icons.image_outlined,
+                        AppIcons.image,
                         color: context.palette.muted,
                         size: AppSizes.icon,
                       )
@@ -94,7 +95,7 @@ class AppPhotoTile extends StatelessWidget {
                               StackTrace? stackTrace,
                             ) => Center(
                               child: Icon(
-                                Icons.broken_image_outlined,
+                                AppIcons.brokenImage,
                                 color: context.palette.muted,
                                 size: AppSizes.icon,
                               ),
@@ -136,7 +137,7 @@ class AppPhotoTile extends StatelessWidget {
                   child: Padding(
                     padding: const EdgeInsets.all(AppSpacing.xs),
                     child: Icon(
-                      Icons.close,
+                      AppIcons.close,
                       color: context.palette.danger,
                       size: AppSizes.smallIcon,
                     ),

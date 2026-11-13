@@ -19,6 +19,7 @@ import '../data/farms_providers.dart';
 import '../domain/plot.dart';
 import 'farm_display.dart';
 import 'plot_map.dart';
+import '../../../design_system/app_icons.dart';
 
 class PlotDetailPage extends ConsumerWidget {
   const PlotDetailPage({required this.plotId, super.key});
@@ -37,7 +38,7 @@ class PlotDetailPage extends ConsumerWidget {
           if (plot.value != null)
             PopupMenuButton<String>(
               key: const Key('plot_actions'),
-              icon: const Icon(Icons.more_vert),
+              icon: const Icon(AppIcons.more),
               onSelected: (String value) {
                 if (value == 'edit') {
                   context.go('/plots/$plotId/edit');

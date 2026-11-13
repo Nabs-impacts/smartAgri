@@ -19,6 +19,7 @@ import '../../catalog/domain/admin_area.dart';
 import '../data/farms_providers.dart';
 import '../domain/farm.dart';
 import 'farm_display.dart';
+import '../../../design_system/app_icons.dart';
 
 class FarmsPage extends ConsumerWidget {
   const FarmsPage({super.key});
@@ -59,7 +60,7 @@ class FarmsPage extends ConsumerWidget {
                 child: AppButton(
                   key: const Key('farms_add'),
                   label: strings.farmAdd,
-                  icon: const Icon(Icons.add),
+                  icon: const Icon(AppIcons.add),
                   onPressed: () => context.go('/farms/new'),
                 ),
               ),
@@ -165,7 +166,7 @@ class _FarmTile extends StatelessWidget {
                 shape: BoxShape.circle,
               ),
               child: Icon(
-                Icons.agriculture_outlined,
+                AppIcons.harvest,
                 color: context.palette.primary,
                 size: AppSizes.icon,
               ),
@@ -194,7 +195,7 @@ class _FarmTile extends StatelessWidget {
               ),
             ),
             Icon(
-              Icons.chevron_right,
+              AppIcons.chevronRight,
               color: context.palette.muted,
               size: AppSizes.icon,
             ),

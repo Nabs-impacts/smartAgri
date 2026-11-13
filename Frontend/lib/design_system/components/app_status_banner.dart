@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 
-import '../tokens.dart';
+import '../app_icons.dart';
 import '../app_palette.dart';
+import '../tokens.dart';
 
 enum AppStatusBannerTone { info, warning, error }
 
@@ -40,7 +41,7 @@ class AppStatusBanner extends StatelessWidget {
       case AppStatusBannerTone.info:
         return palette.onPrimaryContainer;
       case AppStatusBannerTone.warning:
-        return palette.accent;
+        return palette.secondaryText;
       case AppStatusBannerTone.error:
         return palette.onDangerContainer;
     }
@@ -49,11 +50,11 @@ class AppStatusBanner extends StatelessWidget {
   IconData get _icon {
     switch (tone) {
       case AppStatusBannerTone.info:
-        return Icons.sync;
+        return AppIcons.sync;
       case AppStatusBannerTone.warning:
-        return Icons.cloud_off_outlined;
+        return AppIcons.offline;
       case AppStatusBannerTone.error:
-        return Icons.warning_amber_rounded;
+        return AppIcons.warning;
     }
   }
 

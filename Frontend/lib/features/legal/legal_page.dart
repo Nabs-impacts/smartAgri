@@ -5,6 +5,7 @@ import '../../core/i18n/app_localizations.dart';
 import '../../core/i18n/strings_provider.dart';
 import '../../design_system/tokens.dart';
 import '../../design_system/app_palette.dart';
+import '../../design_system/app_icons.dart';
 
 enum LegalDocument { terms, privacy }
 
@@ -46,7 +47,7 @@ class LegalPage extends ConsumerWidget {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: <Widget>[
                     Icon(
-                      Icons.info_outline,
+                      AppIcons.info,
                       color: context.palette.accent,
                       size: AppSizes.icon,
                     ),

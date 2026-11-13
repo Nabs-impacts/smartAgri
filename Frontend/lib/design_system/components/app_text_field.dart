@@ -1,8 +1,9 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../tokens.dart';
+import '../app_icons.dart';
 import '../app_palette.dart';
+import '../tokens.dart';
 
 class AppTextField extends StatefulWidget {
   const AppTextField({
@@ -71,7 +72,7 @@ class _AppTextFieldState extends State<AppTextField> {
             : 'Masquer le mot de passe',
         onPressed: () => setState(() => _obscured = !_obscured),
         icon: Icon(
-          _obscured ? Icons.visibility_outlined : Icons.visibility_off_outlined,
+          _obscured ? AppIcons.visibility : AppIcons.visibilityOff,
           color: context.palette.muted,
           size: AppSizes.icon,
         ),
@@ -82,6 +83,7 @@ class _AppTextFieldState extends State<AppTextField> {
 
   @override
   Widget build(BuildContext context) {
+    final AppPalette palette = context.palette;
     const OutlineInputBorder baseBorder = OutlineInputBorder(
       borderRadius: AppRadii.pillBorder,
       borderSide: BorderSide.none,
@@ -91,6 +93,17 @@ class _AppTextFieldState extends State<AppTextField> {
       crossAxisAlignment: CrossAxisAlignment.start,
       mainAxisSize: MainAxisSize.min,
       children: <Widget>[
+        if (widget.hintText != null)
+          Padding(
+            padding: const EdgeInsets.only(
+              left: AppSpacing.lg,
+              bottom: AppSizes.fieldLabelGap,
+            ),
+            child: Text(
+              widget.hintText!,
+              style: AppTextStyles.label.copyWith(color: palette.muted),
+            ),
+          ),
         TextFormField(
           controller: widget.controller,
           focusNode: widget.focusNode,
@@ -104,23 +117,16 @@ class _AppTextFieldState extends State<AppTextField> {
           autofillHints: widget.autofillHints,
           maxLines: widget.maxLines,
           inputFormatters: widget.inputFormatters,
-          cursorColor: context.palette.primary,
-          style: AppTextStyles.body.copyWith(color: context.palette.ink),
+          cursorColor: palette.primary,
+          style: AppTextStyles.body.copyWith(color: palette.ink),
           decoration: InputDecoration(
             filled: true,
-            fillColor: context.palette.inputFill,
-            hintText: widget.hintText,
-            hintStyle: AppTextStyles.body.copyWith(
-              color: context.palette.muted,
-            ),
+            fillColor: palette.inputFill,
+            hintStyle: AppTextStyles.body.copyWith(color: palette.muted),
             prefixText: widget.prefixText,
-            prefixStyle: AppTextStyles.body.copyWith(
-              color: context.palette.muted,
-            ),
+            prefixStyle: AppTextStyles.body.copyWith(color: palette.muted),
             errorText: widget.errorText,
-            errorStyle: AppTextStyles.caption.copyWith(
-              color: context.palette.danger,
-            ),
+            errorStyle: AppTextStyles.caption.copyWith(color: palette.danger),
             contentPadding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.xl,
               vertical: AppSpacing.lg,
@@ -136,18 +142,18 @@ class _AppTextFieldState extends State<AppTextField> {
             focusedBorder: OutlineInputBorder(
               borderRadius: AppRadii.pillBorder,
               borderSide: BorderSide(
-                color: context.palette.primary,
+                color: palette.primary,
                 width: AppSizes.focusBorder,
               ),
             ),
             errorBorder: OutlineInputBorder(
               borderRadius: AppRadii.pillBorder,
-              borderSide: BorderSide(color: context.palette.danger),
+              borderSide: BorderSide(color: palette.danger),
             ),
             focusedErrorBorder: OutlineInputBorder(
               borderRadius: AppRadii.pillBorder,
               borderSide: BorderSide(
-                color: context.palette.danger,
+                color: palette.danger,
                 width: AppSizes.focusBorder,
               ),
             ),

@@ -1,6 +1,7 @@
-import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smartagri/design_system/components/app_icon_button.dart';
+
+import 'package:smartagri/design_system/app_icons.dart';
 
 import 'test_app.dart';
 
@@ -12,7 +13,7 @@ void main() {
     await pumpComponent(
       tester,
       AppIconButton(
-        icon: Icons.delete_outline,
+        icon: AppIcons.delete,
         tooltip: 'Supprimer',
         onPressed: () => taps++,
         variant: AppIconButtonVariant.danger,
@@ -20,8 +21,8 @@ void main() {
     );
 
     expect(find.byTooltip('Supprimer'), findsOneWidget);
-    expect(find.byIcon(Icons.delete_outline), findsOneWidget);
-    await tester.tap(find.byIcon(Icons.delete_outline));
+    expect(find.byIcon(AppIcons.delete), findsOneWidget);
+    await tester.tap(find.byIcon(AppIcons.delete));
     expect(taps, 1);
   });
 
@@ -30,7 +31,7 @@ void main() {
       await pumpComponent(
         tester,
         AppIconButton(
-          icon: Icons.tune,
+          icon: AppIcons.settings,
           tooltip: variant.name,
           onPressed: () {},
           variant: variant,
@@ -47,13 +48,13 @@ void main() {
     await pumpComponent(
       tester,
       AppIconButton(
-        icon: Icons.lock_outline,
+        icon: AppIcons.lock,
         tooltip: 'Verrouillé',
         onPressed: null,
       ),
     );
 
-    await tester.tap(find.byIcon(Icons.lock_outline));
+    await tester.tap(find.byIcon(AppIcons.lock));
     expect(taps, 0);
   });
 }

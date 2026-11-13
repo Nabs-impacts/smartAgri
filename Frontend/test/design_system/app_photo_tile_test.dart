@@ -7,6 +7,8 @@ import 'package:smartagri/design_system/components/app_photo_tile.dart';
 
 import 'test_app.dart';
 
+import 'package:smartagri/design_system/app_icons.dart';
+
 Uint8List sampleBytes() {
   final img.Image image = img.Image(width: 12, height: 8);
   img.fill(image, color: img.ColorRgb8(10, 120, 60));
@@ -21,7 +23,7 @@ void main() {
     await pumpComponent(tester, AppPhotoTile(onAdd: () => adds++));
 
     expect(find.byKey(const Key('photo_tile_add')), findsOneWidget);
-    expect(find.byIcon(Icons.photo_camera_outlined), findsOneWidget);
+    expect(find.byIcon(AppIcons.camera), findsOneWidget);
 
     await tester.tap(find.byKey(const Key('photo_tile_add')));
     expect(adds, 1);
@@ -55,7 +57,7 @@ void main() {
   ) async {
     await pumpComponent(tester, const AppPhotoTile());
 
-    expect(find.byIcon(Icons.image_outlined), findsOneWidget);
+    expect(find.byIcon(AppIcons.image), findsOneWidget);
     expect(find.byKey(const Key('photo_tile_add')), findsNothing);
     expect(find.byKey(const Key('photo_tile_delete')), findsNothing);
   });

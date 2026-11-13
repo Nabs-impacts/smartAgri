@@ -27,6 +27,7 @@ import '../domain/harvest.dart';
 import '../domain/timeline_entry.dart';
 import 'cycle_display.dart';
 import 'cycle_format.dart';
+import '../../../design_system/app_icons.dart';
 
 class CycleDetailPage extends ConsumerStatefulWidget {
   const CycleDetailPage({required this.cycleId, super.key});
@@ -53,7 +54,7 @@ class _CycleDetailPageState extends ConsumerState<CycleDetailPage> {
           if (cycle.value != null)
             PopupMenuButton<String>(
               key: const Key('cycle_actions'),
-              icon: const Icon(Icons.more_vert),
+              icon: const Icon(AppIcons.more),
               onSelected: (String value) {
                 if (value == 'edit') {
                   context.go('/cycles/${cycle.value!.id}/edit');
@@ -649,7 +650,7 @@ class _JournalTile extends StatelessWidget {
               tooltip: strings.farmDelete,
               onPressed: onDelete,
               icon: Icon(
-                Icons.delete_outline,
+                AppIcons.delete,
                 color: context.palette.danger,
                 size: AppSizes.icon,
               ),
@@ -677,7 +678,7 @@ class _JournalTile extends StatelessWidget {
     }
     final Harvest harvest = (entry as HarvestTimelineEntry).harvest;
     return _JournalContent(
-      icon: Icons.agriculture_outlined,
+      icon: AppIcons.harvest,
       title: strings.activityTypeHarvest,
       details: <String>[
         formatKg(harvest.quantityKg),

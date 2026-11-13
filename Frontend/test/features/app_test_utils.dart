@@ -264,16 +264,23 @@ Future<ProviderContainer> buildTestContainer({
   return container;
 }
 
-Widget testApp(ProviderContainer container, Widget home) {
+Widget testApp(ProviderContainer container, Widget home, {ThemeData? theme}) {
   return UncontrolledProviderScope(
     container: container,
-    child: MaterialApp(theme: AppTheme.light, home: home),
+    child: MaterialApp(theme: theme ?? AppTheme.light, home: home),
   );
 }
 
-Widget testRouterApp(ProviderContainer container, GoRouter router) {
+Widget testRouterApp(
+  ProviderContainer container,
+  GoRouter router, {
+  ThemeData? theme,
+}) {
   return UncontrolledProviderScope(
     container: container,
-    child: MaterialApp.router(theme: AppTheme.light, routerConfig: router),
+    child: MaterialApp.router(
+      theme: theme ?? AppTheme.light,
+      routerConfig: router,
+    ),
   );
 }

@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../tokens.dart';
 import '../app_palette.dart';
+import '../tokens.dart';
 
 enum AppButtonVariant { primary, secondary, inverted, outlined }
 
@@ -32,7 +32,7 @@ class AppButton extends StatelessWidget {
       case AppButtonVariant.primary:
         return palette.primary;
       case AppButtonVariant.secondary:
-        return palette.surface;
+        return palette.secondaryContainer;
       case AppButtonVariant.inverted:
         return palette.inverted;
       case AppButtonVariant.outlined:
@@ -44,9 +44,10 @@ class AppButton extends StatelessWidget {
     switch (variant) {
       case AppButtonVariant.primary:
         return palette.onPrimary;
+      case AppButtonVariant.secondary:
+        return palette.onSecondaryContainer;
       case AppButtonVariant.inverted:
         return palette.onInverted;
-      case AppButtonVariant.secondary:
       case AppButtonVariant.outlined:
         return palette.ink;
     }
@@ -54,7 +55,7 @@ class AppButton extends StatelessWidget {
 
   BorderSide _border(AppPalette palette) {
     if (variant == AppButtonVariant.outlined) {
-      return BorderSide(color: palette.line);
+      return BorderSide(color: palette.line, width: AppSizes.border);
     }
     return BorderSide.none;
   }
@@ -74,7 +75,10 @@ class AppButton extends StatelessWidget {
             color: foreground,
             fontWeight: FontWeight.w700,
           )
-        : AppTextStyles.label.copyWith(color: foreground);
+        : AppTextStyles.label.copyWith(
+            color: foreground,
+            fontWeight: FontWeight.w700,
+          );
 
     final Widget content = loading
         ? SizedBox(
@@ -125,11 +129,14 @@ class AppButton extends StatelessWidget {
           clipBehavior: Clip.antiAlias,
           child: InkWell(
             onTap: _enabled ? onPressed : null,
-            child: SizedBox(
-              height: height,
-              child: Padding(
-                padding: EdgeInsets.symmetric(horizontal: horizontal),
-                child: Center(widthFactor: 1, child: content),
+            child: ConstrainedBox(
+              constraints: BoxConstraints(minHeight: height),
+              child: SizedBox(
+                height: height,
+                child: Padding(
+                  padding: EdgeInsets.symmetric(horizontal: horizontal),
+                  child: Center(widthFactor: 1, child: content),
+                ),
               ),
             ),
           ),

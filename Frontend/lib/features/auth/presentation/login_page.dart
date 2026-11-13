@@ -23,6 +23,7 @@ import '../domain/auth_error_messages.dart';
 import '../domain/auth_purpose.dart';
 import '../domain/otp_args.dart';
 import 'login_controller.dart';
+import '../../../design_system/app_icons.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -215,7 +216,7 @@ class _LoginPageState extends ConsumerState<LoginPage> {
                               }
                             },
                             suffixIcon: Icon(
-                              Icons.phone_outlined,
+                              AppIcons.phone,
                               color: context.palette.muted,
                               size: AppSizes.icon,
                             ),

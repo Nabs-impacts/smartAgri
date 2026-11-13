@@ -1,7 +1,8 @@
 import 'package:flutter/material.dart';
 
-import '../tokens.dart';
+import '../app_icons.dart';
 import '../app_palette.dart';
+import '../tokens.dart';
 
 class AppCheckboxTile extends StatelessWidget {
   const AppCheckboxTile({
@@ -21,6 +22,7 @@ class AppCheckboxTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppPalette palette = context.palette;
     return Semantics(
       checked: value,
       enabled: _enabled,
@@ -37,32 +39,30 @@ class AppCheckboxTile extends StatelessWidget {
               children: <Widget>[
                 AnimatedContainer(
                   duration: AppDurations.fast,
-                  width: 22,
-                  height: 22,
+                  width: AppSizes.checkbox,
+                  height: AppSizes.checkbox,
                   decoration: BoxDecoration(
-                    color: value ? context.palette.primary : Colors.transparent,
+                    color: value ? palette.primary : Colors.transparent,
                     borderRadius: AppRadii.smallBorder,
                     border: Border.all(
-                      color: value
-                          ? context.palette.primary
-                          : context.palette.line,
+                      color: value ? palette.primary : palette.line,
                       width: AppSizes.border,
                     ),
                   ),
                   child: value
                       ? Icon(
-                          Icons.check,
+                          AppIcons.check,
                           size: AppSizes.smallIcon,
-                          color: context.palette.onPrimary,
+                          color: palette.onPrimary,
                         )
                       : null,
                 ),
-                const SizedBox(width: AppSpacing.sm),
+                const SizedBox(width: AppSpacing.md),
                 Flexible(
                   child: Text(
                     label,
                     style: AppTextStyles.body.copyWith(
-                      color: context.palette.ink,
+                      color: palette.ink,
                       fontWeight: FontWeight.w500,
                     ),
                     maxLines: maxLines,

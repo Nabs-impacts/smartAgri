@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../tokens.dart';
 import '../app_palette.dart';
+import '../tokens.dart';
 
 enum AppStatusChipVariant { success, warning, danger, neutral }
 
@@ -48,7 +48,7 @@ class AppStatusChip extends StatelessWidget {
       key: Key('status_chip_${variant.name}'),
       padding: const EdgeInsets.symmetric(
         horizontal: AppSpacing.md,
-        vertical: AppSpacing.xs,
+        vertical: AppSpacing.sm,
       ),
       decoration: BoxDecoration(
         color: _background(palette),

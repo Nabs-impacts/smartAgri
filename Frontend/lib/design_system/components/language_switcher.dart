@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 
 import '../../core/i18n/app_language.dart';
-import '../tokens.dart';
 import '../app_palette.dart';
+import '../tokens.dart';
 
 class LanguageSwitcher extends StatelessWidget {
   const LanguageSwitcher({
@@ -16,6 +16,7 @@ class LanguageSwitcher extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
+    final AppPalette palette = context.palette;
     return Row(
       mainAxisSize: MainAxisSize.min,
       children: AppLanguage.values.map((AppLanguage language) {
@@ -30,39 +31,29 @@ class LanguageSwitcher extends StatelessWidget {
               key: ValueKey<String>('language_${language.apiCode}'),
               borderRadius: AppRadii.pillBorder,
               onTap: () => onChanged(language),
-              child: selected
-                  ? Container(
-                      width: AppSizes.languageCircle,
-                      height: AppSizes.languageCircle,
-                      alignment: Alignment.center,
-                      decoration: BoxDecoration(
-                        color: context.palette.primary,
-                        shape: BoxShape.circle,
-                      ),
-                      child: Text(
-                        language.label,
-                        style: AppTextStyles.label.copyWith(
-                          color: context.palette.onPrimary,
-                          fontWeight: FontWeight.w800,
-                        ),
-                      ),
-                    )
-                  : Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: AppSpacing.md,
-                        vertical: AppSpacing.sm,
-                      ),
-                      decoration: BoxDecoration(
-                        color: context.palette.inputFill,
-                        borderRadius: AppRadii.pillBorder,
-                      ),
-                      child: Text(
-                        language.label,
-                        style: AppTextStyles.label.copyWith(
-                          color: context.palette.primary,
-                        ),
-                      ),
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(
+                  minWidth: AppSizes.languagePill,
+                  minHeight: AppSizes.languagePill,
+                ),
+                child: Container(
+                  alignment: Alignment.center,
+                  padding: const EdgeInsets.symmetric(
+                    horizontal: AppSpacing.md,
+                  ),
+                  decoration: BoxDecoration(
+                    color: selected ? palette.primary : palette.inputFill,
+                    borderRadius: AppRadii.pillBorder,
+                  ),
+                  child: Text(
+                    language.label,
+                    style: AppTextStyles.label.copyWith(
+                      color: selected ? palette.onPrimary : palette.primary,
+                      fontWeight: FontWeight.w800,
                     ),
+                  ),
+                ),
+              ),
             ),
           ),
         );

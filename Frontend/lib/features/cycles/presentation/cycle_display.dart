@@ -8,6 +8,7 @@ import '../domain/cycle_status.dart';
 import '../domain/harvest.dart';
 import '../domain/timeline_entry.dart';
 import 'cycle_format.dart';
+import '../../../design_system/app_icons.dart';
 
 String cycleStatusLabel(AppLocalizations strings, CycleStatus status) {
   return switch (status) {
@@ -41,13 +42,13 @@ String activityTypeLabel(AppLocalizations strings, ActivityType type) {
 
 IconData activityTypeIcon(ActivityType type) {
   return switch (type) {
-    ActivityType.sowing => Icons.grass,
-    ActivityType.fertilizing => Icons.spa_outlined,
-    ActivityType.irrigation => Icons.water_drop_outlined,
-    ActivityType.weeding => Icons.content_cut,
-    ActivityType.pesticide => Icons.bug_report_outlined,
-    ActivityType.harvest => Icons.agriculture_outlined,
-    ActivityType.other => Icons.event_note_outlined,
+    ActivityType.sowing => AppIcons.plant,
+    ActivityType.fertilizing => AppIcons.leaf,
+    ActivityType.irrigation => AppIcons.water,
+    ActivityType.weeding => AppIcons.cut,
+    ActivityType.pesticide => AppIcons.bug,
+    ActivityType.harvest => AppIcons.harvest,
+    ActivityType.other => AppIcons.note,
   };
 }
 
@@ -55,7 +56,7 @@ IconData timelineEntryIcon(TimelineEntry entry) {
   if (entry is ActivityTimelineEntry) {
     return activityTypeIcon(entry.activity.type);
   }
-  return Icons.agriculture_outlined;
+  return AppIcons.harvest;
 }
 
 String timelineEntryTypeLabel(AppLocalizations strings, TimelineEntry entry) {

@@ -9,6 +9,8 @@ import 'package:smartagri/features/admin/presentation/admin_overview_page.dart';
 import '../app_test_utils.dart';
 import 'fake_stats_repository.dart';
 
+import 'package:smartagri/design_system/app_icons.dart';
+
 Future<FakeStatsRepository> pumpOverview(
   WidgetTester tester, {
   Overview? overview,
@@ -133,7 +135,7 @@ void main() {
     final Finder row = find.byKey(const Key('admin_adoption_3'));
     expect(row, findsOneWidget);
     expect(
-      find.descendant(of: row, matching: find.byIcon(Icons.lock_outline)),
+      find.descendant(of: row, matching: find.byIcon(AppIcons.lock)),
       findsOneWidget,
     );
     expect(

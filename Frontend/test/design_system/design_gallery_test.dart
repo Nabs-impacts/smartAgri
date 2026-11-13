@@ -24,11 +24,11 @@ void main() {
     expect(find.byType(AppButton), findsWidgets);
     expect(find.byType(AppProgressBar), findsWidgets);
     expect(find.byType(LanguageSwitcher), findsOneWidget);
-    expect(find.byType(AppCheckboxTile), findsOneWidget);
+    expect(find.byType(AppCheckboxTile), findsWidgets);
     expect(find.byType(AppTextButton), findsWidgets);
     expect(find.byType(AppErrorBanner), findsOneWidget);
     expect(find.byType(AppSelectField<String>), findsWidgets);
-    expect(find.byType(AppChoiceChips<String>), findsOneWidget);
+    expect(find.byType(AppChoiceChips<String>), findsWidgets);
     expect(find.byType(AppOtpField), findsWidgets);
   });
 }

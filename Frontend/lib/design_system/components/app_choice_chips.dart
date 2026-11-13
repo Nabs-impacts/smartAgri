@@ -1,7 +1,7 @@
 import 'package:flutter/material.dart';
 
-import '../tokens.dart';
 import '../app_palette.dart';
+import '../tokens.dart';
 
 class AppChoiceOption<T> {
   const AppChoiceOption({required this.value, required this.label});
@@ -60,12 +60,9 @@ class _ChoiceChip<T> extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    final Color background = selected
-        ? context.palette.primary
-        : context.palette.surface;
-    final Color foreground = selected
-        ? context.palette.onPrimary
-        : context.palette.ink;
+    final AppPalette palette = context.palette;
+    final Color background = selected ? palette.primary : palette.inputFill;
+    final Color foreground = selected ? palette.onPrimary : palette.ink;
     return Semantics(
       button: true,
       selected: selected,

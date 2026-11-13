@@ -26,6 +26,7 @@ import '../../farms/domain/farm.dart';
 import '../../farms/domain/plot.dart';
 import '../../profile/data/me_repository.dart';
 import 'diagnostic_flow_controller.dart';
+import '../../../design_system/app_icons.dart';
 
 typedef DiagnosticPhotoPicker = Future<Uint8List?> Function({
   required bool camera,
@@ -111,7 +112,7 @@ class _DiagnosticNewPageState extends ConsumerState<DiagnosticNewPage> {
                 key: const Key('diagnostic_take_photo'),
                 label: strings.diagnosticTakePhoto,
                 variant: AppButtonVariant.outlined,
-                icon: const Icon(Icons.photo_camera_outlined),
+                icon: const Icon(AppIcons.camera),
                 onPressed: state.submitting || !state.canAddPhoto
                     ? null
                     : () => _pick(camera: true),
@@ -121,7 +122,7 @@ class _DiagnosticNewPageState extends ConsumerState<DiagnosticNewPage> {
                 key: const Key('diagnostic_choose_gallery'),
                 label: strings.diagnosticChooseGallery,
                 variant: AppButtonVariant.outlined,
-                icon: const Icon(Icons.photo_library_outlined),
+                icon: const Icon(AppIcons.photoLibrary),
                 onPressed: state.submitting || !state.canAddPhoto
                     ? null
                     : () => _pick(camera: false),
@@ -251,7 +252,7 @@ class _DiagnosticNewPageState extends ConsumerState<DiagnosticNewPage> {
                   left: AppSpacing.xs,
                   bottom: AppSpacing.xs,
                   child: Icon(
-                    Icons.check_circle,
+                    AppIcons.checkCircle,
                     key: Key('diagnostic_photo_uploaded'),
                     color: context.palette.tertiary,
                     size: AppSizes.icon,
@@ -381,7 +382,7 @@ class _Tip extends StatelessWidget {
       crossAxisAlignment: CrossAxisAlignment.start,
       children: <Widget>[
         Icon(
-          Icons.check_circle_outline,
+          AppIcons.checkCircle,
           color: context.palette.tertiary,
           size: AppSizes.icon,
         ),

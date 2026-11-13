@@ -6,6 +6,8 @@ import 'package:smartagri/design_system/tokens.dart';
 
 import 'test_app.dart';
 
+import 'package:smartagri/design_system/app_icons.dart';
+
 void main() {
   testWidgets('renders the alert icon and message', (
     WidgetTester tester,
@@ -16,7 +18,7 @@ void main() {
     );
 
     expect(find.text('Une erreur est survenue.'), findsOneWidget);
-    expect(find.byIcon(Icons.warning_amber_rounded), findsOneWidget);
+    expect(find.byIcon(AppIcons.warning), findsOneWidget);
   });
 
   testWidgets('uses a very light red rounded background', (
@@ -31,11 +33,8 @@ void main() {
       ),
     );
     final BoxDecoration decoration = container.decoration! as BoxDecoration;
-    expect(decoration.color, const Color(0xFFFFEBEE));
-    expect(
-      decoration.borderRadius,
-      const BorderRadius.all(Radius.circular(12)),
-    );
+    expect(decoration.color, AppColors.dangerContainer);
+    expect(decoration.borderRadius, AppRadii.smallBorder);
     final Text text = tester.widget<Text>(find.text('Erreur'));
     expect(text.style?.color, AppColors.danger);
   });

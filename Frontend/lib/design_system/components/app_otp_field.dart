@@ -1,8 +1,8 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
-import '../tokens.dart';
 import '../app_palette.dart';
+import '../tokens.dart';
 
 class AppOtpField extends StatefulWidget {
   const AppOtpField({
@@ -153,10 +153,10 @@ class AppOtpFieldState extends State<AppOtpField> {
     return Expanded(
       child: AnimatedContainer(
         duration: AppDurations.fast,
-        height: 56,
+        height: AppSizes.otpBox,
         decoration: BoxDecoration(
           color: context.palette.inputFill,
-          borderRadius: BorderRadius.circular(14),
+          borderRadius: AppRadii.smallBorder,
           border: Border.all(color: borderColor, width: borderWidth),
         ),
         alignment: Alignment.center,

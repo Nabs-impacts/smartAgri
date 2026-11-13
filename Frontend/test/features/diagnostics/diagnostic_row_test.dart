@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:smartagri/design_system/app_icons.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:smartagri/features/diagnostics/domain/diagnostic_status.dart';
@@ -75,7 +76,7 @@ void main() {
   ) async {
     await pumpRow(tester, sampleSummary());
 
-    expect(find.byIcon(Icons.eco_outlined), findsOneWidget);
+    expect(find.byIcon(AppIcons.plant), findsOneWidget);
     expect(find.byType(Image), findsNothing);
   });
 
