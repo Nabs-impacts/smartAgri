@@ -10,7 +10,7 @@ class AppLocalizationsDje extends AppLocalizations {
   AppLocalizationsDje([String locale = 'dje']) : super(locale);
 
   @override
-  String get appName => 'SmartAgri';
+  String get appName => 'GonaTa';
 
   @override
   String get loginTitle => 'Connexion';
@@ -59,7 +59,7 @@ class AppLocalizationsDje extends AppLocalizations {
   String get newPasswordLabel => 'Nouveau mot de passe';
 
   @override
-  String get confirmPasswordLabel => 'Confirmer le mot de passe';
+  String get confirmPasswordLabel => 'Confirmation du mot de passe';
 
   @override
   String get changePassword => 'Changer le mot de passe';
@@ -674,8 +674,24 @@ class AppLocalizationsDje extends AppLocalizations {
       'Le nom complet doit contenir entre 2 et 120 caractères.';
 
   @override
+  String get lastNameLabel => 'Nom';
+
+  @override
+  String get firstNameLabel => 'Prénom';
+
+  @override
+  String get lastNameLength => 'Le nom doit contenir entre 1 et 60 caractères.';
+
+  @override
+  String get firstNameLength =>
+      'Le prénom doit contenir entre 1 et 60 caractères.';
+
+  @override
   String get passwordLength =>
       'Le mot de passe doit contenir entre 8 et 128 caractères.';
+
+  @override
+  String get passwordRules => 'Au moins 8 caractères et au plus 128.';
 
   @override
   String get registerTermsConsent => 'J\'accepte les conditions d\'utilisation';
@@ -699,7 +715,7 @@ class AppLocalizationsDje extends AppLocalizations {
   String get registerSubmit => 'Créer mon compte';
 
   @override
-  String get registerAlreadyAccount => 'J\'ai déjà un compte';
+  String get registerAlreadyAccount => 'Déjà un compte ?';
 
   @override
   String get legalTermsTitle => 'Conditions d\'utilisation';
@@ -713,7 +729,7 @@ class AppLocalizationsDje extends AppLocalizations {
 
   @override
   String get legalTermsParagraph1 =>
-      'Ces conditions décrivent les règles d\'utilisation de SmartAgri. Le document définitif précisera les droits et les obligations de chaque utilisateur.';
+      'Ces conditions décrivent les règles d\'utilisation de GonaTa. Le document définitif précisera les droits et les obligations de chaque utilisateur.';
 
   @override
   String get legalTermsParagraph2 =>
@@ -740,6 +756,12 @@ class AppLocalizationsDje extends AppLocalizations {
 
   @override
   String get otpValidate => 'Valider';
+
+  @override
+  String get otpChangePhone => 'Corriger le numéro';
+
+  @override
+  String get noAccountYet => 'Pas encore de compte ?';
 
   @override
   String get back => 'Retour';
@@ -1346,7 +1368,7 @@ class AppLocalizationsDje extends AppLocalizations {
 
   @override
   String get locationExplanation =>
-      'SmartAgri utilise votre position uniquement pour enregistrer les limites de votre parcelle.';
+      'GonaTa utilise votre position uniquement pour enregistrer les limites de votre parcelle.';
 
   @override
   String get locationContinue => 'Continuer';

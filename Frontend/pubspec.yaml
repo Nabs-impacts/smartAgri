@@ -1,5 +1,5 @@
 name: smartagri
-description: Application mobile SmartAgri.
+description: Application mobile GonaTa.
 publish_to: 'none'
 version: 1.0.0+1
 
@@ -73,12 +73,19 @@ flutter_launcher_icons:
   android: true
   ios: false
   image_path: assets/icons/app_icon.png
-  adaptive_icon_background: "#1B5E20"
+  adaptive_icon_background: "#FFFFFF"
   adaptive_icon_foreground: assets/icons/app_icon_foreground.png
 
 flutter_native_splash:
-  color: "#1B5E20"
+  color: "#FFFFFF"
   image: assets/icons/splash_logo.png
+  color_dark: "#121411"
+  image_dark: assets/icons/splash_logo_dark.png
   android: true
   ios: false
   web: false
+  android_12:
+    color: "#FFFFFF"
+    image: assets/icons/splash_logo.png
+    color_dark: "#121411"
+    image_dark: assets/icons/splash_logo_dark.png

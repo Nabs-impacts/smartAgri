@@ -1,29 +1,24 @@
-import 'dart:math';
-
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
 
-import '../../../core/i18n/app_language.dart';
 import '../../../core/i18n/app_localizations.dart';
-import '../../../core/i18n/language_controller.dart';
 import '../../../core/i18n/strings_provider.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/phone/niger_phone.dart';
+import '../../../design_system/app_icons.dart';
+import '../../../design_system/app_palette.dart';
 import '../../../design_system/components/app_button.dart';
 import '../../../design_system/components/app_checkbox_tile.dart';
 import '../../../design_system/components/app_error_banner.dart';
-import '../../../design_system/components/app_logo.dart';
 import '../../../design_system/components/app_text_button.dart';
 import '../../../design_system/components/app_text_field.dart';
-import '../../../design_system/components/language_switcher.dart';
 import '../../../design_system/tokens.dart';
-import '../../../design_system/app_palette.dart';
 import '../domain/auth_error_messages.dart';
 import '../domain/auth_purpose.dart';
 import '../domain/otp_args.dart';
+import 'auth_scaffold.dart';
 import 'login_controller.dart';
-import '../../../design_system/app_icons.dart';
 
 class LoginPage extends ConsumerStatefulWidget {
   const LoginPage({super.key});
@@ -106,203 +101,163 @@ class _LoginPageState extends ConsumerState<LoginPage> {
   @override
   Widget build(BuildContext context) {
     final AppLocalizations strings = ref.watch(stringsProvider);
-    final AppLanguage language = ref.watch(languageControllerProvider);
     final LoginState state = ref.watch(loginControllerProvider);
-    final double width = max(200, MediaQuery.sizeOf(context).width * 0.6);
 
-    return Scaffold(
-      backgroundColor: context.palette.background,
-      body: SafeArea(
-        child: LayoutBuilder(
-          builder: (BuildContext context, BoxConstraints constraints) {
-            final double topHeight = (constraints.maxHeight * 0.38)
-                .clamp(160.0, 320.0)
-                .toDouble();
-            return SingleChildScrollView(
-              padding: const EdgeInsets.fromLTRB(
-                AppSpacing.xl,
-                AppSpacing.lg,
-                AppSpacing.xl,
-                AppSpacing.xl,
-              ),
-              child: ConstrainedBox(
-                constraints: BoxConstraints(
-                  minHeight: max(0, constraints.maxHeight - AppSpacing.xxl),
+    return AuthScaffold(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Text(
+            strings.loginTitle,
+            style: AppTextStyles.headline,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          if (state.error != null) ...<Widget>[
+            AppErrorBanner(
+              key: const Key('login_error'),
+              message: loginErrorMessage(state.error!, strings),
+            ),
+            if (_showsVerifyHint(state.error!)) ...<Widget>[
+              const SizedBox(height: AppSpacing.sm),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: Text(
+                  strings.loginPhoneNotVerifiedHint,
+                  key: const Key('login_verify_hint'),
+                  style: AppTextStyles.body.copyWith(
+                    color: context.palette.muted,
+                  ),
                 ),
-                child: Column(
+              ),
+              Align(
+                alignment: Alignment.centerLeft,
+                child: AppTextButton(
+                  key: const Key('login_verify_phone'),
+                  label: strings.loginVerifyPhone,
+                  onPressed: state.loading
+                      ? null
+                      : () => _openOtp(AuthPurpose.verifyPhone),
+                ),
+              ),
+            ],
+            const SizedBox(height: AppSpacing.lg),
+          ],
+          Form(
+            key: _formKey,
+            child: Column(
+              children: <Widget>[
+                AppTextField(
+                  key: const Key('login_phone_field'),
+                  controller: _phone,
+                  hintText: strings.phoneLabel,
+                  prefixText: '+227 ',
+                  keyboardType: TextInputType.number,
+                  textInputAction: TextInputAction.next,
+                  inputFormatters: const <NigerPhoneInputFormatter>[
+                    NigerPhoneInputFormatter(),
+                  ],
+                  errorText: _phoneError,
+                  onChanged: (_) {
+                    if (_phoneError != null) {
+                      setState(() => _phoneError = null);
+                    }
+                  },
+                  suffixIcon: Icon(
+                    AppIcons.phone,
+                    color: context.palette.muted,
+                    size: AppSizes.icon,
+                  ),
+                  validator: (String? value) => NigerPhone.isValid(value ?? '')
+                      ? null
+                      : strings.phoneInvalid,
+                ),
+                const SizedBox(height: AppSpacing.md),
+                AppTextField(
+                  key: const Key('login_password_field'),
+                  controller: _password,
+                  hintText: strings.passwordLabel,
+                  obscure: true,
+                  textInputAction: TextInputAction.done,
+                  onSubmitted: (_) => _submit(),
+                  validator: (String? value) => value == null || value.isEmpty
+                      ? strings.passwordRequired
+                      : null,
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          LayoutBuilder(
+            builder: (BuildContext context, BoxConstraints constraints) {
+              final AppCheckboxTile remember = AppCheckboxTile(
+                key: const Key('login_remember'),
+                label: strings.rememberMe,
+                value: _rememberMe,
+                onChanged: (bool value) => setState(() => _rememberMe = value),
+              );
+              final AppTextButton forgot = AppTextButton(
+                key: const Key('login_forgot'),
+                label: strings.forgotPassword,
+                variant: AppTextButtonVariant.muted,
+                onPressed: state.loading
+                    ? null
+                    : () => context.go('/forgot-password'),
+              );
+              if (constraints.maxWidth < 360) {
+                return Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: <Widget>[
-                    SizedBox(
-                      height: topHeight,
-                      child: Stack(
-                        children: <Widget>[
-                          Align(
-                            alignment: Alignment.topRight,
-                            child: LanguageSwitcher(
-                              value: language,
-                              onChanged: (AppLanguage value) => ref
-                                  .read(languageControllerProvider.notifier)
-                                  .set(value),
-                            ),
-                          ),
-                          Center(
-                            child: Column(
-                              mainAxisSize: MainAxisSize.min,
-                              children: <Widget>[
-                                const AppLogo(
-                                  variant: AppLogoVariant.green,
-                                  size: 88,
-                                ),
-                                const SizedBox(height: AppSpacing.md),
-                                Text(
-                                  strings.appName,
-                                  style: AppTextStyles.headline,
-                                  textAlign: TextAlign.center,
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    if (state.error != null) ...<Widget>[
-                      AppErrorBanner(
-                        key: const Key('login_error'),
-                        message: loginErrorMessage(state.error!, strings),
-                      ),
-                      if (_showsVerifyHint(state.error!)) ...<Widget>[
-                        const SizedBox(height: AppSpacing.sm),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: Text(
-                            strings.loginPhoneNotVerifiedHint,
-                            key: const Key('login_verify_hint'),
-                            style: AppTextStyles.body.copyWith(
-                              color: context.palette.muted,
-                            ),
-                          ),
-                        ),
-                        Align(
-                          alignment: Alignment.centerLeft,
-                          child: AppTextButton(
-                            key: const Key('login_verify_phone'),
-                            label: strings.loginVerifyPhone,
-                            onPressed: state.loading
-                                ? null
-                                : () => _openOtp(AuthPurpose.verifyPhone),
-                          ),
-                        ),
-                      ],
-                      const SizedBox(height: AppSpacing.lg),
-                    ],
-                    Form(
-                      key: _formKey,
-                      child: Column(
-                        children: <Widget>[
-                          AppTextField(
-                            key: const Key('login_phone_field'),
-                            controller: _phone,
-                            hintText: strings.phoneLabel,
-                            prefixText: '+227 ',
-                            keyboardType: TextInputType.phone,
-                            textInputAction: TextInputAction.next,
-                            inputFormatters: const <NigerPhoneInputFormatter>[
-                              NigerPhoneInputFormatter(),
-                            ],
-                            errorText: _phoneError,
-                            onChanged: (_) {
-                              if (_phoneError != null) {
-                                setState(() => _phoneError = null);
-                              }
-                            },
-                            suffixIcon: Icon(
-                              AppIcons.phone,
-                              color: context.palette.muted,
-                              size: AppSizes.icon,
-                            ),
-                            validator: (String? value) =>
-                                NigerPhone.isValid(value ?? '')
-                                ? null
-                                : strings.phoneInvalid,
-                          ),
-                          const SizedBox(height: AppSpacing.md),
-                          AppTextField(
-                            key: const Key('login_password_field'),
-                            controller: _password,
-                            hintText: strings.passwordLabel,
-                            obscure: true,
-                            textInputAction: TextInputAction.done,
-                            onSubmitted: (_) => _submit(),
-                            validator: (String? value) =>
-                                value == null || value.isEmpty
-                                ? strings.passwordRequired
-                                : null,
-                          ),
-                        ],
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    Row(
-                      children: <Widget>[
-                        Expanded(
-                          child: AppCheckboxTile(
-                            key: const Key('login_remember'),
-                            label: strings.rememberMe,
-                            value: _rememberMe,
-                            onChanged: (bool value) =>
-                                setState(() => _rememberMe = value),
-                          ),
-                        ),
-                        AppTextButton(
-                          key: const Key('login_forgot'),
-                          label: strings.forgotPassword,
-                          variant: AppTextButtonVariant.muted,
-                          onPressed: state.loading
-                              ? null
-                              : () => context.go('/forgot-password'),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: AppSpacing.xl),
-                    Center(
-                      child: SizedBox(
-                        width: width,
-                        child: AppButton(
-                          key: const Key('login_submit'),
-                          label: strings.signIn,
-                          loading: state.loading,
-                          onPressed: state.loading ? null : _submit,
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    Center(
-                      child: AppTextButton(
-                        key: const Key('login_sms_code'),
-                        label: strings.loginReceiveSmsCode,
-                        variant: AppTextButtonVariant.muted,
-                        onPressed: state.loading
-                            ? null
-                            : () => _openOtp(AuthPurpose.login),
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.sm),
-                    Center(
-                      child: AppTextButton(
-                        key: const Key('login_register'),
-                        label: strings.createAccount,
-                        onPressed: state.loading
-                            ? null
-                            : () => context.go('/register'),
-                      ),
-                    ),
-                    const SizedBox(height: AppSpacing.xl),
+                    remember,
+                    Align(alignment: Alignment.centerRight, child: forgot),
                   ],
+                );
+              }
+              return Row(
+                children: <Widget>[
+                  Expanded(child: remember),
+                  forgot,
+                ],
+              );
+            },
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          AppButton(
+            key: const Key('login_submit'),
+            label: strings.signIn,
+            loading: state.loading,
+            onPressed: state.loading ? null : _submit,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Center(
+            child: AppTextButton(
+              key: const Key('login_sms_code'),
+              label: strings.loginReceiveSmsCode,
+              variant: AppTextButtonVariant.muted,
+              onPressed: state.loading
+                  ? null
+                  : () => _openOtp(AuthPurpose.login),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Wrap(
+            alignment: WrapAlignment.center,
+            crossAxisAlignment: WrapCrossAlignment.center,
+            children: <Widget>[
+              Text(
+                strings.noAccountYet,
+                style: AppTextStyles.body.copyWith(
+                  color: context.palette.muted,
                 ),
               ),
-            );
-          },
-        ),
+              AppTextButton(
+                key: const Key('login_register'),
+                label: strings.createAccount,
+                onPressed: state.loading ? null : () => context.go('/register'),
+              ),
+            ],
+          ),
+        ],
       ),
     );
   }

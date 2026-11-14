@@ -10,7 +10,7 @@ import '../../../core/network/api_exception.dart';
 import '../../../design_system/components/app_button.dart';
 import '../../../design_system/components/app_card.dart';
 import '../../../design_system/components/app_error_banner.dart';
-import '../../../design_system/components/app_logo.dart';
+import '../../../design_system/components/gonata_logo.dart';
 import '../../../design_system/components/app_photo_tile.dart';
 import '../../../design_system/components/app_progress_bar.dart';
 import '../../../design_system/components/app_status_chip.dart';
@@ -307,7 +307,10 @@ class _PulsingLogoState extends State<_PulsingLogo>
 
   @override
   Widget build(BuildContext context) {
-    return ScaleTransition(scale: _scale, child: const AppLogo(size: 72));
+    return ScaleTransition(
+      scale: _scale,
+      child: const GonataLogo.symbol(size: 72),
+    );
   }
 }
 

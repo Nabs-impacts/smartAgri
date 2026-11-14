@@ -219,6 +219,9 @@ Future<AuthHarness> pumpAuthApp(
   FakeAuthRepository? repository,
   RecordingSessionController? session,
   bool settle = true,
+  ThemeData? theme,
+  double textScale = 1,
+  double keyboardBottomInset = 0,
 }) async {
   SharedPreferences.setMockInitialValues(<String, Object>{});
   final SharedPreferences preferences = await SharedPreferences.getInstance();
@@ -276,7 +279,19 @@ Future<AuthHarness> pumpAuthApp(
   await tester.pumpWidget(
     UncontrolledProviderScope(
       container: container,
-      child: MaterialApp.router(theme: AppTheme.light, routerConfig: router),
+      child: MaterialApp.router(
+        theme: theme ?? AppTheme.light,
+        routerConfig: router,
+        builder: (BuildContext context, Widget? child) {
+          return MediaQuery(
+            data: MediaQuery.of(context).copyWith(
+              textScaler: TextScaler.linear(textScale),
+              viewInsets: EdgeInsets.only(bottom: keyboardBottomInset),
+            ),
+            child: child ?? const SizedBox.shrink(),
+          );
+        },
+      ),
     ),
   );
   if (settle) {

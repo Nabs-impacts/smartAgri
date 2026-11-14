@@ -75,16 +75,20 @@ void main() {
     );
     await openResetStep(tester, harness);
 
+    await tester.ensureVisible(find.byKey(const Key('forgot_change_password')));
+    await tester.pump();
     await tester.tap(find.byKey(const Key('forgot_change_password')));
     await tester.pumpAndSettle();
 
     expect(find.text('Veuillez saisir le code reçu.'), findsOneWidget);
     expect(
-      find.text('Le mot de passe doit contenir au moins 8 caractères.'),
+      find.text('Le mot de passe doit contenir entre 8 et 128 caractères.'),
       findsOneWidget,
     );
 
     await fillReset(tester, code: '123', password: 'court');
+    await tester.ensureVisible(find.byKey(const Key('forgot_change_password')));
+    await tester.pump();
     await tester.tap(find.byKey(const Key('forgot_change_password')));
     await tester.pumpAndSettle();
 
@@ -95,6 +99,8 @@ void main() {
       password: 'nouveau123',
       confirmation: 'different123',
     );
+    await tester.ensureVisible(find.byKey(const Key('forgot_change_password')));
+    await tester.pump();
     await tester.tap(find.byKey(const Key('forgot_change_password')));
     await tester.pumpAndSettle();
 
@@ -156,6 +162,8 @@ void main() {
     await openResetStep(tester, harness);
     await fillReset(tester);
 
+    await tester.ensureVisible(find.byKey(const Key('forgot_change_password')));
+    await tester.pump();
     await tester.tap(find.byKey(const Key('forgot_change_password')));
     await tester.pump();
     await tester.pump();
@@ -217,6 +225,8 @@ void main() {
     await openResetStep(tester, harness);
     await fillReset(tester);
 
+    await tester.ensureVisible(find.byKey(const Key('forgot_change_password')));
+    await tester.pump();
     await tester.tap(find.byKey(const Key('forgot_change_password')));
     await tester.pumpAndSettle();
 

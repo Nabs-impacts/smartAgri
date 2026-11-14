@@ -103,7 +103,7 @@ abstract class AppLocalizations {
   /// No description provided for @appName.
   ///
   /// In fr, this message translates to:
-  /// **'SmartAgri'**
+  /// **'GonaTa'**
   String get appName;
 
   /// No description provided for @loginTitle.
@@ -199,7 +199,7 @@ abstract class AppLocalizations {
   /// No description provided for @confirmPasswordLabel.
   ///
   /// In fr, this message translates to:
-  /// **'Confirmer le mot de passe'**
+  /// **'Confirmation du mot de passe'**
   String get confirmPasswordLabel;
 
   /// No description provided for @changePassword.
@@ -1318,11 +1318,41 @@ abstract class AppLocalizations {
   /// **'Le nom complet doit contenir entre 2 et 120 caractères.'**
   String get fullNameLength;
 
+  /// No description provided for @lastNameLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nom'**
+  String get lastNameLabel;
+
+  /// No description provided for @firstNameLabel.
+  ///
+  /// In fr, this message translates to:
+  /// **'Prénom'**
+  String get firstNameLabel;
+
+  /// No description provided for @lastNameLength.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le nom doit contenir entre 1 et 60 caractères.'**
+  String get lastNameLength;
+
+  /// No description provided for @firstNameLength.
+  ///
+  /// In fr, this message translates to:
+  /// **'Le prénom doit contenir entre 1 et 60 caractères.'**
+  String get firstNameLength;
+
   /// No description provided for @passwordLength.
   ///
   /// In fr, this message translates to:
   /// **'Le mot de passe doit contenir entre 8 et 128 caractères.'**
   String get passwordLength;
+
+  /// No description provided for @passwordRules.
+  ///
+  /// In fr, this message translates to:
+  /// **'Au moins 8 caractères et au plus 128.'**
+  String get passwordRules;
 
   /// No description provided for @registerTermsConsent.
   ///
@@ -1363,7 +1393,7 @@ abstract class AppLocalizations {
   /// No description provided for @registerAlreadyAccount.
   ///
   /// In fr, this message translates to:
-  /// **'J\'ai déjà un compte'**
+  /// **'Déjà un compte ?'**
   String get registerAlreadyAccount;
 
   /// No description provided for @legalTermsTitle.
@@ -1387,7 +1417,7 @@ abstract class AppLocalizations {
   /// No description provided for @legalTermsParagraph1.
   ///
   /// In fr, this message translates to:
-  /// **'Ces conditions décrivent les règles d\'utilisation de SmartAgri. Le document définitif précisera les droits et les obligations de chaque utilisateur.'**
+  /// **'Ces conditions décrivent les règles d\'utilisation de GonaTa. Le document définitif précisera les droits et les obligations de chaque utilisateur.'**
   String get legalTermsParagraph1;
 
   /// No description provided for @legalTermsParagraph2.
@@ -1431,6 +1461,18 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Valider'**
   String get otpValidate;
+
+  /// No description provided for @otpChangePhone.
+  ///
+  /// In fr, this message translates to:
+  /// **'Corriger le numéro'**
+  String get otpChangePhone;
+
+  /// No description provided for @noAccountYet.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pas encore de compte ?'**
+  String get noAccountYet;
 
   /// No description provided for @back.
   ///
@@ -2467,7 +2509,7 @@ abstract class AppLocalizations {
   /// No description provided for @locationExplanation.
   ///
   /// In fr, this message translates to:
-  /// **'SmartAgri utilise votre position uniquement pour enregistrer les limites de votre parcelle.'**
+  /// **'GonaTa utilise votre position uniquement pour enregistrer les limites de votre parcelle.'**
   String get locationExplanation;
 
   /// No description provided for @locationContinue.

@@ -25,13 +25,13 @@ Future<void> main() async {
   runApp(
     ProviderScope(
       overrides: [sharedPreferencesProvider.overrideWithValue(preferences)],
-      child: const SmartAgriApp(),
+      child: const GonataApp(),
     ),
   );
 }
 
-class SmartAgriApp extends ConsumerWidget {
-  const SmartAgriApp({super.key});
+class GonataApp extends ConsumerWidget {
+  const GonataApp({super.key});
 
   @override
   Widget build(BuildContext context, WidgetRef ref) {

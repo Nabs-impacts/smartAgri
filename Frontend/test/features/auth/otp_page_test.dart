@@ -217,7 +217,9 @@ void main() {
     );
   });
 
-  testWidgets('the back button returns to login', (WidgetTester tester) async {
+  testWidgets('the back button returns to registration', (
+    WidgetTester tester,
+  ) async {
     final AuthHarness harness = await pumpAuthApp(
       tester,
       initialLocation: '/otp',
@@ -228,6 +230,6 @@ void main() {
     await tester.tap(find.byKey(const Key('otp_back')));
     await tester.pumpAndSettle();
 
-    expect(harness.router.state.uri.path, '/login');
+    expect(harness.router.state.uri.path, '/register');
   });
 }

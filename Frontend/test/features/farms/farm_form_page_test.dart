@@ -125,7 +125,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(
       find.text(
-        'SmartAgri utilise votre position uniquement pour enregistrer les limites de votre parcelle.',
+        'GonaTa utilise votre position uniquement pour enregistrer les limites de votre parcelle.',
       ),
       findsOneWidget,
     );

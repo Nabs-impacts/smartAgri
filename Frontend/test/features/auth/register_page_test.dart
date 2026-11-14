@@ -22,12 +22,14 @@ void setTallSurface(WidgetTester tester) {
 
 Future<void> fillRegister(
   WidgetTester tester, {
-  String name = 'Amina Diallo',
+  String lastName = 'Diallo',
+  String firstName = 'Amina',
   String phone = '90203040',
   String password = 'secret123',
   String confirmation = 'secret123',
 }) async {
-  await tester.enterText(fieldByKey('register_name_field'), name);
+  await tester.enterText(fieldByKey('register_last_name_field'), lastName);
+  await tester.enterText(fieldByKey('register_first_name_field'), firstName);
   await tester.enterText(fieldByKey('register_phone_field'), phone);
   await tester.enterText(fieldByKey('register_password_field'), password);
   await tester.enterText(fieldByKey('register_confirm_field'), confirmation);
@@ -102,7 +104,8 @@ void main() {
 
     await fillRegister(
       tester,
-      name: 'A',
+      lastName: 'A' * 61,
+      firstName: 'B' * 61,
       phone: '123',
       password: 'court',
       confirmation: 'autre',
@@ -111,7 +114,11 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(
-      find.text('Le nom complet doit contenir entre 2 et 120 caractères.'),
+      find.text('Le nom doit contenir entre 1 et 60 caractères.'),
+      findsOneWidget,
+    );
+    expect(
+      find.text('Le prénom doit contenir entre 1 et 60 caractères.'),
       findsOneWidget,
     );
     expect(

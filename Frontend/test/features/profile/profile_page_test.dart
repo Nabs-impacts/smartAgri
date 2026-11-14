@@ -247,12 +247,12 @@ void main() {
     completer.complete(
       DataExport(
         bytes: Uint8List.fromList(<int>[123, 125]),
-        fileName: 'smartagri-donnees-2026-11-04.json',
+        fileName: 'gonata-donnees-2026-11-04.json',
       ),
     );
     await tester.pumpAndSettle();
 
-    expect(exporter.fileNames, <String>['smartagri-donnees-2026-11-04.json']);
+    expect(exporter.fileNames, <String>['gonata-donnees-2026-11-04.json']);
     expect(exporter.bytes.single, <int>[123, 125]);
     expect(find.text('Vos données ont été exportées.'), findsOneWidget);
   });

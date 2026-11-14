@@ -23,6 +23,7 @@ class AppTextField extends StatefulWidget {
     this.focusNode,
     this.maxLines = 1,
     this.inputFormatters,
+    this.helperText,
     super.key,
   });
 
@@ -42,6 +43,7 @@ class AppTextField extends StatefulWidget {
   final FocusNode? focusNode;
   final int maxLines;
   final List<TextInputFormatter>? inputFormatters;
+  final String? helperText;
 
   @override
   State<AppTextField> createState() => _AppTextFieldState();
@@ -127,6 +129,10 @@ class _AppTextFieldState extends State<AppTextField> {
             prefixStyle: AppTextStyles.body.copyWith(color: palette.muted),
             errorText: widget.errorText,
             errorStyle: AppTextStyles.caption.copyWith(color: palette.danger),
+            helperText: widget.helperText,
+            helperStyle: AppTextStyles.caption.copyWith(color: palette.muted),
+            helperMaxLines: 2,
+            errorMaxLines: 2,
             contentPadding: const EdgeInsets.symmetric(
               horizontal: AppSpacing.xl,
               vertical: AppSpacing.lg,

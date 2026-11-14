@@ -8,16 +8,17 @@ import 'package:go_router/go_router.dart';
 import '../../../core/i18n/app_localizations.dart';
 import '../../../core/i18n/strings_provider.dart';
 import '../../../core/phone/niger_phone.dart';
+import '../../../design_system/app_icons.dart';
+import '../../../design_system/app_palette.dart';
 import '../../../design_system/components/app_button.dart';
 import '../../../design_system/components/app_error_banner.dart';
 import '../../../design_system/components/app_text_button.dart';
 import '../../../design_system/components/app_text_field.dart';
 import '../../../design_system/components/info_text.dart';
 import '../../../design_system/tokens.dart';
-import '../../../design_system/app_palette.dart';
 import '../domain/auth_error_messages.dart';
+import 'auth_scaffold.dart';
 import 'forgot_password_controller.dart';
-import '../../../design_system/app_icons.dart';
 
 class ForgotPasswordPage extends ConsumerStatefulWidget {
   const ForgotPasswordPage({super.key});
@@ -64,8 +65,9 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
   }
 
   String? _validatePassword(AppLocalizations strings, String? value) {
-    if (value == null || value.length < 8) {
-      return strings.passwordMinLength;
+    final int length = value?.length ?? 0;
+    if (length < 8 || length > 128) {
+      return strings.passwordLength;
     }
     return null;
   }
@@ -156,60 +158,54 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
       }
     });
 
-    return Scaffold(
-      backgroundColor: context.palette.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.xl),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Align(
-                alignment: Alignment.centerLeft,
-                child: AppTextButton(
-                  key: const Key('forgot_back'),
-                  label: strings.backToLogin,
-                  variant: AppTextButtonVariant.muted,
-                  onPressed: state.loading ? null : () => context.go('/login'),
-                ),
+    return AuthScaffold(
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Align(
+            alignment: Alignment.centerLeft,
+            child: AppTextButton(
+              key: const Key('forgot_back'),
+              label: strings.backToLogin,
+              variant: AppTextButtonVariant.muted,
+              onPressed: state.loading ? null : () => context.go('/login'),
+            ),
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          if (state.success)
+            _SuccessView(
+              strings: strings,
+              onReturn: () => context.go(
+                '/login?phone=${Uri.encodeComponent(_phone.text)}',
+              ),
+            )
+          else ...<Widget>[
+            Text(
+              strings.forgotPasswordTitle,
+              style: AppTextStyles.headline,
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.sm),
+            Text(
+              strings.forgotPasswordInstructions,
+              style: AppTextStyles.body.copyWith(color: context.palette.muted),
+              textAlign: TextAlign.center,
+            ),
+            const SizedBox(height: AppSpacing.xl),
+            if (state.error != null &&
+                state.step == ForgotPasswordStep.request) ...<Widget>[
+              AppErrorBanner(
+                key: const Key('forgot_error'),
+                message: authErrorMessage(state.error!, strings),
               ),
               const SizedBox(height: AppSpacing.lg),
-              if (state.success)
-                _SuccessView(
-                  strings: strings,
-                  onReturn: () => context.go(
-                    '/login?phone=${Uri.encodeComponent(_phone.text)}',
-                  ),
-                )
-              else ...<Widget>[
-                Text(
-                  strings.forgotPasswordTitle,
-                  style: AppTextStyles.headline,
-                ),
-                const SizedBox(height: AppSpacing.sm),
-                Text(
-                  strings.forgotPasswordInstructions,
-                  style: AppTextStyles.body.copyWith(
-                    color: context.palette.muted,
-                  ),
-                ),
-                const SizedBox(height: AppSpacing.xl),
-                if (state.error != null &&
-                    state.step == ForgotPasswordStep.request) ...<Widget>[
-                  AppErrorBanner(
-                    key: const Key('forgot_error'),
-                    message: authErrorMessage(state.error!, strings),
-                  ),
-                  const SizedBox(height: AppSpacing.lg),
-                ],
-                if (state.step == ForgotPasswordStep.request)
-                  _buildRequestStep(strings, state)
-                else
-                  _buildResetStep(strings, state),
-              ],
             ],
-          ),
-        ),
+            if (state.step == ForgotPasswordStep.request)
+              _buildRequestStep(strings, state)
+            else
+              _buildResetStep(strings, state),
+          ],
+        ],
       ),
     );
   }
@@ -228,7 +224,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
             controller: _phone,
             hintText: strings.phoneLabel,
             prefixText: '+227 ',
-            keyboardType: TextInputType.phone,
+            keyboardType: TextInputType.number,
             textInputAction: TextInputAction.done,
             inputFormatters: const <NigerPhoneInputFormatter>[
               NigerPhoneInputFormatter(),
@@ -284,6 +280,7 @@ class _ForgotPasswordPageState extends ConsumerState<ForgotPasswordPage> {
             key: const Key('forgot_password_field'),
             controller: _password,
             hintText: strings.newPasswordLabel,
+            helperText: strings.passwordRules,
             obscure: true,
             textInputAction: TextInputAction.next,
             validator: (String? value) => _validatePassword(strings, value),
@@ -334,7 +331,7 @@ class _SuccessView extends StatelessWidget {
   Widget build(BuildContext context) {
     return Column(
       children: <Widget>[
-        const SizedBox(height: AppSpacing.xxl),
+        const SizedBox(height: AppSpacing.xl),
         Icon(AppIcons.checkCircle, color: context.palette.tertiary, size: 64),
         const SizedBox(height: AppSpacing.lg),
         Text(

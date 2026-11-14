@@ -7,15 +7,16 @@ import 'package:go_router/go_router.dart';
 import '../../../core/i18n/app_localizations.dart';
 import '../../../core/i18n/strings_provider.dart';
 import '../../../core/phone/niger_phone.dart';
+import '../../../design_system/app_palette.dart';
 import '../../../design_system/components/app_button.dart';
 import '../../../design_system/components/app_error_banner.dart';
 import '../../../design_system/components/app_otp_field.dart';
 import '../../../design_system/components/app_text_button.dart';
 import '../../../design_system/tokens.dart';
-import '../../../design_system/app_palette.dart';
 import '../domain/auth_error_messages.dart';
 import '../domain/auth_purpose.dart';
 import '../domain/otp_args.dart';
+import 'auth_scaffold.dart';
 import 'otp_controller.dart';
 
 String maskPhone(String phone) {
@@ -119,75 +120,66 @@ class _OtpPageState extends ConsumerState<OtpPage> {
     final OtpState state = ref.watch(otpControllerProvider);
     final bool login = widget.args.purpose == AuthPurpose.login;
 
-    return Scaffold(
-      backgroundColor: context.palette.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(AppSpacing.xl),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.stretch,
-            children: <Widget>[
-              Align(
-                alignment: Alignment.centerLeft,
-                child: AppTextButton(
-                  key: const Key('otp_back'),
-                  label: strings.back,
-                  variant: AppTextButtonVariant.muted,
-                  onPressed: state.loading ? null : () => context.go('/login'),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              Text(
-                login ? strings.otpLoginTitle : strings.otpVerifyPhoneTitle,
-                style: AppTextStyles.headline,
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.sm),
-              Text(
-                strings.otpInstructions(maskPhone(widget.args.phone)),
-                style: AppTextStyles.body.copyWith(
-                  color: context.palette.muted,
-                ),
-                textAlign: TextAlign.center,
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              if (state.error != null) ...<Widget>[
-                AppErrorBanner(
-                  key: const Key('otp_error'),
-                  message: authErrorMessage(state.error!, strings),
-                ),
-                const SizedBox(height: AppSpacing.lg),
-              ],
-              AppOtpField(
-                key: _otpKey,
-                onChanged: _onChanged,
-                error: _fieldError,
-                semanticLabel: strings.otpCodeLabel,
-                autofocus: true,
-              ),
-              const SizedBox(height: AppSpacing.xl),
-              AppButton(
-                key: const Key('otp_submit'),
-                label: strings.otpValidate,
-                loading: state.loading,
-                onPressed: state.loading || _code.length != 6 ? null : _verify,
-              ),
-              const SizedBox(height: AppSpacing.md),
-              Center(
-                child: AppTextButton(
-                  key: const Key('otp_resend'),
-                  label: _resendSeconds > 0
-                      ? '${strings.resendCode} ($_resendSeconds s)'
-                      : strings.resendCode,
-                  variant: AppTextButtonVariant.muted,
-                  onPressed: state.loading || _resendSeconds > 0
-                      ? null
-                      : _resend,
-                ),
-              ),
-            ],
+    return AuthScaffold(
+      logoStyle: AuthLogoStyle.symbol,
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.stretch,
+        children: <Widget>[
+          Align(
+            alignment: Alignment.centerLeft,
+            child: AppTextButton(
+              key: const Key('otp_back'),
+              label: strings.otpChangePhone,
+              variant: AppTextButtonVariant.muted,
+              onPressed: state.loading ? null : () => context.go('/register'),
+            ),
           ),
-        ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            login ? strings.otpLoginTitle : strings.otpVerifyPhoneTitle,
+            style: AppTextStyles.headline,
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.sm),
+          Text(
+            strings.otpInstructions(maskPhone(widget.args.phone)),
+            style: AppTextStyles.body.copyWith(color: context.palette.muted),
+            textAlign: TextAlign.center,
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          if (state.error != null) ...<Widget>[
+            AppErrorBanner(
+              key: const Key('otp_error'),
+              message: authErrorMessage(state.error!, strings),
+            ),
+            const SizedBox(height: AppSpacing.lg),
+          ],
+          AppOtpField(
+            key: _otpKey,
+            onChanged: _onChanged,
+            error: _fieldError,
+            semanticLabel: strings.otpCodeLabel,
+            autofocus: true,
+          ),
+          const SizedBox(height: AppSpacing.xl),
+          AppButton(
+            key: const Key('otp_submit'),
+            label: strings.otpValidate,
+            loading: state.loading,
+            onPressed: state.loading || _code.length != 6 ? null : _verify,
+          ),
+          const SizedBox(height: AppSpacing.md),
+          Center(
+            child: AppTextButton(
+              key: const Key('otp_resend'),
+              label: _resendSeconds > 0
+                  ? '${strings.resendCode} ($_resendSeconds s)'
+                  : strings.resendCode,
+              variant: AppTextButtonVariant.muted,
+              onPressed: state.loading || _resendSeconds > 0 ? null : _resend,
+            ),
+          ),
+        ],
       ),
     );
   }

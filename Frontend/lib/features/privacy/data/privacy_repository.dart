@@ -186,7 +186,7 @@ class PrivacyRepository {
     final String year = date.year.toString().padLeft(4, '0');
     final String month = date.month.toString().padLeft(2, '0');
     final String day = date.day.toString().padLeft(2, '0');
-    return 'smartagri-donnees-$year-$month-$day.json';
+    return 'gonata-donnees-$year-$month-$day.json';
   }
 }
 

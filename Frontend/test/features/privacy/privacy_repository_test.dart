@@ -82,7 +82,7 @@ void main() {
 
     expect(adapter.requests.single.method, 'GET');
     expect(adapter.requests.single.path, '/users/me/export');
-    expect(export.fileName, 'smartagri-donnees-2026-11-04.json');
+    expect(export.fileName, 'gonata-donnees-2026-11-04.json');
     final Map<String, dynamic> decoded =
         jsonDecode(utf8.decode(export.bytes)) as Map<String, dynamic>;
     expect(decoded['user'], <String, dynamic>{'id': 'u1'});
