@@ -29,6 +29,7 @@ void main() {
     expect(find.byKey(const Key('profile_privacy_consents')), findsNothing);
     expect(find.byKey(const Key('profile_privacy_export')), findsNothing);
     expect(find.byKey(const Key('profile_privacy_delete')), findsNothing);
+    await tester.scrollUntilVisible(find.text('Se déconnecter'), 300);
     expect(find.text('Se déconnecter'), findsOneWidget);
   });
 }

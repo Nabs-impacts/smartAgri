@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 
+import '../core/router/app_page.dart';
 import 'app_palette.dart';
 import 'tokens.dart';
 
@@ -98,6 +99,7 @@ abstract final class AppTheme {
       highlightColor: Colors.transparent,
       textTheme: textTheme,
       extensions: <ThemeExtension<dynamic>>[palette],
+      pageTransitionsTheme: appPageTransitionsTheme,
       appBarTheme: AppBarTheme(
         backgroundColor: palette.background,
         foregroundColor: palette.ink,

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../core/haptics/app_haptics.dart';
 import '../app_palette.dart';
 import '../tokens.dart';
+import 'app_pressable.dart';
 
 enum AppButtonVariant { primary, secondary, inverted, outlined }
 
@@ -127,8 +129,15 @@ class AppButton extends StatelessWidget {
             side: _border(palette),
           ),
           clipBehavior: Clip.antiAlias,
-          child: InkWell(
+          child: AppPressable(
             onTap: _enabled ? onPressed : null,
+            enabled: _enabled,
+            borderRadius: AppRadii.pillBorder,
+            haptics:
+                variant == AppButtonVariant.primary ||
+                    variant == AppButtonVariant.inverted
+                ? AppHapticType.confirm
+                : AppHapticType.tap,
             child: ConstrainedBox(
               constraints: BoxConstraints(minHeight: height),
               child: SizedBox(

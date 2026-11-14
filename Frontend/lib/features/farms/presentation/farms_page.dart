@@ -9,7 +9,11 @@ import '../../../core/network/api_exception.dart';
 import '../../../core/sync/sync_providers.dart';
 import '../../../core/sync/sync_status.dart';
 import '../../../design_system/components/app_button.dart';
+import '../../../core/haptics/app_haptics.dart';
 import '../../../design_system/components/app_card.dart';
+import '../../../design_system/components/app_pressable.dart';
+import '../../../design_system/components/app_staggered_entrance.dart';
+import '../../../design_system/components/app_skeleton.dart';
 import '../../../design_system/components/app_error_banner.dart';
 import '../../../design_system/components/app_text_button.dart';
 import '../../../design_system/tokens.dart';
@@ -81,14 +85,16 @@ class FarmsPage extends ConsumerWidget {
                   ),
                 )
               else
-                for (final Farm farm in farmsValue) ...<Widget>[
-                  _FarmTile(
-                    farm: farm,
-                    region: farmRegionName(farm, areas),
-                    onTap: () => context.go('/farms/${farm.id}'),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                ],
+                AppStaggeredEntrance(
+                  children: <Widget>[
+                    for (final Farm farm in farmsValue)
+                      _FarmTile(
+                        farm: farm,
+                        region: farmRegionName(farm, areas),
+                        onTap: () => context.go('/farms/${farm.id}'),
+                      ),
+                  ],
+                ),
             ],
           ),
         ),
@@ -97,19 +103,7 @@ class FarmsPage extends ConsumerWidget {
   }
 
   List<Widget> _skeleton(BuildContext context) {
-    return <Widget>[
-      for (int index = 0; index < 3; index++) ...<Widget>[
-        Container(
-          key: Key('farms_skeleton_$index'),
-          height: 84,
-          decoration: BoxDecoration(
-            color: context.palette.inputFill,
-            borderRadius: AppRadii.cardBorder,
-          ),
-        ),
-        const SizedBox(height: AppSpacing.md),
-      ],
-    ];
+    return <Widget>[const SkeletonList(keyPrefix: 'farms_skeleton')];
   }
 
   Widget _error(
@@ -151,9 +145,10 @@ class _FarmTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return AppPressable(
       key: Key('farm_card_${farm.id}'),
       borderRadius: AppRadii.cardBorder,
+      haptics: AppHapticType.tap,
       onTap: onTap,
       child: AppCard(
         child: Row(

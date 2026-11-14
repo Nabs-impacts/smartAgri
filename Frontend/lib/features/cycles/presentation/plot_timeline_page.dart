@@ -4,7 +4,10 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/i18n/app_localizations.dart';
 import '../../../core/i18n/strings_provider.dart';
+import '../../../core/haptics/app_haptics.dart';
 import '../../../design_system/components/app_card.dart';
+import '../../../design_system/components/app_skeleton.dart';
+import '../../../design_system/components/app_pressable.dart';
 import '../../../design_system/components/app_error_banner.dart';
 import '../../../design_system/components/app_text_button.dart';
 import '../../../design_system/tokens.dart';
@@ -33,8 +36,9 @@ class PlotTimelinePage extends ConsumerWidget {
       appBar: AppBar(title: Text(strings.plotTimelineTitle)),
       body: SafeArea(
         child: timeline.when(
-          loading: () => Center(
-            child: CircularProgressIndicator(color: context.palette.primary),
+          loading: () => const Padding(
+            padding: EdgeInsets.all(AppSpacing.xl),
+            child: SkeletonList(keyPrefix: 'plot_timeline_skeleton'),
           ),
           error: (Object error, StackTrace stackTrace) => Center(
             child: Padding(
@@ -161,9 +165,10 @@ class _TimelineRow extends ConsumerWidget {
         ? null
         : ref.watch(cultureNameProvider(cycle.cropId)).value;
     final List<String> details = timelineEntryDetails(strings, entry);
-    return InkWell(
+    return AppPressable(
       key: Key('timeline_entry_${entry.id}'),
       borderRadius: AppRadii.cardBorder,
+      haptics: AppHapticType.tap,
       onTap: () => context.go('/cycles/${timelineEntryCycleId(entry)}'),
       child: AppCard(
         child: Row(

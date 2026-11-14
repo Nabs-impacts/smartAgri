@@ -5,7 +5,9 @@ import 'package:intl/intl.dart';
 
 import '../../../core/i18n/app_localizations.dart';
 import '../../../core/i18n/strings_provider.dart';
+import '../../../core/haptics/app_haptics.dart';
 import '../../../design_system/components/app_card.dart';
+import '../../../design_system/components/app_pressable.dart';
 import '../../../design_system/components/app_status_chip.dart';
 import '../../../design_system/tokens.dart';
 import '../../../design_system/app_palette.dart';
@@ -31,9 +33,10 @@ class DiagnosticRow extends ConsumerWidget {
     final String title = label == null || label.trim().isEmpty
         ? strings.diagnosticsHistoryUntitled
         : label;
-    return InkWell(
+    return AppPressable(
       key: Key('diagnostic_row_${summary.id}'),
       borderRadius: AppRadii.cardBorder,
+      haptics: AppHapticType.tap,
       onTap: () => context.push('/diagnostic/${summary.id}'),
       child: AppCard(
         padding: const EdgeInsets.all(AppSpacing.md),

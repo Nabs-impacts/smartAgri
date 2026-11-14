@@ -1,3 +1,5 @@
+import '../../../core/haptics/app_haptics.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_map/flutter_map.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
@@ -374,7 +376,10 @@ class _PlotBoundaryEditorPageState
                             key: const Key('boundary_finish'),
                             label: strings.plotBoundaryFinish,
                             onPressed: _controller.isValid
-                                ? () => _close(_controller.geometry)
+                                ? () {
+                                    AppHaptics.trigger(AppHapticType.success);
+                                    _close(_controller.geometry);
+                                  }
                                 : null,
                           ),
                           if (_controller.hadBoundary) ...<Widget>[

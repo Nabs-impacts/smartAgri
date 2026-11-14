@@ -7,11 +7,13 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 import 'core/config/app_config.dart';
 import 'core/database/database_owner_guard.dart';
+import 'core/haptics/app_haptics.dart';
 import 'core/i18n/app_localizations.dart';
 import 'core/i18n/language_controller.dart';
 import 'core/router/app_router.dart';
 import 'core/sync/sync_providers.dart';
 import 'core/theme/theme_mode_controller.dart';
+import 'design_system/components/app_skeleton.dart';
 import 'design_system/theme.dart';
 import 'features/auth/data/consent_sync_service.dart';
 
@@ -36,6 +38,7 @@ class SmartAgriApp extends ConsumerWidget {
     ref.watch(consentSyncStartupProvider);
     ref.watch(databaseOwnerGuardProvider);
     ref.watch(syncSchedulerProvider);
+    ref.watch(hapticsControllerProvider);
     return MaterialApp.router(
       onGenerateTitle: (BuildContext context) =>
           AppLocalizations.of(context).appName,
@@ -49,7 +52,7 @@ class SmartAgriApp extends ConsumerWidget {
           value: isDark
               ? AppTheme.darkOverlayStyle
               : AppTheme.lightOverlayStyle,
-          child: child ?? const SizedBox.shrink(),
+          child: AppSkeletonScope(child: child ?? const SizedBox.shrink()),
         );
       },
       locale: const Locale('fr'),

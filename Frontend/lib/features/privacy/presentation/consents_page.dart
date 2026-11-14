@@ -7,6 +7,7 @@ import '../../../core/i18n/strings_provider.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../design_system/components/app_button.dart';
 import '../../../design_system/components/app_card.dart';
+import '../../../design_system/components/app_skeleton.dart';
 import '../../../design_system/components/app_error_banner.dart';
 import '../../../design_system/components/app_text_button.dart';
 import '../../../design_system/tokens.dart';
@@ -63,7 +64,15 @@ class _ConsentsPageState extends ConsumerState<ConsentsPage> {
       appBar: AppBar(title: Text(strings.profilePrivacyConsents)),
       body: SafeArea(
         child: consents.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const Padding(
+            padding: EdgeInsets.all(AppSpacing.xl),
+            child: SkeletonList(
+              count: 4,
+              itemHeight: 72,
+              tile: false,
+              keyPrefix: 'consents_skeleton',
+            ),
+          ),
           error: (Object error, StackTrace stackTrace) => _error(strings),
           data: (List<ConsentRecord> records) => _content(strings, records),
         ),

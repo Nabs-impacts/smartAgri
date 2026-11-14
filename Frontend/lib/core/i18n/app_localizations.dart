@@ -2589,6 +2589,18 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Sombre'**
   String get appearanceDark;
+
+  /// No description provided for @hapticsTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vibrations'**
+  String get hapticsTitle;
+
+  /// No description provided for @hapticsDescription.
+  ///
+  /// In fr, this message translates to:
+  /// **'Retour haptique lors des actions'**
+  String get hapticsDescription;
 }
 
 class _AppLocalizationsDelegate

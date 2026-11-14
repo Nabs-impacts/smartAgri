@@ -1417,4 +1417,10 @@ class AppLocalizationsFr extends AppLocalizations {
 
   @override
   String get appearanceDark => 'Sombre';
+
+  @override
+  String get hapticsTitle => 'Vibrations';
+
+  @override
+  String get hapticsDescription => 'Retour haptique lors des actions';
 }

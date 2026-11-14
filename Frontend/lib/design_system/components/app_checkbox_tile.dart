@@ -1,8 +1,10 @@
 import 'package:flutter/material.dart';
 
+import '../../core/haptics/app_haptics.dart';
 import '../app_icons.dart';
 import '../app_palette.dart';
 import '../tokens.dart';
+import 'app_pressable.dart';
 
 class AppCheckboxTile extends StatelessWidget {
   const AppCheckboxTile({
@@ -27,9 +29,11 @@ class AppCheckboxTile extends StatelessWidget {
       checked: value,
       enabled: _enabled,
       label: label,
-      child: InkWell(
-        onTap: _enabled ? () => onChanged!(!value) : null,
+      child: AppPressable(
+        onTap: () => onChanged!(!value),
+        enabled: _enabled,
         borderRadius: AppRadii.smallBorder,
+        haptics: AppHapticType.tap,
         child: ConstrainedBox(
           constraints: const BoxConstraints(minHeight: AppSizes.touchTarget),
           child: Padding(

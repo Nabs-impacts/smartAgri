@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../core/haptics/app_haptics.dart';
 import '../app_palette.dart';
 import '../tokens.dart';
+import 'app_pressable.dart';
 
 enum AppIconButtonVariant {
   square,
@@ -84,9 +86,12 @@ class AppIconButton extends StatelessWidget {
             color: _background(palette),
             shape: _shape(palette),
             clipBehavior: Clip.antiAlias,
-            child: InkWell(
+            child: AppPressable(
               onTap: onPressed,
+              enabled: enabled,
               customBorder: _shape(palette),
+              haptics: AppHapticType.tap,
+              semanticLabel: tooltip,
               child: SizedBox(
                 width: AppSizes.iconButton,
                 height: AppSizes.iconButton,

@@ -5,6 +5,7 @@ import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 import '../../../core/config/app_config.dart';
+import '../../../core/haptics/app_haptics.dart';
 import '../../../core/i18n/language_controller.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../core/network/network_providers.dart';
@@ -172,7 +173,8 @@ class PrivacyRepository {
         .where(
           (String key) =>
               key != LanguageController.storageKey &&
-              key != ThemeModeController.storageKey,
+              key != ThemeModeController.storageKey &&
+              key != HapticsController.storageKey,
         )
         .toList();
     for (final String key in keys) {

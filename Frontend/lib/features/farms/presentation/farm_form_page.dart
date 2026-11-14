@@ -1,3 +1,5 @@
+import '../../../core/haptics/app_haptics.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -11,6 +13,7 @@ import '../../../core/location/location_service.dart';
 import '../../../core/network/api_error_messages.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../design_system/components/app_button.dart';
+import '../../../design_system/components/app_skeleton.dart';
 import '../../../design_system/components/app_error_banner.dart';
 import '../../../design_system/components/app_select_field.dart';
 import '../../../design_system/components/app_text_button.dart';
@@ -54,7 +57,12 @@ class FarmFormPage extends ConsumerWidget {
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.xl),
             child: farms.isLoading
-                ? CircularProgressIndicator(color: context.palette.primary)
+                ? const SkeletonList(
+                    count: 5,
+                    itemHeight: 64,
+                    tile: false,
+                    keyPrefix: 'farm_form_skeleton',
+                  )
                 : Column(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
@@ -157,6 +165,7 @@ class _FarmFormState extends ConsumerState<_FarmForm> {
             );
       }
       if (mounted) {
+        AppHaptics.trigger(AppHapticType.success);
         context.pop();
       }
     } on ApiException catch (error) {

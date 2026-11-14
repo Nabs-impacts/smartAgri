@@ -6,7 +6,11 @@ import '../../../core/i18n/app_localizations.dart';
 import '../../../core/i18n/strings_provider.dart';
 import '../../../core/network/api_error_messages.dart';
 import '../../../core/network/api_exception.dart';
+import '../../../core/haptics/app_haptics.dart';
 import '../../../design_system/components/app_card.dart';
+import '../../../design_system/components/app_skeleton.dart';
+import '../../../design_system/components/app_staggered_entrance.dart';
+import '../../../design_system/components/app_pressable.dart';
 import '../../../design_system/components/app_error_banner.dart';
 import '../../../design_system/components/app_text_button.dart';
 import '../../../design_system/tokens.dart';
@@ -44,7 +48,10 @@ class FarmDetailPage extends ConsumerWidget {
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.xl),
               child: farms.isLoading
-                  ? CircularProgressIndicator(color: context.palette.primary)
+                  ? const SkeletonList(
+                      count: 3,
+                      keyPrefix: 'farm_detail_skeleton',
+                    )
                   : Column(
                       mainAxisSize: MainAxisSize.min,
                       children: <Widget>[
@@ -159,14 +166,7 @@ class FarmDetailPage extends ConsumerWidget {
               ),
               const SizedBox(height: AppSpacing.md),
               if (plots.isLoading && plots.value == null)
-                Center(
-                  child: Padding(
-                    padding: EdgeInsets.all(AppSpacing.lg),
-                    child: CircularProgressIndicator(
-                      color: context.palette.primary,
-                    ),
-                  ),
-                )
+                const SkeletonList(count: 2, keyPrefix: 'farm_plots_skeleton')
               else if (plots.hasError && plots.value == null)
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -203,13 +203,15 @@ class FarmDetailPage extends ConsumerWidget {
                   ),
                 )
               else
-                for (final Plot plot in plots.value!) ...<Widget>[
-                  _PlotTile(
-                    plot: plot,
-                    onTap: () => context.go('/plots/${plot.id}'),
-                  ),
-                  const SizedBox(height: AppSpacing.md),
-                ],
+                AppStaggeredEntrance(
+                  children: <Widget>[
+                    for (final Plot plot in plots.value!)
+                      _PlotTile(
+                        plot: plot,
+                        onTap: () => context.go('/plots/${plot.id}'),
+                      ),
+                  ],
+                ),
             ],
           ),
         ),
@@ -267,9 +269,10 @@ class _PlotTile extends StatelessWidget {
       if (plot.soilType != null) plot.soilType!.label,
       if (plot.irrigation != null) plot.irrigation!.label,
     ];
-    return InkWell(
+    return AppPressable(
       key: Key('plot_card_${plot.id}'),
       borderRadius: AppRadii.cardBorder,
+      haptics: AppHapticType.tap,
       onTap: onTap,
       child: AppCard(
         child: Row(

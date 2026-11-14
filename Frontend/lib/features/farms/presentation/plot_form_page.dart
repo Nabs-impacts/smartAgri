@@ -1,3 +1,5 @@
+import '../../../core/haptics/app_haptics.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -9,6 +11,7 @@ import '../../../core/i18n/strings_provider.dart';
 import '../../../core/network/api_error_messages.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../design_system/components/app_button.dart';
+import '../../../design_system/components/app_skeleton.dart';
 import '../../../design_system/components/app_choice_chips.dart';
 import '../../../design_system/components/app_error_banner.dart';
 import '../../../design_system/components/app_text_button.dart';
@@ -52,7 +55,12 @@ class PlotFormPage extends ConsumerWidget {
           child: Padding(
             padding: const EdgeInsets.all(AppSpacing.xl),
             child: plot.isLoading
-                ? CircularProgressIndicator(color: context.palette.primary)
+                ? const SkeletonList(
+                    count: 5,
+                    itemHeight: 64,
+                    tile: false,
+                    keyPrefix: 'plot_form_skeleton',
+                  )
                 : Column(
                     mainAxisSize: MainAxisSize.min,
                     children: <Widget>[
@@ -159,6 +167,7 @@ class _PlotFormState extends ConsumerState<_PlotForm> {
             );
       }
       if (mounted) {
+        AppHaptics.trigger(AppHapticType.success);
         context.pop();
       }
     } on ApiException catch (error) {

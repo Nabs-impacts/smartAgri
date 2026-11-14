@@ -13,7 +13,10 @@ import '../../core/sync/sync_providers.dart';
 import '../../core/sync/sync_status.dart';
 import '../../core/theme/theme_mode_controller.dart';
 import '../../design_system/components/app_button.dart';
+import '../../core/haptics/app_haptics.dart';
 import '../../design_system/components/app_card.dart';
+import '../../design_system/components/app_count_up.dart';
+import '../../design_system/components/app_pressable.dart';
 import '../../design_system/components/app_choice_chips.dart';
 import '../../design_system/components/app_progress_bar.dart';
 import '../../design_system/components/app_text_button.dart';
@@ -75,9 +78,10 @@ class ProfilePage extends ConsumerWidget {
                   const SizedBox(height: AppSpacing.xl),
                   _usageSection(context, strings, data.quotas),
                   const SizedBox(height: AppSpacing.xl),
-                  InkWell(
+                  AppPressable(
                     key: const Key('profile_diagnostics'),
                     borderRadius: AppRadii.cardBorder,
+                    haptics: AppHapticType.tap,
                     onTap: () => context.go('/diagnostics'),
                     child: AppCard(
                       padding: const EdgeInsets.all(AppSpacing.md),
@@ -111,6 +115,8 @@ class ProfilePage extends ConsumerWidget {
                 ],
                 const SizedBox(height: AppSpacing.xl),
                 _appearanceSection(ref, strings),
+                const SizedBox(height: AppSpacing.xl),
+                _hapticsSection(context, ref, strings),
                 const SizedBox(height: AppSpacing.lg),
                 SizedBox(
                   width: double.infinity,
@@ -276,6 +282,48 @@ class ProfilePage extends ConsumerWidget {
     );
   }
 
+  Widget _hapticsSection(
+    BuildContext context,
+    WidgetRef ref,
+    AppLocalizations strings,
+  ) {
+    final bool haptics = ref.watch(hapticsControllerProvider);
+    return Column(
+      key: const Key('profile_haptics_section'),
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: <Widget>[
+        Text(strings.hapticsTitle, style: AppTextStyles.title),
+        const SizedBox(height: AppSpacing.md),
+        AppCard(
+          padding: const EdgeInsets.all(AppSpacing.md),
+          child: Row(
+            children: <Widget>[
+              Expanded(
+                child: Text(
+                  strings.hapticsDescription,
+                  style: AppTextStyles.body.copyWith(
+                    color: context.palette.muted,
+                  ),
+                ),
+              ),
+              const SizedBox(width: AppSpacing.md),
+              Switch.adaptive(
+                key: const Key('profile_haptics'),
+                value: haptics,
+                onChanged: (bool value) {
+                  ref.read(hapticsControllerProvider.notifier).set(value);
+                  if (value) {
+                    AppHaptics.trigger(AppHapticType.success);
+                  }
+                },
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
   Widget _usageSection(
     BuildContext context,
     AppLocalizations strings,
@@ -417,9 +465,10 @@ class _SyncSection extends ConsumerWidget {
                 style: AppTextStyles.body,
               ),
               const SizedBox(height: AppSpacing.xs),
-              InkWell(
+              AppPressable(
                 key: const Key('profile_sync_failed'),
                 borderRadius: AppRadii.smallBorder,
+                haptics: AppHapticType.tap,
                 onTap: snapshot.failedCount > 0
                     ? () => context.push('/sync/failed')
                     : null,
@@ -492,14 +541,21 @@ class _QuotaRow extends StatelessWidget {
             children: <Widget>[
               Expanded(child: Text(label, style: AppTextStyles.body)),
               const SizedBox(width: AppSpacing.sm),
-              Text(
-                ratio == null
-                    ? strings.profileUnlimited
-                    : '${quota.used} / ${quota.limit}',
-                style: AppTextStyles.caption.copyWith(
-                  color: context.palette.muted,
+              if (ratio == null)
+                Text(
+                  strings.profileUnlimited,
+                  style: AppTextStyles.caption.copyWith(
+                    color: context.palette.muted,
+                  ),
+                )
+              else
+                AppCountUp(
+                  value: quota.used,
+                  format: (num value) => '${value.round()} / ${quota.limit}',
+                  style: AppTextStyles.caption.copyWith(
+                    color: context.palette.muted,
+                  ),
                 ),
-              ),
             ],
           ),
           if (ratio != null) ...<Widget>[
@@ -629,8 +685,9 @@ class _PrivacyRow extends StatelessWidget {
     final Color color = danger
         ? context.palette.danger
         : context.palette.primary;
-    return InkWell(
+    return AppPressable(
       borderRadius: AppRadii.cardBorder,
+      haptics: AppHapticType.tap,
       onTap: onTap,
       child: AppCard(
         padding: const EdgeInsets.all(AppSpacing.md),

@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 
+import '../../core/haptics/app_haptics.dart';
 import '../app_palette.dart';
 import '../tokens.dart';
+import 'app_pressable.dart';
 
 class AppChoiceOption<T> {
   const AppChoiceOption({required this.value, required this.label});
@@ -72,8 +74,12 @@ class _ChoiceChip<T> extends StatelessWidget {
         color: background,
         shape: const StadiumBorder(),
         clipBehavior: Clip.antiAlias,
-        child: InkWell(
-          onTap: enabled ? onTap : null,
+        child: AppPressable(
+          onTap: onTap,
+          enabled: enabled,
+          haptics: AppHapticType.tap,
+          borderRadius: AppRadii.pillBorder,
+          semanticLabel: option.label,
           child: SizedBox(
             height: AppSizes.touchTarget,
             child: Padding(

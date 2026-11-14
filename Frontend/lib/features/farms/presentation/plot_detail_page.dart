@@ -4,7 +4,11 @@ import 'package:go_router/go_router.dart';
 
 import '../../../core/i18n/app_localizations.dart';
 import '../../../core/i18n/strings_provider.dart';
+import '../../../core/haptics/app_haptics.dart';
 import '../../../design_system/components/app_card.dart';
+import '../../../design_system/components/app_skeleton.dart';
+import '../../../design_system/components/app_staggered_entrance.dart';
+import '../../../design_system/components/app_pressable.dart';
 import '../../../design_system/components/app_error_banner.dart';
 import '../../../design_system/components/app_status_chip.dart';
 import '../../../design_system/components/app_text_button.dart';
@@ -61,8 +65,9 @@ class PlotDetailPage extends ConsumerWidget {
       ),
       body: SafeArea(
         child: plot.when(
-          loading: () => Center(
-            child: CircularProgressIndicator(color: context.palette.primary),
+          loading: () => const Padding(
+            padding: EdgeInsets.all(AppSpacing.xl),
+            child: SkeletonList(keyPrefix: 'plot_detail_skeleton'),
           ),
           error: (Object error, StackTrace stackTrace) => Center(
             child: Padding(
@@ -211,12 +216,8 @@ class _CyclesSection extends ConsumerWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         cycles.when(
-          loading: () => Center(
-            child: Padding(
-              padding: EdgeInsets.all(AppSpacing.lg),
-              child: CircularProgressIndicator(color: context.palette.primary),
-            ),
-          ),
+          loading: () =>
+              const SkeletonList(count: 2, keyPrefix: 'plot_cycles_skeleton'),
           error: (Object error, StackTrace stackTrace) => Column(
             crossAxisAlignment: CrossAxisAlignment.stretch,
             children: <Widget>[
@@ -244,12 +245,10 @@ class _CyclesSection extends ConsumerWidget {
                 ),
               );
             }
-            return Column(
+            return AppStaggeredEntrance(
               children: <Widget>[
-                for (final Cycle cycle in items) ...<Widget>[
+                for (final Cycle cycle in items)
                   _CycleTile(strings: strings, cycle: cycle),
-                  const SizedBox(height: AppSpacing.md),
-                ],
               ],
             );
           },
@@ -277,9 +276,10 @@ class _CycleTile extends ConsumerWidget {
   @override
   Widget build(BuildContext context, WidgetRef ref) {
     final String? cropName = ref.watch(cultureNameProvider(cycle.cropId)).value;
-    return InkWell(
+    return AppPressable(
       key: Key('cycle_card_${cycle.id}'),
       borderRadius: AppRadii.cardBorder,
+      haptics: AppHapticType.tap,
       onTap: () => context.go('/cycles/${cycle.id}'),
       child: AppCard(
         child: Column(

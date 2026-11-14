@@ -20,9 +20,17 @@ class HomeShell extends ConsumerWidget {
     ref.watch(meProvider);
     final AppLocalizations strings = ref.watch(stringsProvider);
     final List<AppNavItem> items = <AppNavItem>[
-      AppNavItem(icon: AppIcons.home, label: strings.navHome),
+      AppNavItem(
+        icon: AppIcons.home,
+        selectedIcon: AppIcons.homeFill,
+        label: strings.navHome,
+      ),
       AppNavItem(icon: AppIcons.search, label: strings.navSearch),
-      AppNavItem(icon: AppIcons.profile, label: strings.navProfile),
+      AppNavItem(
+        icon: AppIcons.profile,
+        selectedIcon: AppIcons.profileFill,
+        label: strings.navProfile,
+      ),
     ];
     return Scaffold(
       body: Column(

@@ -9,7 +9,11 @@ import '../../core/i18n/strings_provider.dart';
 import '../../core/network/api_error_messages.dart';
 import '../../core/network/api_exception.dart';
 import '../../design_system/components/app_button.dart';
+import '../../core/haptics/app_haptics.dart';
 import '../../design_system/components/app_card.dart';
+import '../../design_system/components/app_skeleton.dart';
+import '../../design_system/components/app_pressable.dart';
+import '../../design_system/components/app_staggered_entrance.dart';
 import '../../design_system/components/app_icon_button.dart';
 import '../../design_system/components/app_text_button.dart';
 import '../../design_system/components/info_text.dart';
@@ -222,16 +226,7 @@ class HomePage extends ConsumerWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         if (diagnostics.isLoading && diagnostics.value == null)
-          AppCard(
-            child: SizedBox(
-              height: 48,
-              child: Center(
-                child: CircularProgressIndicator(
-                  color: context.palette.primary,
-                ),
-              ),
-            ),
-          )
+          const SkeletonList(count: 2, keyPrefix: 'home_diagnostics_skeleton')
         else if (diagnostics.hasError && diagnostics.value == null)
           AppCard(
             child: Column(
@@ -266,10 +261,12 @@ class HomePage extends ConsumerWidget {
             ),
           )
         else
-          for (final DiagnosticSummary summary in items.take(3)) ...<Widget>[
-            DiagnosticRow(summary: summary),
-            const SizedBox(height: AppSpacing.md),
-          ],
+          AppStaggeredEntrance(
+            children: <Widget>[
+              for (final DiagnosticSummary summary in items.take(3))
+                DiagnosticRow(summary: summary),
+            ],
+          ),
       ],
     );
   }
@@ -298,16 +295,7 @@ class HomePage extends ConsumerWidget {
         ),
         const SizedBox(height: AppSpacing.md),
         if (farms.isLoading && farms.value == null)
-          AppCard(
-            child: SizedBox(
-              height: 48,
-              child: Center(
-                child: CircularProgressIndicator(
-                  color: context.palette.primary,
-                ),
-              ),
-            ),
-          )
+          const SkeletonList(count: 2, keyPrefix: 'home_farms_skeleton')
         else if (farms.hasError && farms.value == null)
           AppCard(
             child: Column(
@@ -351,14 +339,16 @@ class HomePage extends ConsumerWidget {
             ),
           )
         else
-          for (final Farm farm in farms.value!.take(3)) ...<Widget>[
-            _HomeFarmTile(
-              farm: farm,
-              region: farmRegionName(farm, areas),
-              onTap: () => context.go('/farms/${farm.id}'),
-            ),
-            const SizedBox(height: AppSpacing.md),
-          ],
+          AppStaggeredEntrance(
+            children: <Widget>[
+              for (final Farm farm in farms.value!.take(3))
+                _HomeFarmTile(
+                  farm: farm,
+                  region: farmRegionName(farm, areas),
+                  onTap: () => context.go('/farms/${farm.id}'),
+                ),
+            ],
+          ),
       ],
     );
   }
@@ -403,9 +393,10 @@ class _HomeFarmTile extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return InkWell(
+    return AppPressable(
       key: Key('home_farm_${farm.id}'),
       borderRadius: AppRadii.cardBorder,
+      haptics: AppHapticType.tap,
       onTap: onTap,
       child: AppCard(
         padding: const EdgeInsets.all(AppSpacing.md),

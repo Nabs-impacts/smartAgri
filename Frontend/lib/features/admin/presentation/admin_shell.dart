@@ -21,7 +21,11 @@ class AdminShell extends ConsumerWidget {
     final List<AppNavItem> items = <AppNavItem>[
       AppNavItem(icon: AppIcons.dashboard, label: strings.adminNavOverview),
       AppNavItem(icon: AppIcons.chart, label: strings.adminNavYields),
-      AppNavItem(icon: AppIcons.profile, label: strings.navProfile),
+      AppNavItem(
+        icon: AppIcons.profile,
+        selectedIcon: AppIcons.profileFill,
+        label: strings.navProfile,
+      ),
     ];
     return Scaffold(
       body: navigationShell,

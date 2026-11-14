@@ -1,3 +1,5 @@
+import '../../../core/haptics/app_haptics.dart';
+
 import 'package:flutter/material.dart';
 import 'package:flutter_riverpod/flutter_riverpod.dart';
 import 'package:go_router/go_router.dart';
@@ -6,6 +8,7 @@ import 'package:uuid/uuid.dart';
 import '../../../core/i18n/app_localizations.dart';
 import '../../../core/i18n/strings_provider.dart';
 import '../../../design_system/components/app_button.dart';
+import '../../../design_system/components/app_skeleton.dart';
 import '../../../design_system/components/app_choice_chips.dart';
 import '../../../design_system/components/app_date_field.dart';
 import '../../../design_system/components/app_error_banner.dart';
@@ -85,8 +88,14 @@ class _LoadingScaffold extends StatelessWidget {
       backgroundColor: context.palette.background,
       appBar: AppBar(title: Text(strings.activityCreateTitle)),
       body: SafeArea(
-        child: Center(
-          child: CircularProgressIndicator(color: context.palette.primary),
+        child: const Padding(
+          padding: EdgeInsets.all(AppSpacing.xl),
+          child: SkeletonList(
+            count: 5,
+            itemHeight: 64,
+            tile: false,
+            keyPrefix: 'activity_form_skeleton',
+          ),
         ),
       ),
     );
@@ -389,6 +398,7 @@ class _ActivityFormState extends ConsumerState<_ActivityForm> {
         );
       }
       if (mounted) {
+        AppHaptics.trigger(AppHapticType.success);
         context.pop();
       }
     } on CycleDomainException catch (error) {

@@ -2,9 +2,11 @@ import 'dart:typed_data';
 
 import 'package:flutter/material.dart';
 
+import '../../core/haptics/app_haptics.dart';
 import '../app_icons.dart';
 import '../app_palette.dart';
 import '../tokens.dart';
+import 'app_pressable.dart';
 
 class AppPhotoTile extends StatelessWidget {
   const AppPhotoTile({
@@ -50,8 +52,11 @@ class AppPhotoTile extends StatelessWidget {
             color: context.palette.inputFill,
             borderRadius: AppRadii.cardBorder,
             clipBehavior: Clip.antiAlias,
-            child: InkWell(
+            child: AppPressable(
               onTap: onAdd,
+              borderRadius: AppRadii.cardBorder,
+              haptics: AppHapticType.tap,
+              semanticLabel: 'Ajouter une photo',
               child: CustomPaint(
                 painter: _DashedBorderPainter(color: context.palette.line),
                 child: Center(
@@ -130,9 +135,11 @@ class AppPhotoTile extends StatelessWidget {
               child: Material(
                 color: context.palette.surfaceRaised,
                 shape: const CircleBorder(),
-                child: InkWell(
+                child: AppPressable(
                   key: const Key('photo_tile_delete'),
                   customBorder: const CircleBorder(),
+                  haptics: AppHapticType.tap,
+                  semanticLabel: 'Supprimer la photo',
                   onTap: onDelete,
                   child: Padding(
                     padding: const EdgeInsets.all(AppSpacing.xs),

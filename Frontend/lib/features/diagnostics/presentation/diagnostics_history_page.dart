@@ -8,6 +8,7 @@ import '../../../core/network/api_error_messages.dart';
 import '../../../core/network/api_exception.dart';
 import '../../../design_system/components/app_button.dart';
 import '../../../design_system/components/app_card.dart';
+import '../../../design_system/components/app_skeleton.dart';
 import '../../../design_system/tokens.dart';
 import '../../../design_system/app_palette.dart';
 import '../data/diagnostics_history_provider.dart';
@@ -185,17 +186,13 @@ class _Skeleton extends StatelessWidget {
         AppSpacing.xl,
         AppSpacing.xl,
       ),
-      children: <Widget>[
-        for (int index = 0; index < 6; index++) ...<Widget>[
-          Container(
-            height: 104,
-            decoration: BoxDecoration(
-              color: context.palette.inputFill,
-              borderRadius: AppRadii.cardBorder,
-            ),
-          ),
-          const SizedBox(height: AppSpacing.md),
-        ],
+      children: const <Widget>[
+        SkeletonList(
+          count: 6,
+          itemHeight: 104,
+          tile: false,
+          keyPrefix: 'diagnostics_history_skeleton_item',
+        ),
       ],
     );
   }

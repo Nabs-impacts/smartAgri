@@ -7,7 +7,10 @@ import 'package:go_router/go_router.dart';
 import '../../../core/i18n/app_localizations.dart';
 import '../../../core/i18n/strings_provider.dart';
 import '../../../design_system/components/app_button.dart';
+import '../../../core/haptics/app_haptics.dart';
 import '../../../design_system/components/app_card.dart';
+import '../../../design_system/components/app_skeleton.dart';
+import '../../../design_system/components/app_pressable.dart';
 import '../../../design_system/components/app_status_chip.dart';
 import '../../../design_system/components/app_text_button.dart';
 import '../../../design_system/tokens.dart';
@@ -77,8 +80,9 @@ class _CycleDetailPageState extends ConsumerState<CycleDetailPage> {
       ),
       body: SafeArea(
         child: cycle.when(
-          loading: () => Center(
-            child: CircularProgressIndicator(color: context.palette.primary),
+          loading: () => const Padding(
+            padding: EdgeInsets.all(AppSpacing.xl),
+            child: SkeletonList(keyPrefix: 'cycle_detail_skeleton'),
           ),
           error: (Object error, StackTrace stackTrace) => _NotFoundView(
             strings: strings,
@@ -602,9 +606,10 @@ class _JournalTile extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final _JournalContent content = _content();
-    return InkWell(
+    return AppPressable(
       key: Key('journal_entry_${entry.id}'),
       borderRadius: AppRadii.cardBorder,
+      haptics: AppHapticType.tap,
       onTap: onTap,
       child: AppCard(
         child: Row(

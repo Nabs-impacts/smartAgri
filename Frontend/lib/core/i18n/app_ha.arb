@@ -614,5 +614,7 @@
   "appearanceTitle": "Apparence",
   "appearanceSystem": "Automatique",
   "appearanceLight": "Clair",
-  "appearanceDark": "Sombre"
+  "appearanceDark": "Sombre",
+  "hapticsTitle": "Vibrations",
+  "hapticsDescription": "Retour haptique lors des actions"
 }

@@ -38,6 +38,7 @@ import '../../features/profile/profile_page.dart';
 import '../../features/search/search_page.dart';
 import '../../features/sync/presentation/sync_failed_page.dart';
 import '../config/app_config.dart';
+import 'app_page.dart';
 import '../session/session_controller.dart';
 import '../session/session_state.dart';
 
@@ -77,36 +78,45 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
     routes: <RouteBase>[
       GoRoute(
         path: '/splash',
-        builder: (_, _) => const PlaceholderPage(title: 'Chargement'),
+        pageBuilder: (_, _) =>
+            AppPage(child: const PlaceholderPage(title: 'Chargement')),
       ),
-      GoRoute(path: '/login', builder: (_, _) => const LoginPage()),
-      GoRoute(path: '/register', builder: (_, _) => const RegisterPage()),
+      GoRoute(
+        path: '/login',
+        pageBuilder: (_, _) => AppPage(child: const LoginPage()),
+      ),
+      GoRoute(
+        path: '/register',
+        pageBuilder: (_, _) => AppPage(child: const RegisterPage()),
+      ),
       GoRoute(
         path: '/otp',
         redirect: (_, GoRouterState state) =>
             state.extra is OtpArgs ? null : '/login',
-        builder: (_, GoRouterState state) =>
-            OtpPage(args: state.extra! as OtpArgs),
+        pageBuilder: (_, GoRouterState state) =>
+            AppPage(child: OtpPage(args: state.extra! as OtpArgs)),
       ),
       GoRoute(
         path: '/forgot-password',
-        builder: (_, _) => const ForgotPasswordPage(),
+        pageBuilder: (_, _) => AppPage(child: const ForgotPasswordPage()),
       ),
       GoRoute(
         path: '/legal/terms',
-        builder: (_, _) => const LegalPage(document: LegalDocument.terms),
+        pageBuilder: (_, _) =>
+            AppPage(child: const LegalPage(document: LegalDocument.terms)),
       ),
       GoRoute(
         path: '/legal/privacy',
-        builder: (_, _) => const LegalPage(document: LegalDocument.privacy),
+        pageBuilder: (_, _) =>
+            AppPage(child: const LegalPage(document: LegalDocument.privacy)),
       ),
       GoRoute(
         path: '/privacy/consents',
-        builder: (_, _) => const ConsentsPage(),
+        pageBuilder: (_, _) => AppPage(child: const ConsentsPage()),
       ),
       GoRoute(
         path: '/privacy/delete',
-        builder: (_, _) => const DeleteAccountPage(),
+        pageBuilder: (_, _) => AppPage(child: const DeleteAccountPage()),
       ),
       StatefulShellRoute.indexedStack(
         builder: (
@@ -117,17 +127,35 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
         branches: <StatefulShellBranch>[
           StatefulShellBranch(
             routes: <RouteBase>[
-              GoRoute(path: '/home', builder: (_, _) => const HomePage()),
+              GoRoute(
+                path: '/home',
+                pageBuilder: (_, _) => AppPage(
+                  transition: AppPageTransition.fade,
+                  child: const HomePage(),
+                ),
+              ),
             ],
           ),
           StatefulShellBranch(
             routes: <RouteBase>[
-              GoRoute(path: '/search', builder: (_, _) => const SearchPage()),
+              GoRoute(
+                path: '/search',
+                pageBuilder: (_, _) => AppPage(
+                  transition: AppPageTransition.fade,
+                  child: const SearchPage(),
+                ),
+              ),
             ],
           ),
           StatefulShellBranch(
             routes: <RouteBase>[
-              GoRoute(path: '/profile', builder: (_, _) => const ProfilePage()),
+              GoRoute(
+                path: '/profile',
+                pageBuilder: (_, _) => AppPage(
+                  transition: AppPageTransition.fade,
+                  child: const ProfilePage(),
+                ),
+              ),
             ],
           ),
         ],
@@ -143,7 +171,10 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
             routes: <RouteBase>[
               GoRoute(
                 path: '/admin/overview',
-                builder: (_, _) => const AdminOverviewPage(),
+                pageBuilder: (_, _) => AppPage(
+                  transition: AppPageTransition.fade,
+                  child: const AdminOverviewPage(),
+                ),
               ),
             ],
           ),
@@ -151,7 +182,10 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
             routes: <RouteBase>[
               GoRoute(
                 path: '/admin/yields',
-                builder: (_, _) => const AdminYieldsPage(),
+                pageBuilder: (_, _) => AppPage(
+                  transition: AppPageTransition.fade,
+                  child: const AdminYieldsPage(),
+                ),
               ),
             ],
           ),
@@ -159,112 +193,165 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
             routes: <RouteBase>[
               GoRoute(
                 path: '/admin/profile',
-                builder: (_, _) => const ProfilePage(),
+                pageBuilder: (_, _) => AppPage(
+                  transition: AppPageTransition.fade,
+                  child: const ProfilePage(),
+                ),
               ),
             ],
           ),
         ],
       ),
       GoRoute(path: '/admin', redirect: (_, _) => '/admin/overview'),
-      GoRoute(path: '/farms', builder: (_, _) => const FarmsPage()),
-      GoRoute(path: '/farms/new', builder: (_, _) => const FarmFormPage()),
+      GoRoute(
+        path: '/farms',
+        pageBuilder: (_, _) => AppPage(child: const FarmsPage()),
+      ),
+      GoRoute(
+        path: '/farms/new',
+        pageBuilder: (_, _) => AppPage(
+          transition: AppPageTransition.vertical,
+          child: const FarmFormPage(),
+        ),
+      ),
       GoRoute(
         path: '/farms/:farmId/edit',
-        builder: (_, GoRouterState state) =>
-            FarmFormPage(farmId: state.pathParameters['farmId']),
+        pageBuilder: (_, GoRouterState state) => AppPage(
+          transition: AppPageTransition.vertical,
+          child: FarmFormPage(farmId: state.pathParameters['farmId']),
+        ),
       ),
       GoRoute(
         path: '/farms/:farmId/plots/new',
-        builder: (_, GoRouterState state) =>
-            PlotFormPage(farmId: state.pathParameters['farmId']),
+        pageBuilder: (_, GoRouterState state) => AppPage(
+          transition: AppPageTransition.vertical,
+          child: PlotFormPage(farmId: state.pathParameters['farmId']),
+        ),
       ),
       GoRoute(
         path: '/farms/:farmId',
-        builder: (_, GoRouterState state) =>
-            FarmDetailPage(farmId: state.pathParameters['farmId'] ?? ''),
+        pageBuilder: (_, GoRouterState state) => AppPage(
+          child: FarmDetailPage(farmId: state.pathParameters['farmId'] ?? ''),
+        ),
       ),
       GoRoute(
         path: '/plots/boundary',
-        builder: (_, GoRouterState state) => PlotBoundaryEditorPage(
-          initialGeometry: state.extra is PlotGeometry
-              ? state.extra! as PlotGeometry
-              : null,
+        pageBuilder: (_, GoRouterState state) => AppPage(
+          transition: AppPageTransition.vertical,
+          child: PlotBoundaryEditorPage(
+            initialGeometry: state.extra is PlotGeometry
+                ? state.extra! as PlotGeometry
+                : null,
+          ),
         ),
       ),
       GoRoute(
         path: '/plots/:plotId/edit',
-        builder: (_, GoRouterState state) =>
-            PlotFormPage(plotId: state.pathParameters['plotId']),
+        pageBuilder: (_, GoRouterState state) => AppPage(
+          transition: AppPageTransition.vertical,
+          child: PlotFormPage(plotId: state.pathParameters['plotId']),
+        ),
       ),
       GoRoute(
         path: '/plots/:plotId/cycles/new',
-        builder: (_, GoRouterState state) =>
-            CycleFormPage(plotId: state.pathParameters['plotId']),
+        pageBuilder: (_, GoRouterState state) => AppPage(
+          transition: AppPageTransition.vertical,
+          child: CycleFormPage(plotId: state.pathParameters['plotId']),
+        ),
       ),
       GoRoute(
         path: '/plots/:plotId/timeline',
-        builder: (_, GoRouterState state) =>
-            PlotTimelinePage(plotId: state.pathParameters['plotId'] ?? ''),
+        pageBuilder: (_, GoRouterState state) => AppPage(
+          child: PlotTimelinePage(plotId: state.pathParameters['plotId'] ?? ''),
+        ),
       ),
       GoRoute(
         path: '/plots/:plotId',
-        builder: (_, GoRouterState state) =>
-            PlotDetailPage(plotId: state.pathParameters['plotId'] ?? ''),
+        pageBuilder: (_, GoRouterState state) => AppPage(
+          child: PlotDetailPage(plotId: state.pathParameters['plotId'] ?? ''),
+        ),
       ),
       GoRoute(
         path: '/cycles/:cycleId/edit',
-        builder: (_, GoRouterState state) =>
-            CycleFormPage(cycleId: state.pathParameters['cycleId']),
+        pageBuilder: (_, GoRouterState state) => AppPage(
+          transition: AppPageTransition.vertical,
+          child: CycleFormPage(cycleId: state.pathParameters['cycleId']),
+        ),
       ),
       GoRoute(
         path: '/cycles/:cycleId/activities/new',
-        builder: (_, GoRouterState state) =>
-            ActivityFormPage(cycleId: state.pathParameters['cycleId'] ?? ''),
+        pageBuilder: (_, GoRouterState state) => AppPage(
+          transition: AppPageTransition.vertical,
+          child: ActivityFormPage(
+            cycleId: state.pathParameters['cycleId'] ?? '',
+          ),
+        ),
       ),
       GoRoute(
         path: '/cycles/:cycleId/activities/:activityId/edit',
-        builder: (_, GoRouterState state) => ActivityFormPage(
-          cycleId: state.pathParameters['cycleId'] ?? '',
-          activityId: state.pathParameters['activityId'],
+        pageBuilder: (_, GoRouterState state) => AppPage(
+          transition: AppPageTransition.vertical,
+          child: ActivityFormPage(
+            cycleId: state.pathParameters['cycleId'] ?? '',
+            activityId: state.pathParameters['activityId'],
+          ),
         ),
       ),
       GoRoute(
         path: '/cycles/:cycleId/harvests/new',
-        builder: (_, GoRouterState state) =>
-            HarvestFormPage(cycleId: state.pathParameters['cycleId'] ?? ''),
+        pageBuilder: (_, GoRouterState state) => AppPage(
+          transition: AppPageTransition.vertical,
+          child: HarvestFormPage(
+            cycleId: state.pathParameters['cycleId'] ?? '',
+          ),
+        ),
       ),
       GoRoute(
         path: '/cycles/:cycleId/harvests/:harvestId/edit',
-        builder: (_, GoRouterState state) => HarvestFormPage(
-          cycleId: state.pathParameters['cycleId'] ?? '',
-          harvestId: state.pathParameters['harvestId'],
+        pageBuilder: (_, GoRouterState state) => AppPage(
+          transition: AppPageTransition.vertical,
+          child: HarvestFormPage(
+            cycleId: state.pathParameters['cycleId'] ?? '',
+            harvestId: state.pathParameters['harvestId'],
+          ),
         ),
       ),
       GoRoute(
         path: '/cycles/:cycleId',
-        builder: (_, GoRouterState state) =>
-            CycleDetailPage(cycleId: state.pathParameters['cycleId'] ?? ''),
+        pageBuilder: (_, GoRouterState state) => AppPage(
+          child: CycleDetailPage(
+            cycleId: state.pathParameters['cycleId'] ?? '',
+          ),
+        ),
       ),
       GoRoute(
         path: '/diagnostics',
-        builder: (_, _) => const DiagnosticsHistoryPage(),
+        pageBuilder: (_, _) => AppPage(child: const DiagnosticsHistoryPage()),
       ),
-      GoRoute(path: '/sync/failed', builder: (_, _) => const SyncFailedPage()),
+      GoRoute(
+        path: '/sync/failed',
+        pageBuilder: (_, _) => AppPage(child: const SyncFailedPage()),
+      ),
       GoRoute(path: '/diagnostic', redirect: (_, _) => '/diagnostic/new'),
       GoRoute(
         path: '/diagnostic/new',
-        builder: (_, _) => const DiagnosticNewPage(),
+        pageBuilder: (_, _) => AppPage(
+          transition: AppPageTransition.vertical,
+          child: const DiagnosticNewPage(),
+        ),
       ),
       GoRoute(
         path: '/diagnostic/:diagnosticId',
-        builder: (_, GoRouterState state) => DiagnosticResultPage(
-          diagnosticId: state.pathParameters['diagnosticId'] ?? '',
+        pageBuilder: (_, GoRouterState state) => AppPage(
+          child: DiagnosticResultPage(
+            diagnosticId: state.pathParameters['diagnosticId'] ?? '',
+          ),
         ),
       ),
       if (kDebugMode)
         GoRoute(
           path: '/dev/gallery',
-          builder: (_, _) => const DesignGalleryPage(),
+          pageBuilder: (_, _) => AppPage(child: const DesignGalleryPage()),
         ),
     ],
     redirect: (_, GoRouterState state) {

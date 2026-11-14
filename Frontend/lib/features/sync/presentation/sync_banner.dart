@@ -6,6 +6,7 @@ import '../../../core/i18n/app_localizations.dart';
 import '../../../core/i18n/strings_provider.dart';
 import '../../../core/sync/sync_providers.dart';
 import '../../../core/sync/sync_status.dart';
+import '../../../design_system/app_motion.dart';
 import '../../../design_system/components/app_status_banner.dart';
 import '../../../design_system/tokens.dart';
 
@@ -17,19 +18,29 @@ class SyncBanner extends ConsumerWidget {
     final AppLocalizations strings = ref.watch(stringsProvider);
     final SyncSnapshot snapshot = ref.watch(syncStatusProvider);
     final Widget? banner = _banner(context, ref, strings, snapshot);
-    if (banner == null) {
-      return const SizedBox.shrink();
-    }
-    return SafeArea(
-      bottom: false,
-      child: Padding(
-        padding: const EdgeInsets.fromLTRB(
-          AppSpacing.xl,
-          AppSpacing.md,
-          AppSpacing.xl,
-          0,
-        ),
-        child: banner,
+    return AnimatedSize(
+      duration: AppMotion.mediumFor(context),
+      curve: AppMotion.enter,
+      alignment: Alignment.topCenter,
+      child: AnimatedSwitcher(
+        duration: AppMotion.mediumFor(context),
+        switchInCurve: AppMotion.enter,
+        switchOutCurve: AppMotion.exit,
+        child: banner == null
+            ? const SizedBox.shrink(key: ValueKey<String>('sync_none'))
+            : SafeArea(
+                key: ValueKey<Key?>(banner.key),
+                bottom: false,
+                child: Padding(
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.xl,
+                    AppSpacing.md,
+                    AppSpacing.xl,
+                    0,
+                  ),
+                  child: banner,
+                ),
+              ),
       ),
     );
   }

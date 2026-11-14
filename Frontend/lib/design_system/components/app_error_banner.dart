@@ -1,14 +1,26 @@
 import 'package:flutter/material.dart';
 import 'package:flutter/semantics.dart';
 
+import '../../core/haptics/app_haptics.dart';
 import '../app_icons.dart';
 import '../app_palette.dart';
 import '../tokens.dart';
 
-class AppErrorBanner extends StatelessWidget {
+class AppErrorBanner extends StatefulWidget {
   const AppErrorBanner({required this.message, super.key});
 
   final String message;
+
+  @override
+  State<AppErrorBanner> createState() => _AppErrorBannerState();
+}
+
+class _AppErrorBannerState extends State<AppErrorBanner> {
+  @override
+  void initState() {
+    super.initState();
+    AppHaptics.trigger(AppHapticType.error);
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -16,7 +28,7 @@ class AppErrorBanner extends StatelessWidget {
     return Semantics(
       container: true,
       role: SemanticsRole.alert,
-      label: message,
+      label: widget.message,
       child: Container(
         padding: const EdgeInsets.symmetric(
           horizontal: AppSpacing.lg,
@@ -33,7 +45,7 @@ class AppErrorBanner extends StatelessWidget {
             const SizedBox(width: AppSpacing.sm),
             Flexible(
               child: Text(
-                message,
+                widget.message,
                 style: AppTextStyles.body.copyWith(color: palette.danger),
               ),
             ),

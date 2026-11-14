@@ -8,6 +8,7 @@ import '../../../core/sync/outbox.dart';
 import '../../../core/sync/sync_providers.dart';
 import '../../../design_system/components/app_button.dart';
 import '../../../design_system/components/app_card.dart';
+import '../../../design_system/components/app_skeleton.dart';
 import '../../../design_system/components/app_text_button.dart';
 import '../../../design_system/tokens.dart';
 import '../../../design_system/app_palette.dart';
@@ -26,7 +27,10 @@ class SyncFailedPage extends ConsumerWidget {
       appBar: AppBar(title: Text(strings.syncFailedTitle)),
       body: SafeArea(
         child: changes.when(
-          loading: () => const Center(child: CircularProgressIndicator()),
+          loading: () => const Padding(
+            padding: EdgeInsets.all(AppSpacing.xl),
+            child: SkeletonList(keyPrefix: 'sync_failed_skeleton'),
+          ),
           error: (Object error, StackTrace stackTrace) => Center(
             child: Padding(
               padding: const EdgeInsets.all(AppSpacing.xl),
