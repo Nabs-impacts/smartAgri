@@ -160,13 +160,32 @@ class AppLocalizationsHa extends AppLocalizations {
   String get homeGreeting => 'Bonjour';
 
   @override
-  String homeWeatherRain(String percent) {
-    return 'Risque de pluie ($percent%)';
+  String homeGreetingSemantic(String name) {
+    return 'Bonjour, $name';
+  }
+
+  @override
+  String get homeNameFallback => 'Agriculteur';
+
+  @override
+  String get homeProfileSemantic => 'Mon profil';
+
+  @override
+  String homeSyncUpToDate(String lastSync) {
+    return 'À jour · $lastSync';
+  }
+
+  @override
+  String get homeSyncSyncing => 'Synchronisation…';
+
+  @override
+  String homeWeatherCondition(String percent) {
+    return 'Pluie probable : $percent %';
   }
 
   @override
   String homeWeatherWind(String speed) {
-    return 'Vent ${speed}km/h';
+    return 'Vent $speed km/h';
   }
 
   @override
@@ -182,7 +201,149 @@ class AppLocalizationsHa extends AppLocalizations {
   String get homeDemoData => 'Données de démonstration';
 
   @override
-  String get homeNewDiagnostic => 'Faire un diagnostic';
+  String get homeDiagnosticCardTitle => 'Diagnostic santé des plantes';
+
+  @override
+  String get homeDiagnosticCardBody =>
+      'Identifiez maladies et ravageurs à partir d\'une photo.';
+
+  @override
+  String get homeDiagnosticAction => 'Analyser une plante';
+
+  @override
+  String homeDiagnosticRemaining(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Il vous reste $count diagnostics ce mois-ci',
+      one: 'Il vous reste 1 diagnostic ce mois-ci',
+      zero: 'Il ne vous reste aucun diagnostic ce mois-ci',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeDiagnosticRemainingPrefix => 'Il vous reste';
+
+  @override
+  String homeDiagnosticRemainingSuffix(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'diagnostics ce mois-ci',
+      one: 'diagnostic ce mois-ci',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeDiagnosticUnlimited => 'Diagnostics illimités ce mois-ci';
+
+  @override
+  String get homeActiveCyclesTitle => 'Mes cultures en cours';
+
+  @override
+  String get homeActiveCyclesEmpty =>
+      'Aucune culture en cours. Ajoutez un cycle dans une de vos parcelles.';
+
+  @override
+  String get homeActiveCyclesSeeFarms => 'Voir mes champs';
+
+  @override
+  String homeCycleSownAgo(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Semé il y a $count jours',
+      one: 'Semé il y a 1 jour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeCycleSownToday => 'Semé aujourd\'hui';
+
+  @override
+  String homeCycleSowingIn(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Semis prévu dans $count jours',
+      one: 'Semis prévu dans 1 jour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeCycleSowingToday => 'Semis prévu aujourd\'hui';
+
+  @override
+  String homeCycleHarvestIn(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Récolte dans $count jours',
+      one: 'Récolte dans 1 jour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeCycleHarvestToday => 'Récolte prévue aujourd\'hui';
+
+  @override
+  String homeCycleHarvestLate(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: 'Récolte en retard de $count jours',
+      one: 'Récolte en retard de 1 jour',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get homeCycleDatesMissing => 'Dates à renseigner';
+
+  @override
+  String get homeRecentActivitiesTitle => 'Dernières activités';
+
+  @override
+  String homeActivityCropPlot(String crop, String plot) {
+    return '$crop · $plot';
+  }
+
+  @override
+  String get homeStartTitle => 'Bienvenue sur GonaTa';
+
+  @override
+  String get homeStartBody =>
+      'Commencez par créer votre première exploitation.';
+
+  @override
+  String get homeStartAction => 'Créer mon exploitation';
+
+  @override
+  String get homeShortcutAddActivity => 'Ajouter une activité';
+
+  @override
+  String get homeShortcutAddHarvest => 'Enregistrer une récolte';
+
+  @override
+  String get homeShortcutNewFarm => 'Nouvelle exploitation';
+
+  @override
+  String get homeShortcutNoCycleTitle => 'Aucun cycle en cours';
+
+  @override
+  String get homeShortcutNoCycleBody =>
+      'Ajoutez un cycle dans une de vos parcelles pour enregistrer une activité ou une récolte.';
+
+  @override
+  String get homeShortcutGoFarms => 'Voir mes champs';
+
+  @override
+  String get homeShortcutChooseCycle => 'Choisir un cycle';
 
   @override
   String get diagnosticComingSoon => 'Le diagnostic arrive à l\'étape suivante';
@@ -227,15 +388,6 @@ class AppLocalizationsHa extends AppLocalizations {
 
   @override
   String get profileCachedData => 'Données en cache';
-
-  @override
-  String get homeFarmsTitle => 'Mes exploitations';
-
-  @override
-  String get homeFarmsSeeAll => 'Tout voir';
-
-  @override
-  String get homeFarmsEmpty => 'Ajoutez votre première exploitation';
 
   @override
   String get farmsTitle => 'Mes exploitations';
@@ -547,9 +699,6 @@ class AppLocalizationsHa extends AppLocalizations {
 
   @override
   String get diagnosticsLatestTitle => 'Derniers diagnostics';
-
-  @override
-  String get diagnosticsLatestEmpty => 'Vos diagnostics apparaîtront ici';
 
   @override
   String get diagnosticsHistoryDelete => 'Supprimer';

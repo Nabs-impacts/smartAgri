@@ -46,15 +46,34 @@
   "navMore": "Plus",
   "navProfile": "Profil",
   "homeGreeting": "Bonjour",
-  "homeWeatherRain": "Risque de pluie ({percent}%)",
-  "@homeWeatherRain": {
+  "homeGreetingSemantic": "Bonjour, {name}",
+  "@homeGreetingSemantic": {
+    "placeholders": {
+      "name": {
+        "type": "String"
+      }
+    }
+  },
+  "homeNameFallback": "Agriculteur",
+  "homeProfileSemantic": "Mon profil",
+  "homeSyncUpToDate": "À jour · {lastSync}",
+  "@homeSyncUpToDate": {
+    "placeholders": {
+      "lastSync": {
+        "type": "String"
+      }
+    }
+  },
+  "homeSyncSyncing": "Synchronisation…",
+  "homeWeatherCondition": "Pluie probable : {percent} %",
+  "@homeWeatherCondition": {
     "placeholders": {
       "percent": {
         "type": "String"
       }
     }
   },
-  "homeWeatherWind": "Vent {speed}km/h",
+  "homeWeatherWind": "Vent {speed} km/h",
   "@homeWeatherWind": {
     "placeholders": {
       "speed": {
@@ -66,7 +85,88 @@
   "homeWeatherSoilDry": "Sol sec",
   "homeWeatherSoilWet": "Sol humide",
   "homeDemoData": "Données de démonstration",
-  "homeNewDiagnostic": "Faire un diagnostic",
+  "homeDiagnosticCardTitle": "Diagnostic santé des plantes",
+  "homeDiagnosticCardBody": "Identifiez maladies et ravageurs à partir d'une photo.",
+  "homeDiagnosticAction": "Analyser une plante",
+  "homeDiagnosticRemaining": "{count, plural, =0{Il ne vous reste aucun diagnostic ce mois-ci} =1{Il vous reste 1 diagnostic ce mois-ci} other{Il vous reste {count} diagnostics ce mois-ci}}",
+  "@homeDiagnosticRemaining": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeDiagnosticRemainingPrefix": "Il vous reste",
+  "homeDiagnosticRemainingSuffix": "{count, plural, =1{diagnostic ce mois-ci} other{diagnostics ce mois-ci}}",
+  "@homeDiagnosticRemainingSuffix": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeDiagnosticUnlimited": "Diagnostics illimités ce mois-ci",
+  "homeActiveCyclesTitle": "Mes cultures en cours",
+  "homeActiveCyclesEmpty": "Aucune culture en cours. Ajoutez un cycle dans une de vos parcelles.",
+  "homeActiveCyclesSeeFarms": "Voir mes champs",
+  "homeCycleSownAgo": "{count, plural, =1{Semé il y a 1 jour} other{Semé il y a {count} jours}}",
+  "@homeCycleSownAgo": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeCycleSownToday": "Semé aujourd'hui",
+  "homeCycleSowingIn": "{count, plural, =1{Semis prévu dans 1 jour} other{Semis prévu dans {count} jours}}",
+  "@homeCycleSowingIn": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeCycleSowingToday": "Semis prévu aujourd'hui",
+  "homeCycleHarvestIn": "{count, plural, =1{Récolte dans 1 jour} other{Récolte dans {count} jours}}",
+  "@homeCycleHarvestIn": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeCycleHarvestToday": "Récolte prévue aujourd'hui",
+  "homeCycleHarvestLate": "{count, plural, =1{Récolte en retard de 1 jour} other{Récolte en retard de {count} jours}}",
+  "@homeCycleHarvestLate": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "homeCycleDatesMissing": "Dates à renseigner",
+  "homeRecentActivitiesTitle": "Dernières activités",
+  "homeActivityCropPlot": "{crop} · {plot}",
+  "@homeActivityCropPlot": {
+    "placeholders": {
+      "crop": {
+        "type": "String"
+      },
+      "plot": {
+        "type": "String"
+      }
+    }
+  },
+  "homeStartTitle": "Bienvenue sur GonaTa",
+  "homeStartBody": "Commencez par créer votre première exploitation.",
+  "homeStartAction": "Créer mon exploitation",
+  "homeShortcutAddActivity": "Ajouter une activité",
+  "homeShortcutAddHarvest": "Enregistrer une récolte",
+  "homeShortcutNewFarm": "Nouvelle exploitation",
+  "homeShortcutNoCycleTitle": "Aucun cycle en cours",
+  "homeShortcutNoCycleBody": "Ajoutez un cycle dans une de vos parcelles pour enregistrer une activité ou une récolte.",
+  "homeShortcutGoFarms": "Voir mes champs",
+  "homeShortcutChooseCycle": "Choisir un cycle",
   "diagnosticComingSoon": "Le diagnostic arrive à l'étape suivante",
   "profileLanguage": "Langue",
   "profileUsage": "Mon utilisation",
@@ -88,9 +188,6 @@
   "profileLogoutMessage": "Voulez-vous vraiment vous déconnecter ?",
   "profileLogoutCancel": "Annuler",
   "profileCachedData": "Données en cache",
-  "homeFarmsTitle": "Mes exploitations",
-  "homeFarmsSeeAll": "Tout voir",
-  "homeFarmsEmpty": "Ajoutez votre première exploitation",
   "farmsTitle": "Mes exploitations",
   "farmsEmpty": "Aucune exploitation pour le moment.",
   "farmAdd": "Ajouter une exploitation",
@@ -195,7 +292,6 @@
   "diagnosticsHistoryNew": "Faire un diagnostic",
   "diagnosticsHistoryUntitled": "Analyse en cours…",
   "diagnosticsLatestTitle": "Derniers diagnostics",
-  "diagnosticsLatestEmpty": "Vos diagnostics apparaîtront ici",
   "diagnosticsHistoryDelete": "Supprimer",
   "diagnosticStatusDone": "Terminé",
   "diagnosticStatusNeedsReview": "À vérifier",

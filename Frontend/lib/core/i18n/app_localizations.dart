@@ -376,16 +376,46 @@ abstract class AppLocalizations {
   /// **'Bonjour'**
   String get homeGreeting;
 
-  /// No description provided for @homeWeatherRain.
+  /// No description provided for @homeGreetingSemantic.
   ///
   /// In fr, this message translates to:
-  /// **'Risque de pluie ({percent}%)'**
-  String homeWeatherRain(String percent);
+  /// **'Bonjour, {name}'**
+  String homeGreetingSemantic(String name);
+
+  /// No description provided for @homeNameFallback.
+  ///
+  /// In fr, this message translates to:
+  /// **'Agriculteur'**
+  String get homeNameFallback;
+
+  /// No description provided for @homeProfileSemantic.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mon profil'**
+  String get homeProfileSemantic;
+
+  /// No description provided for @homeSyncUpToDate.
+  ///
+  /// In fr, this message translates to:
+  /// **'À jour · {lastSync}'**
+  String homeSyncUpToDate(String lastSync);
+
+  /// No description provided for @homeSyncSyncing.
+  ///
+  /// In fr, this message translates to:
+  /// **'Synchronisation…'**
+  String get homeSyncSyncing;
+
+  /// No description provided for @homeWeatherCondition.
+  ///
+  /// In fr, this message translates to:
+  /// **'Pluie probable : {percent} %'**
+  String homeWeatherCondition(String percent);
 
   /// No description provided for @homeWeatherWind.
   ///
   /// In fr, this message translates to:
-  /// **'Vent {speed}km/h'**
+  /// **'Vent {speed} km/h'**
   String homeWeatherWind(String speed);
 
   /// No description provided for @homeWeatherSoilGood.
@@ -412,11 +442,185 @@ abstract class AppLocalizations {
   /// **'Données de démonstration'**
   String get homeDemoData;
 
-  /// No description provided for @homeNewDiagnostic.
+  /// No description provided for @homeDiagnosticCardTitle.
   ///
   /// In fr, this message translates to:
-  /// **'Faire un diagnostic'**
-  String get homeNewDiagnostic;
+  /// **'Diagnostic santé des plantes'**
+  String get homeDiagnosticCardTitle;
+
+  /// No description provided for @homeDiagnosticCardBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Identifiez maladies et ravageurs à partir d\'une photo.'**
+  String get homeDiagnosticCardBody;
+
+  /// No description provided for @homeDiagnosticAction.
+  ///
+  /// In fr, this message translates to:
+  /// **'Analyser une plante'**
+  String get homeDiagnosticAction;
+
+  /// No description provided for @homeDiagnosticRemaining.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Il ne vous reste aucun diagnostic ce mois-ci} =1{Il vous reste 1 diagnostic ce mois-ci} other{Il vous reste {count} diagnostics ce mois-ci}}'**
+  String homeDiagnosticRemaining(int count);
+
+  /// No description provided for @homeDiagnosticRemainingPrefix.
+  ///
+  /// In fr, this message translates to:
+  /// **'Il vous reste'**
+  String get homeDiagnosticRemainingPrefix;
+
+  /// No description provided for @homeDiagnosticRemainingSuffix.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{diagnostic ce mois-ci} other{diagnostics ce mois-ci}}'**
+  String homeDiagnosticRemainingSuffix(int count);
+
+  /// No description provided for @homeDiagnosticUnlimited.
+  ///
+  /// In fr, this message translates to:
+  /// **'Diagnostics illimités ce mois-ci'**
+  String get homeDiagnosticUnlimited;
+
+  /// No description provided for @homeActiveCyclesTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Mes cultures en cours'**
+  String get homeActiveCyclesTitle;
+
+  /// No description provided for @homeActiveCyclesEmpty.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucune culture en cours. Ajoutez un cycle dans une de vos parcelles.'**
+  String get homeActiveCyclesEmpty;
+
+  /// No description provided for @homeActiveCyclesSeeFarms.
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir mes champs'**
+  String get homeActiveCyclesSeeFarms;
+
+  /// No description provided for @homeCycleSownAgo.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{Semé il y a 1 jour} other{Semé il y a {count} jours}}'**
+  String homeCycleSownAgo(int count);
+
+  /// No description provided for @homeCycleSownToday.
+  ///
+  /// In fr, this message translates to:
+  /// **'Semé aujourd\'hui'**
+  String get homeCycleSownToday;
+
+  /// No description provided for @homeCycleSowingIn.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{Semis prévu dans 1 jour} other{Semis prévu dans {count} jours}}'**
+  String homeCycleSowingIn(int count);
+
+  /// No description provided for @homeCycleSowingToday.
+  ///
+  /// In fr, this message translates to:
+  /// **'Semis prévu aujourd\'hui'**
+  String get homeCycleSowingToday;
+
+  /// No description provided for @homeCycleHarvestIn.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{Récolte dans 1 jour} other{Récolte dans {count} jours}}'**
+  String homeCycleHarvestIn(int count);
+
+  /// No description provided for @homeCycleHarvestToday.
+  ///
+  /// In fr, this message translates to:
+  /// **'Récolte prévue aujourd\'hui'**
+  String get homeCycleHarvestToday;
+
+  /// No description provided for @homeCycleHarvestLate.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =1{Récolte en retard de 1 jour} other{Récolte en retard de {count} jours}}'**
+  String homeCycleHarvestLate(int count);
+
+  /// No description provided for @homeCycleDatesMissing.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dates à renseigner'**
+  String get homeCycleDatesMissing;
+
+  /// No description provided for @homeRecentActivitiesTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Dernières activités'**
+  String get homeRecentActivitiesTitle;
+
+  /// No description provided for @homeActivityCropPlot.
+  ///
+  /// In fr, this message translates to:
+  /// **'{crop} · {plot}'**
+  String homeActivityCropPlot(String crop, String plot);
+
+  /// No description provided for @homeStartTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Bienvenue sur GonaTa'**
+  String get homeStartTitle;
+
+  /// No description provided for @homeStartBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Commencez par créer votre première exploitation.'**
+  String get homeStartBody;
+
+  /// No description provided for @homeStartAction.
+  ///
+  /// In fr, this message translates to:
+  /// **'Créer mon exploitation'**
+  String get homeStartAction;
+
+  /// No description provided for @homeShortcutAddActivity.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajouter une activité'**
+  String get homeShortcutAddActivity;
+
+  /// No description provided for @homeShortcutAddHarvest.
+  ///
+  /// In fr, this message translates to:
+  /// **'Enregistrer une récolte'**
+  String get homeShortcutAddHarvest;
+
+  /// No description provided for @homeShortcutNewFarm.
+  ///
+  /// In fr, this message translates to:
+  /// **'Nouvelle exploitation'**
+  String get homeShortcutNewFarm;
+
+  /// No description provided for @homeShortcutNoCycleTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun cycle en cours'**
+  String get homeShortcutNoCycleTitle;
+
+  /// No description provided for @homeShortcutNoCycleBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Ajoutez un cycle dans une de vos parcelles pour enregistrer une activité ou une récolte.'**
+  String get homeShortcutNoCycleBody;
+
+  /// No description provided for @homeShortcutGoFarms.
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir mes champs'**
+  String get homeShortcutGoFarms;
+
+  /// No description provided for @homeShortcutChooseCycle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Choisir un cycle'**
+  String get homeShortcutChooseCycle;
 
   /// No description provided for @diagnosticComingSoon.
   ///
@@ -501,24 +705,6 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Données en cache'**
   String get profileCachedData;
-
-  /// No description provided for @homeFarmsTitle.
-  ///
-  /// In fr, this message translates to:
-  /// **'Mes exploitations'**
-  String get homeFarmsTitle;
-
-  /// No description provided for @homeFarmsSeeAll.
-  ///
-  /// In fr, this message translates to:
-  /// **'Tout voir'**
-  String get homeFarmsSeeAll;
-
-  /// No description provided for @homeFarmsEmpty.
-  ///
-  /// In fr, this message translates to:
-  /// **'Ajoutez votre première exploitation'**
-  String get homeFarmsEmpty;
 
   /// No description provided for @farmsTitle.
   ///
@@ -1101,12 +1287,6 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Derniers diagnostics'**
   String get diagnosticsLatestTitle;
-
-  /// No description provided for @diagnosticsLatestEmpty.
-  ///
-  /// In fr, this message translates to:
-  /// **'Vos diagnostics apparaîtront ici'**
-  String get diagnosticsLatestEmpty;
 
   /// No description provided for @diagnosticsHistoryDelete.
   ///

@@ -46,6 +46,15 @@ class FixedSessionController extends SessionController {
   SessionState build() => fixedState;
 }
 
+class FixedSyncStatusController extends SyncStatusController {
+  FixedSyncStatusController(this.initial);
+
+  final SyncStatus initial;
+
+  @override
+  SyncStatus build() => initial;
+}
+
 class FixedStaleController extends MeStaleController {
   FixedStaleController(this.initial);
 
@@ -242,7 +251,21 @@ Future<ProviderContainer> buildTestContainer({
       syncRunnerProvider.overrideWithValue(
         syncRunner ?? () async => SyncResult.none,
       ),
-      if (syncStatus != null) syncStatusProvider.overrideWithValue(syncStatus),
+      if (syncStatus != null) ...[
+        syncStatusProvider.overrideWithValue(syncStatus),
+        pendingCountProvider.overrideWithValue(
+          AsyncData<int>(syncStatus.pendingCount),
+        ),
+        failedCountProvider.overrideWithValue(
+          AsyncData<int>(syncStatus.failedCount),
+        ),
+        lastSyncAtProvider.overrideWithValue(
+          AsyncData<DateTime?>(syncStatus.lastSyncAt),
+        ),
+        syncStatusControllerProvider.overrideWith(
+          () => FixedSyncStatusController(syncStatus.status),
+        ),
+      ],
       diagnosticsRepositoryProvider.overrideWithValue(
         diagnosticsRepository ?? FakeDiagnosticsRepository(),
       ),

@@ -10,6 +10,46 @@ part 'app_database.g.dart';
 
 const Object _absent = Object();
 
+class ActiveCycleOverviewRow {
+  const ActiveCycleOverviewRow({
+    required this.id,
+    required this.plotId,
+    required this.cropId,
+    required this.status,
+    required this.plotName,
+    required this.farmName,
+    this.sowingDate,
+    this.expectedHarvestDate,
+  });
+
+  final String id;
+  final String plotId;
+  final int cropId;
+  final String status;
+  final String plotName;
+  final String farmName;
+  final String? sowingDate;
+  final String? expectedHarvestDate;
+}
+
+class RecentActivityOverviewRow {
+  const RecentActivityOverviewRow({
+    required this.id,
+    required this.cropCycleId,
+    required this.cropId,
+    required this.type,
+    required this.performedOn,
+    required this.plotName,
+  });
+
+  final String id;
+  final String cropCycleId;
+  final int cropId;
+  final String type;
+  final String performedOn;
+  final String plotName;
+}
+
 @DataClassName('FarmRow')
 class Farms extends Table {
   TextColumn get id => text()();
@@ -501,6 +541,92 @@ class AppDatabase extends _$AppDatabase {
             (Farms t) => OrderingTerm.asc(t.id),
           ]))
         .watch();
+  }
+
+  Stream<List<ActiveCycleOverviewRow>> watchActiveCycleOverview() {
+    final JoinedSelectStatement<HasResultSet, dynamic> query =
+        select(cropCycles).join(<Join<HasResultSet, dynamic>>[
+          innerJoin(plots, plots.id.equalsExp(cropCycles.plotId)),
+          innerJoin(farms, farms.id.equalsExp(plots.farmId)),
+        ]);
+    query.where(
+      cropCycles.deletedAt.isNull() &
+          plots.deletedAt.isNull() &
+          farms.deletedAt.isNull() &
+          cropCycles.status.isIn(<String>['planned', 'growing']),
+    );
+    query.orderBy(<OrderingTerm>[
+      OrderingTerm(
+        expression: cropCycles.expectedHarvestDate,
+        mode: OrderingMode.asc,
+        nulls: NullsOrder.last,
+      ),
+      OrderingTerm(
+        expression: cropCycles.sowingDate,
+        mode: OrderingMode.desc,
+        nulls: NullsOrder.last,
+      ),
+      OrderingTerm.asc(cropCycles.id),
+    ]);
+    return query.watch().map((List<TypedResult> rows) {
+      return rows.map((TypedResult row) {
+        final CropCycleRow cycle = row.readTable(cropCycles);
+        final PlotRow plot = row.readTable(plots);
+        final FarmRow farm = row.readTable(farms);
+        return ActiveCycleOverviewRow(
+          id: cycle.id,
+          plotId: cycle.plotId,
+          cropId: cycle.cropId,
+          status: cycle.status,
+          plotName: plot.name,
+          farmName: farm.name,
+          sowingDate: cycle.sowingDate,
+          expectedHarvestDate: cycle.expectedHarvestDate,
+        );
+      }).toList();
+    });
+  }
+
+  Stream<List<RecentActivityOverviewRow>> watchRecentActivities(int limit) {
+    final JoinedSelectStatement<HasResultSet, dynamic> query =
+        select(farmActivities).join(<Join<HasResultSet, dynamic>>[
+          innerJoin(
+            cropCycles,
+            cropCycles.id.equalsExp(farmActivities.cropCycleId),
+          ),
+          innerJoin(plots, plots.id.equalsExp(cropCycles.plotId)),
+        ]);
+    query.where(
+      farmActivities.deletedAt.isNull() &
+          cropCycles.deletedAt.isNull() &
+          plots.deletedAt.isNull(),
+    );
+    query.orderBy(<OrderingTerm>[
+      OrderingTerm.desc(farmActivities.performedOn),
+      OrderingTerm.desc(farmActivities.id),
+    ]);
+    query.limit(limit);
+    return query.watch().map((List<TypedResult> rows) {
+      return rows.map((TypedResult row) {
+        final FarmActivityRow activity = row.readTable(farmActivities);
+        final CropCycleRow cycle = row.readTable(cropCycles);
+        final PlotRow plot = row.readTable(plots);
+        return RecentActivityOverviewRow(
+          id: activity.id,
+          cropCycleId: activity.cropCycleId,
+          cropId: cycle.cropId,
+          type: activity.type,
+          performedOn: activity.performedOn,
+          plotName: plot.name,
+        );
+      }).toList();
+    });
+  }
+
+  Stream<bool> watchHasFarms() {
+    return (select(farms)..where((Farms t) => t.deletedAt.isNull()))
+        .watch()
+        .map((List<FarmRow> rows) => rows.isNotEmpty);
   }
 
   Stream<List<PlotRow>> watchPlots(String farmId) {
