@@ -15,6 +15,7 @@ import '../../../design_system/components/app_pressable.dart';
 import '../../../design_system/components/app_staggered_entrance.dart';
 import '../../../design_system/components/app_skeleton.dart';
 import '../../../design_system/components/app_error_banner.dart';
+import '../../../design_system/components/app_tab_header.dart';
 import '../../../design_system/components/app_text_button.dart';
 import '../../../design_system/tokens.dart';
 import '../../../design_system/app_palette.dart';
@@ -43,7 +44,6 @@ class FarmsPage extends ConsumerWidget {
 
     return Scaffold(
       backgroundColor: context.palette.background,
-      appBar: AppBar(title: Text(strings.farmsTitle)),
       body: SafeArea(
         child: RefreshIndicator(
           onRefresh: () async {
@@ -59,13 +59,17 @@ class FarmsPage extends ConsumerWidget {
               AppSpacing.xl,
             ),
             children: <Widget>[
+              AppTabHeader(
+                key: const Key('farms_header'),
+                title: strings.farmsTitle,
+              ),
               SizedBox(
                 width: double.infinity,
                 child: AppButton(
                   key: const Key('farms_add'),
                   label: strings.farmAdd,
                   icon: const Icon(AppIcons.add),
-                  onPressed: () => context.go('/farms/new'),
+                  onPressed: () => context.push('/farms/new'),
                 ),
               ),
               const SizedBox(height: AppSpacing.xl),
@@ -91,7 +95,7 @@ class FarmsPage extends ConsumerWidget {
                       _FarmTile(
                         farm: farm,
                         region: farmRegionName(farm, areas),
-                        onTap: () => context.go('/farms/${farm.id}'),
+                        onTap: () => context.push('/farms/${farm.id}'),
                       ),
                   ],
                 ),

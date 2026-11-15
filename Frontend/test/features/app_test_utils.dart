@@ -18,6 +18,7 @@ import 'package:smartagri/core/session/session_state.dart';
 import 'package:smartagri/core/storage/token_store.dart';
 import 'package:smartagri/core/sync/sync_providers.dart';
 import 'package:smartagri/core/sync/sync_service.dart';
+import 'package:smartagri/core/sync/sync_status.dart';
 import 'package:smartagri/design_system/theme.dart';
 import 'package:smartagri/features/auth/data/auth_repository.dart';
 import 'package:smartagri/features/admin/data/stats_repository.dart';
@@ -31,8 +32,10 @@ import 'package:smartagri/features/farms/data/farms_repository.dart';
 import 'package:smartagri/features/privacy/data/data_exporter.dart';
 import 'package:smartagri/features/privacy/data/privacy_repository.dart';
 import 'package:smartagri/features/profile/data/me_repository.dart';
+import 'package:smartagri/features/tips/data/recommendations_repository.dart';
 
 import 'diagnostics/fake_diagnostics_repository.dart';
+import 'tips/fake_recommendations_repository.dart';
 
 class FixedSessionController extends SessionController {
   FixedSessionController(this.fixedState);
@@ -204,7 +207,9 @@ Future<ProviderContainer> buildTestContainer({
   FarmsRepository? farmsRepository,
   AppDatabase? database,
   SyncRunner? syncRunner,
+  SyncSnapshot? syncStatus,
   DiagnosticsRepository? diagnosticsRepository,
+  RecommendationsRepository? recommendationsRepository,
   CyclesRepository? cyclesRepository,
   PrivacyRepository? privacyRepository,
   DataExporter? dataExporter,
@@ -237,8 +242,12 @@ Future<ProviderContainer> buildTestContainer({
       syncRunnerProvider.overrideWithValue(
         syncRunner ?? () async => SyncResult.none,
       ),
+      if (syncStatus != null) syncStatusProvider.overrideWithValue(syncStatus),
       diagnosticsRepositoryProvider.overrideWithValue(
         diagnosticsRepository ?? FakeDiagnosticsRepository(),
+      ),
+      recommendationsRepositoryProvider.overrideWithValue(
+        recommendationsRepository ?? FakeRecommendationsRepository(),
       ),
       adminAreasProvider.overrideWith(
         () => FixedAdminAreasController(adminAreas),

@@ -83,6 +83,10 @@ abstract final class AppSizes {
   static const double progress = 8;
   static const double navHeight = 72;
   static const double navIndicator = 48;
+  static const double navPillWidth = 44;
+  static const double navPillHeight = 28;
+  static const double navAction = 64;
+  static const double navOverhang = 24;
   static const double languagePill = 48;
   static const double logo = 48;
   static const double buttonRegular = 56;

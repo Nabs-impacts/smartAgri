@@ -25,6 +25,7 @@ import '../domain/diagnostic_status.dart';
 import '../domain/prediction.dart';
 import '../domain/recommendation_info.dart';
 import '../domain/severity.dart';
+import 'recommendation_feedback.dart';
 import '../../../design_system/app_icons.dart';
 
 final Provider<bool> diagnosticDemoBannerProvider = Provider<bool>(
@@ -42,9 +43,6 @@ class DiagnosticResultPage extends ConsumerStatefulWidget {
 }
 
 class _DiagnosticResultPageState extends ConsumerState<DiagnosticResultPage> {
-  bool _feedbackSent = false;
-  bool _feedbackSending = false;
-
   @override
   Widget build(BuildContext context) {
     final AppLocalizations strings = ref.watch(stringsProvider);
@@ -119,13 +117,7 @@ class _DiagnosticResultPageState extends ConsumerState<DiagnosticResultPage> {
                 onRetry: _retry,
               )
             else
-              _DoneView(
-                strings: strings,
-                diagnostic: diagnostic,
-                feedbackSent: _feedbackSent,
-                feedbackSending: _feedbackSending,
-                onFeedback: _sendFeedback,
-              ),
+              _DoneView(strings: strings, diagnostic: diagnostic),
           ],
         ),
       ),
@@ -147,36 +139,6 @@ class _DiagnosticResultPageState extends ConsumerState<DiagnosticResultPage> {
       }
     }
     ref.invalidate(diagnosticWatchProvider(widget.diagnosticId));
-  }
-
-  Future<void> _sendFeedback(bool helpful) async {
-    if (_feedbackSent || _feedbackSending) {
-      return;
-    }
-    final DiagnosticWatchState? current = ref
-        .read(diagnosticWatchProvider(widget.diagnosticId))
-        .value;
-    final RecommendationInfo? recommendation =
-        current?.diagnostic?.recommendation;
-    if (recommendation == null) {
-      return;
-    }
-    setState(() => _feedbackSending = true);
-    try {
-      await ref
-          .read(diagnosticsRepositoryProvider)
-          .sendFeedback(recommendation.id, helpful: helpful);
-      if (mounted) {
-        setState(() {
-          _feedbackSending = false;
-          _feedbackSent = true;
-        });
-      }
-    } on ApiException {
-      if (mounted) {
-        setState(() => _feedbackSending = false);
-      }
-    }
   }
 
   Future<void> _confirmDelete(AppLocalizations strings) async {
@@ -365,19 +327,10 @@ class _ProcessingView extends StatelessWidget {
 }
 
 class _DoneView extends StatelessWidget {
-  const _DoneView({
-    required this.strings,
-    required this.diagnostic,
-    required this.feedbackSent,
-    required this.feedbackSending,
-    required this.onFeedback,
-  });
+  const _DoneView({required this.strings, required this.diagnostic});
 
   final AppLocalizations strings;
   final Diagnostic diagnostic;
-  final bool feedbackSent;
-  final bool feedbackSending;
-  final ValueChanged<bool> onFeedback;
 
   @override
   Widget build(BuildContext context) {
@@ -471,44 +424,10 @@ class _DoneView extends StatelessWidget {
                 Text(recommendation.body, style: AppTextStyles.body),
                 ..._stepSections(strings, recommendation),
                 const SizedBox(height: AppSpacing.lg),
-                if (feedbackSent)
-                  Text(
-                    strings.diagnosticFeedbackThanks,
-                    key: const Key('diagnostic_feedback_thanks'),
-                    style: AppTextStyles.label.copyWith(
-                      color: context.palette.primary,
-                    ),
-                  )
-                else ...<Widget>[
-                  Text(
-                    strings.diagnosticFeedbackQuestion,
-                    style: AppTextStyles.body,
-                  ),
-                  const SizedBox(height: AppSpacing.sm),
-                  Row(
-                    children: <Widget>[
-                      AppButton(
-                        key: const Key('diagnostic_feedback_yes'),
-                        label: strings.diagnosticFeedbackYes,
-                        variant: AppButtonVariant.outlined,
-                        size: AppButtonSize.compact,
-                        onPressed: feedbackSending
-                            ? null
-                            : () => onFeedback(true),
-                      ),
-                      const SizedBox(width: AppSpacing.sm),
-                      AppButton(
-                        key: const Key('diagnostic_feedback_no'),
-                        label: strings.diagnosticFeedbackNo,
-                        variant: AppButtonVariant.outlined,
-                        size: AppButtonSize.compact,
-                        onPressed: feedbackSending
-                            ? null
-                            : () => onFeedback(false),
-                      ),
-                    ],
-                  ),
-                ],
+                RecommendationFeedbackPanel(
+                  recommendationId: recommendation.id,
+                  keyPrefix: 'diagnostic',
+                ),
               ],
             ),
           ),

@@ -31,12 +31,14 @@ import '../../features/farms/presentation/plot_form_page.dart';
 import '../../features/home/home_page.dart';
 import '../../features/home/home_shell.dart';
 import '../../features/legal/legal_page.dart';
+import '../../features/more/presentation/more_page.dart';
 import '../../features/privacy/presentation/consents_page.dart';
 import '../../features/privacy/presentation/delete_account_page.dart';
 import '../../features/profile/data/me_repository.dart';
 import '../../features/profile/profile_page.dart';
-import '../../features/search/search_page.dart';
 import '../../features/sync/presentation/sync_failed_page.dart';
+import '../../features/tips/presentation/recommendation_detail_page.dart';
+import '../../features/tips/presentation/tips_page.dart';
 import '../config/app_config.dart';
 import 'app_page.dart';
 import '../session/session_controller.dart';
@@ -139,10 +141,10 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
           StatefulShellBranch(
             routes: <RouteBase>[
               GoRoute(
-                path: '/search',
+                path: '/farms',
                 pageBuilder: (_, _) => AppPage(
                   transition: AppPageTransition.fade,
-                  child: const SearchPage(),
+                  child: const FarmsPage(),
                 ),
               ),
             ],
@@ -150,10 +152,21 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
           StatefulShellBranch(
             routes: <RouteBase>[
               GoRoute(
-                path: '/profile',
+                path: '/tips',
                 pageBuilder: (_, _) => AppPage(
                   transition: AppPageTransition.fade,
-                  child: const ProfilePage(),
+                  child: const TipsPage(),
+                ),
+              ),
+            ],
+          ),
+          StatefulShellBranch(
+            routes: <RouteBase>[
+              GoRoute(
+                path: '/more',
+                pageBuilder: (_, _) => AppPage(
+                  transition: AppPageTransition.fade,
+                  child: const MorePage(),
                 ),
               ),
             ],
@@ -203,9 +216,18 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
         ],
       ),
       GoRoute(path: '/admin', redirect: (_, _) => '/admin/overview'),
+      GoRoute(path: '/search', redirect: (_, _) => '/home'),
       GoRoute(
-        path: '/farms',
-        pageBuilder: (_, _) => AppPage(child: const FarmsPage()),
+        path: '/profile',
+        pageBuilder: (_, _) => AppPage(child: const ProfilePage()),
+      ),
+      GoRoute(
+        path: '/tips/:recommendationId',
+        pageBuilder: (_, GoRouterState state) => AppPage(
+          child: RecommendationDetailPage(
+            recommendationId: state.pathParameters['recommendationId'] ?? '',
+          ),
+        ),
       ),
       GoRoute(
         path: '/farms/new',
@@ -400,6 +422,9 @@ final Provider<GoRouter> routerProvider = Provider<GoRouter>((Ref ref) {
           '/forgot-password',
           '/home',
           '/search',
+          '/farms',
+          '/tips',
+          '/more',
           '/profile',
           '/admin',
           '/sync/failed',

@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:smartagri/core/sync/sync_providers.dart';
 import 'package:smartagri/core/sync/sync_service.dart';
 import 'package:smartagri/core/sync/sync_status.dart';
+import 'package:smartagri/design_system/app_icons.dart';
 import 'package:smartagri/features/farms/domain/farm.dart';
 import 'package:smartagri/features/farms/presentation/farm_detail_page.dart';
 import 'package:smartagri/features/farms/presentation/farm_form_page.dart';
@@ -32,6 +33,17 @@ void main() {
     await tester.pumpAndSettle();
 
     expect(find.byType(FarmDetailPage), findsOneWidget);
+  });
+
+  testWidgets('uses a tab header without a back button', (
+    WidgetTester tester,
+  ) async {
+    await pumpFarmsApp(tester);
+
+    expect(find.byKey(const Key('farms_header')), findsOneWidget);
+    expect(find.text('Mes exploitations'), findsOneWidget);
+    expect(find.byIcon(AppIcons.chevronLeft), findsNothing);
+    expect(find.byKey(const Key('farms_add')), findsOneWidget);
   });
 
   testWidgets('opens the creation form from the primary button', (

@@ -25,28 +25,51 @@ class HomeShell extends ConsumerWidget {
         selectedIcon: AppIcons.homeFill,
         label: strings.navHome,
       ),
-      AppNavItem(icon: AppIcons.search, label: strings.navSearch),
       AppNavItem(
-        icon: AppIcons.profile,
-        selectedIcon: AppIcons.profileFill,
-        label: strings.navProfile,
+        icon: AppIcons.farm,
+        selectedIcon: AppIcons.farmFill,
+        label: strings.navFarms,
+      ),
+      AppNavItem(
+        icon: AppIcons.tips,
+        selectedIcon: AppIcons.tipsFill,
+        label: strings.navTips,
+      ),
+      AppNavItem(
+        icon: AppIcons.more,
+        selectedIcon: AppIcons.moreFill,
+        label: strings.navMore,
       ),
     ];
-    return Scaffold(
-      body: Column(
-        children: <Widget>[
-          const SyncBanner(),
-          Expanded(child: navigationShell),
-        ],
-      ),
-      bottomNavigationBar: SafeArea(
-        minimum: const EdgeInsets.all(AppSpacing.lg),
-        child: AppBottomNav(
-          items: items,
-          selectedIndex: navigationShell.currentIndex,
-          onSelected: (int index) => navigationShell.goBranch(
-            index,
-            initialLocation: index == navigationShell.currentIndex,
+    return PopScope(
+      canPop: navigationShell.currentIndex == 0,
+      onPopInvokedWithResult: (bool didPop, Object? result) {
+        if (didPop) {
+          return;
+        }
+        navigationShell.goBranch(0);
+      },
+      child: Scaffold(
+        body: Column(
+          children: <Widget>[
+            const SyncBanner(),
+            Expanded(child: navigationShell),
+          ],
+        ),
+        bottomNavigationBar: SafeArea(
+          minimum: const EdgeInsets.all(AppSpacing.lg),
+          child: AppBottomNav(
+            items: items,
+            selectedIndex: navigationShell.currentIndex,
+            centralAction: AppNavAction(
+              icon: AppIcons.scan,
+              label: strings.navScan,
+              onPressed: () => context.push('/diagnostic/new'),
+            ),
+            onSelected: (int index) => navigationShell.goBranch(
+              index,
+              initialLocation: index == navigationShell.currentIndex,
+            ),
           ),
         ),
       ),

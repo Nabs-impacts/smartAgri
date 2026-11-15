@@ -91,6 +91,12 @@ abstract final class AppIcons {
     fontPackage: 'phosphor_flutter',
     matchTextDirection: true,
   );
+  static const IconData moreFill = IconData(
+    0xe208,
+    fontFamily: 'PhosphorFill',
+    fontPackage: 'phosphor_flutter',
+    matchTextDirection: true,
+  );
   static const IconData sync = IconData(
     0xe094,
     fontFamily: 'PhosphorRegular',
@@ -369,6 +375,12 @@ abstract final class AppIcons {
   );
   static const IconData filter = IconData(
     0xe266,
+    fontFamily: 'PhosphorRegular',
+    fontPackage: 'phosphor_flutter',
+    matchTextDirection: true,
+  );
+  static const IconData signOut = IconData(
+    0xe42a,
     fontFamily: 'PhosphorRegular',
     fontPackage: 'phosphor_flutter',
     matchTextDirection: true,

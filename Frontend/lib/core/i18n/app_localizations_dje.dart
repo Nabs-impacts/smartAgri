@@ -142,7 +142,16 @@ class AppLocalizationsDje extends AppLocalizations {
   String get navHome => 'Accueil';
 
   @override
-  String get navSearch => 'Recherche';
+  String get navFarms => 'Champs';
+
+  @override
+  String get navScan => 'Scanner';
+
+  @override
+  String get navTips => 'Conseils';
+
+  @override
+  String get navMore => 'Plus';
 
   @override
   String get navProfile => 'Profil';
@@ -177,9 +186,6 @@ class AppLocalizationsDje extends AppLocalizations {
 
   @override
   String get diagnosticComingSoon => 'Le diagnostic arrive à l\'étape suivante';
-
-  @override
-  String get searchComingSoon => 'Bientôt disponible';
 
   @override
   String get profileLanguage => 'Langue';
@@ -477,7 +483,7 @@ class AppLocalizationsDje extends AppLocalizations {
   String get diagnosticRefresh => 'Actualiser';
 
   @override
-  String get diagnosticFeedbackQuestion => 'Ce conseil vous a-t-il aidé ?';
+  String get diagnosticFeedbackQuestion => 'Ce conseil vous a-t-il été utile ?';
 
   @override
   String get diagnosticFeedbackYes => 'Oui';
@@ -1445,4 +1451,90 @@ class AppLocalizationsDje extends AppLocalizations {
 
   @override
   String get hapticsDescription => 'Retour haptique lors des actions';
+
+  @override
+  String get moreTitle => 'Plus';
+
+  @override
+  String get moreDiagnostics => 'Historique des diagnostics';
+
+  @override
+  String get moreSync => 'Synchronisation';
+
+  @override
+  String get moreSyncUpToDate => 'À jour';
+
+  @override
+  String get moreSyncOffline => 'Hors connexion';
+
+  @override
+  String moreSyncPending(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count modifications en attente',
+      one: '1 modification en attente',
+      zero: 'Aucune modification en attente',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String moreSyncFailed(int count) {
+    String _temp0 = intl.Intl.pluralLogic(
+      count,
+      locale: localeName,
+      other: '$count refusées',
+      one: '1 refusée',
+      zero: 'Aucune refusée',
+    );
+    return '$_temp0';
+  }
+
+  @override
+  String get morePrivacy => 'Confidentialité et données';
+
+  @override
+  String get moreTerms => 'Conditions d\'utilisation';
+
+  @override
+  String get morePrivacyPolicy => 'Politique de confidentialité';
+
+  @override
+  String get tipsTitle => 'Conseils';
+
+  @override
+  String get tipsSoonTitle => 'Conseiller IA GonaTa';
+
+  @override
+  String get tipsSoonBadge => 'Bientôt';
+
+  @override
+  String get tipsSoonBody =>
+      'Bientôt, posez vos questions agricoles à un assistant.';
+
+  @override
+  String get tipsRecommendationsTitle => 'Vos recommandations';
+
+  @override
+  String get tipsEmpty =>
+      'Aucun conseil pour le moment. Analysez une plante pour recevoir des recommandations.';
+
+  @override
+  String get tipsAnalyze => 'Analyser une plante';
+
+  @override
+  String get tipsOffline => 'Les conseils nécessitent une connexion Internet.';
+
+  @override
+  String get tipsLoadMore => 'Charger plus';
+
+  @override
+  String get tipsDetailTitle => 'Conseil';
+
+  @override
+  String get tipsSeeDiagnostic => 'Voir le diagnostic';
+
+  @override
+  String get feedbackApplied => 'Appliqué';
 }

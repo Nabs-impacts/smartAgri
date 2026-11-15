@@ -19,16 +19,15 @@ import '../../design_system/components/app_count_up.dart';
 import '../../design_system/components/app_pressable.dart';
 import '../../design_system/components/app_choice_chips.dart';
 import '../../design_system/components/app_progress_bar.dart';
-import '../../design_system/components/app_text_button.dart';
 import '../../design_system/components/language_switcher.dart';
 import '../../design_system/tokens.dart';
 import '../../design_system/app_palette.dart';
-import '../auth/data/auth_repository.dart';
 import '../auth/domain/user_profile.dart';
 import '../privacy/data/data_exporter.dart';
 import '../privacy/data/privacy_repository.dart';
 import '../sync/sync_format.dart';
 import 'data/me_repository.dart';
+import 'presentation/logout_dialog.dart';
 import '../../design_system/app_icons.dart';
 
 class ProfilePage extends ConsumerWidget {
@@ -44,92 +43,124 @@ class ProfilePage extends ConsumerWidget {
     return Scaffold(
       backgroundColor: context.palette.background,
       body: SafeArea(
-        child: RefreshIndicator(
-          onRefresh: () => ref.read(meProvider.notifier).refresh(),
-          child: ListView(
-            key: const Key('profile_scroll'),
-            physics: const AlwaysScrollableScrollPhysics(),
-            padding: const EdgeInsets.fromLTRB(
-              AppSpacing.xl,
-              AppSpacing.lg,
-              AppSpacing.xl,
-              AppSpacing.xl,
-            ),
-            children: <Widget>[
-              if (data == null && me.isLoading)
-                ..._skeleton(context)
-              else if (data == null && me.hasError)
-                _error(context, ref, strings, me.error)
-              else if (data != null) ...<Widget>[
-                _header(context, strings, data.user),
-                if (stale) ...<Widget>[
-                  const SizedBox(height: AppSpacing.sm),
-                  Text(
-                    strings.profileCachedData,
-                    key: const Key('profile_cached'),
-                    style: AppTextStyles.caption.copyWith(
-                      color: context.palette.muted,
+        child: Column(
+          children: <Widget>[
+            if (Navigator.of(context).canPop())
+              Padding(
+                padding: const EdgeInsets.fromLTRB(
+                  AppSpacing.sm,
+                  AppSpacing.sm,
+                  AppSpacing.xl,
+                  0,
+                ),
+                child: Row(
+                  children: <Widget>[
+                    IconButton(
+                      key: const Key('profile_back'),
+                      icon: const Icon(AppIcons.chevronLeft),
+                      tooltip: strings.back,
+                      onPressed: () => context.pop(),
                     ),
-                  ),
-                ],
-                const SizedBox(height: AppSpacing.xl),
-                _languageSection(ref, strings),
-                if (!data.user.isAdmin) ...<Widget>[
-                  const SizedBox(height: AppSpacing.xl),
-                  _usageSection(context, strings, data.quotas),
-                  const SizedBox(height: AppSpacing.xl),
-                  AppPressable(
-                    key: const Key('profile_diagnostics'),
-                    borderRadius: AppRadii.cardBorder,
-                    haptics: AppHapticType.tap,
-                    onTap: () => context.go('/diagnostics'),
-                    child: AppCard(
-                      padding: const EdgeInsets.all(AppSpacing.md),
-                      child: Row(
-                        children: <Widget>[
-                          Icon(
-                            AppIcons.plant,
-                            color: context.palette.primary,
-                            size: AppSizes.icon,
-                          ),
-                          const SizedBox(width: AppSpacing.md),
-                          Expanded(
-                            child: Text(
-                              strings.profileDiagnostics,
-                              style: AppTextStyles.label,
-                            ),
-                          ),
-                          Icon(
-                            AppIcons.chevronRight,
-                            color: context.palette.muted,
-                            size: AppSizes.icon,
-                          ),
-                        ],
+                    const SizedBox(width: AppSpacing.sm),
+                    Expanded(
+                      child: Text(
+                        strings.navProfile,
+                        style: AppTextStyles.headline,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: AppSpacing.xl),
-                  _PrivacySection(strings: strings),
-                  const SizedBox(height: AppSpacing.xl),
-                  _SyncSection(strings: strings),
-                ],
-                const SizedBox(height: AppSpacing.xl),
-                _appearanceSection(ref, strings),
-                const SizedBox(height: AppSpacing.xl),
-                _hapticsSection(context, ref, strings),
-                const SizedBox(height: AppSpacing.lg),
-                SizedBox(
-                  width: double.infinity,
-                  child: AppButton(
-                    key: const Key('profile_logout'),
-                    label: strings.profileLogout,
-                    variant: AppButtonVariant.outlined,
-                    onPressed: () => _confirmLogout(context, ref, strings),
-                  ),
+                  ],
                 ),
-              ],
-            ],
-          ),
+              ),
+            Expanded(
+              child: RefreshIndicator(
+                onRefresh: () => ref.read(meProvider.notifier).refresh(),
+                child: ListView(
+                  key: const Key('profile_scroll'),
+                  physics: const AlwaysScrollableScrollPhysics(),
+                  padding: const EdgeInsets.fromLTRB(
+                    AppSpacing.xl,
+                    AppSpacing.lg,
+                    AppSpacing.xl,
+                    AppSpacing.xl,
+                  ),
+                  children: <Widget>[
+                    if (data == null && me.isLoading)
+                      ..._skeleton(context)
+                    else if (data == null && me.hasError)
+                      _error(context, ref, strings, me.error)
+                    else if (data != null) ...<Widget>[
+                      _header(context, strings, data.user),
+                      if (stale) ...<Widget>[
+                        const SizedBox(height: AppSpacing.sm),
+                        Text(
+                          strings.profileCachedData,
+                          key: const Key('profile_cached'),
+                          style: AppTextStyles.caption.copyWith(
+                            color: context.palette.muted,
+                          ),
+                        ),
+                      ],
+                      const SizedBox(height: AppSpacing.xl),
+                      _languageSection(ref, strings),
+                      if (!data.user.isAdmin) ...<Widget>[
+                        const SizedBox(height: AppSpacing.xl),
+                        _usageSection(context, strings, data.quotas),
+                        const SizedBox(height: AppSpacing.xl),
+                        AppPressable(
+                          key: const Key('profile_diagnostics'),
+                          borderRadius: AppRadii.cardBorder,
+                          haptics: AppHapticType.tap,
+                          onTap: () => context.go('/diagnostics'),
+                          child: AppCard(
+                            padding: const EdgeInsets.all(AppSpacing.md),
+                            child: Row(
+                              children: <Widget>[
+                                Icon(
+                                  AppIcons.plant,
+                                  color: context.palette.primary,
+                                  size: AppSizes.icon,
+                                ),
+                                const SizedBox(width: AppSpacing.md),
+                                Expanded(
+                                  child: Text(
+                                    strings.profileDiagnostics,
+                                    style: AppTextStyles.label,
+                                  ),
+                                ),
+                                Icon(
+                                  AppIcons.chevronRight,
+                                  color: context.palette.muted,
+                                  size: AppSizes.icon,
+                                ),
+                              ],
+                            ),
+                          ),
+                        ),
+                        const SizedBox(height: AppSpacing.xl),
+                        _PrivacySection(strings: strings),
+                        const SizedBox(height: AppSpacing.xl),
+                        _SyncSection(strings: strings),
+                      ],
+                      const SizedBox(height: AppSpacing.xl),
+                      _appearanceSection(ref, strings),
+                      const SizedBox(height: AppSpacing.xl),
+                      _hapticsSection(context, ref, strings),
+                      const SizedBox(height: AppSpacing.lg),
+                      SizedBox(
+                        width: double.infinity,
+                        child: AppButton(
+                          key: const Key('profile_logout'),
+                          label: strings.profileLogout,
+                          variant: AppButtonVariant.outlined,
+                          onPressed: () => confirmLogout(context, ref, strings),
+                        ),
+                      ),
+                    ],
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -385,38 +416,6 @@ class ProfilePage extends ConsumerWidget {
       return phone;
     }
     return '+227 ${NigerPhone.format(normalized)}';
-  }
-
-  Future<void> _confirmLogout(
-    BuildContext context,
-    WidgetRef ref,
-    AppLocalizations strings,
-  ) async {
-    final bool? confirmed = await showDialog<bool>(
-      context: context,
-      builder: (BuildContext dialogContext) {
-        return AlertDialog(
-          title: Text(strings.profileLogout),
-          content: Text(strings.profileLogoutMessage),
-          actions: <Widget>[
-            AppTextButton(
-              key: const Key('profile_logout_cancel'),
-              label: strings.profileLogoutCancel,
-              variant: AppTextButtonVariant.muted,
-              onPressed: () => Navigator.of(dialogContext).pop(false),
-            ),
-            AppTextButton(
-              key: const Key('profile_logout_confirm'),
-              label: strings.profileLogout,
-              onPressed: () => Navigator.of(dialogContext).pop(true),
-            ),
-          ],
-        );
-      },
-    );
-    if (confirmed == true) {
-      await ref.read(authRepositoryProvider).logout();
-    }
   }
 }
 

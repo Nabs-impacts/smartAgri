@@ -279,4 +279,40 @@ void main() {
       findsOneWidget,
     );
   });
+
+  testWidgets('shows a back arrow when the profile is pushed', (
+    WidgetTester tester,
+  ) async {
+    final ProviderContainer container = await buildTestContainer(
+      meRepository: FakeMeRepository(sampleMeData()),
+    );
+    final GoRouter router = GoRouter(
+      initialLocation: '/start',
+      routes: <RouteBase>[
+        GoRoute(
+          path: '/start',
+          builder: (BuildContext context, _) => Scaffold(
+            body: Center(
+              child: TextButton(
+                onPressed: () => context.push('/profile'),
+                child: const Text('ouvrir profil'),
+              ),
+            ),
+          ),
+        ),
+        GoRoute(path: '/profile', builder: (_, _) => const ProfilePage()),
+      ],
+    );
+    await tester.pumpWidget(testRouterApp(container, router));
+    await tester.pumpAndSettle();
+
+    await tester.tap(find.text('ouvrir profil'));
+    await tester.pumpAndSettle();
+
+    expect(find.byKey(const Key('profile_back')), findsOneWidget);
+
+    await tester.tap(find.byKey(const Key('profile_back')));
+    await tester.pumpAndSettle();
+    expect(find.text('ouvrir profil'), findsOneWidget);
+  });
 }

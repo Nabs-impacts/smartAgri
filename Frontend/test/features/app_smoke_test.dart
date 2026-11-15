@@ -33,6 +33,10 @@ void main() {
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);
 
+      await tester.tap(find.byKey(const Key('app_bottom_nav_3')));
+      await tester.pumpAndSettle();
+      expect(tester.takeException(), isNull);
+
       await tester.tap(find.byKey(const Key('app_bottom_nav_0')));
       await tester.pumpAndSettle();
       expect(tester.takeException(), isNull);

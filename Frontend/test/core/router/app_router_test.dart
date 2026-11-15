@@ -20,14 +20,20 @@ import 'package:smartagri/features/catalog/data/catalog_repository.dart';
 import 'package:smartagri/features/dev_gallery/design_gallery_page.dart';
 import 'package:smartagri/features/diagnostics/data/diagnostics_repository.dart';
 import 'package:smartagri/features/diagnostics/presentation/diagnostic_new_page.dart';
+import 'package:smartagri/features/farms/presentation/farms_page.dart';
 import 'package:smartagri/features/home/home_page.dart';
 import 'package:smartagri/features/legal/legal_page.dart';
+import 'package:smartagri/features/more/presentation/more_page.dart';
 import 'package:smartagri/features/privacy/presentation/delete_account_page.dart';
 import 'package:smartagri/features/profile/data/me_repository.dart';
+import 'package:smartagri/features/profile/profile_page.dart';
+import 'package:smartagri/features/tips/data/recommendations_repository.dart';
+import 'package:smartagri/features/tips/presentation/tips_page.dart';
 
 import '../../features/admin/fake_stats_repository.dart';
 import '../../features/app_test_utils.dart';
 import '../../features/diagnostics/fake_diagnostics_repository.dart';
+import '../../features/tips/fake_recommendations_repository.dart';
 
 class FixedSessionController extends SessionController {
   FixedSessionController(this.fixedState);
@@ -65,6 +71,9 @@ Future<ProviderContainer> buildContainer(
       statsRepositoryProvider.overrideWithValue(FakeStatsRepository()),
       diagnosticsRepositoryProvider.overrideWithValue(
         FakeDiagnosticsRepository(),
+      ),
+      recommendationsRepositoryProvider.overrideWithValue(
+        FakeRecommendationsRepository(),
       ),
       adminAreasProvider.overrideWith(
         () => FixedAdminAreasController(sampleAdminAreas),
@@ -390,6 +399,64 @@ void main() {
     expect(router.state.uri.path, '/admin/overview');
     expect(find.byType(AdminOverviewPage), findsOneWidget);
     expect(find.byType(LoginPage), findsNothing);
+  });
+
+  testWidgets('the search route redirects to the home tab', (
+    WidgetTester tester,
+  ) async {
+    final ProviderContainer container = await buildContainer(
+      FixedSessionController(SessionState.authenticated),
+      startRoute: '/search',
+    );
+    final GoRouter router = await pumpContainer(tester, container);
+    await tester.pumpAndSettle();
+
+    expect(router.state.uri.path, '/home');
+    expect(find.byType(HomePage), findsOneWidget);
+  });
+
+  testWidgets('the farmer shell exposes farms, tips and more', (
+    WidgetTester tester,
+  ) async {
+    final ProviderContainer container = await buildContainer(
+      FixedSessionController(SessionState.authenticated),
+      startRoute: '/farms',
+    );
+    final GoRouter router = await pumpContainer(tester, container);
+    await tester.pumpAndSettle();
+
+    expect(router.state.uri.path, '/farms');
+    expect(find.byType(FarmsPage), findsOneWidget);
+
+    router.go('/tips');
+    await tester.pumpAndSettle();
+    expect(router.state.uri.path, '/tips');
+    expect(find.byType(TipsPage), findsOneWidget);
+
+    router.go('/more');
+    await tester.pumpAndSettle();
+    expect(router.state.uri.path, '/more');
+    expect(find.byType(MorePage), findsOneWidget);
+
+    final AppBottomNav nav = tester.widget<AppBottomNav>(
+      find.byType(AppBottomNav),
+    );
+    expect(nav.selectedIndex, 3);
+  });
+
+  testWidgets('the profile stays a full-screen page', (
+    WidgetTester tester,
+  ) async {
+    final ProviderContainer container = await buildContainer(
+      FixedSessionController(SessionState.authenticated),
+      startRoute: '/profile',
+    );
+    final GoRouter router = await pumpContainer(tester, container);
+    await tester.pumpAndSettle();
+
+    expect(router.state.uri.path, '/profile');
+    expect(find.byType(ProfilePage), findsOneWidget);
+    expect(find.byType(AppBottomNav), findsNothing);
   });
 
   testWidgets('a farmer is redirected away from the admin routes', (

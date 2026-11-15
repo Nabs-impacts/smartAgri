@@ -340,11 +340,29 @@ abstract class AppLocalizations {
   /// **'Accueil'**
   String get navHome;
 
-  /// No description provided for @navSearch.
+  /// No description provided for @navFarms.
   ///
   /// In fr, this message translates to:
-  /// **'Recherche'**
-  String get navSearch;
+  /// **'Champs'**
+  String get navFarms;
+
+  /// No description provided for @navScan.
+  ///
+  /// In fr, this message translates to:
+  /// **'Scanner'**
+  String get navScan;
+
+  /// No description provided for @navTips.
+  ///
+  /// In fr, this message translates to:
+  /// **'Conseils'**
+  String get navTips;
+
+  /// No description provided for @navMore.
+  ///
+  /// In fr, this message translates to:
+  /// **'Plus'**
+  String get navMore;
 
   /// No description provided for @navProfile.
   ///
@@ -405,12 +423,6 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Le diagnostic arrive à l\'étape suivante'**
   String get diagnosticComingSoon;
-
-  /// No description provided for @searchComingSoon.
-  ///
-  /// In fr, this message translates to:
-  /// **'Bientôt disponible'**
-  String get searchComingSoon;
 
   /// No description provided for @profileLanguage.
   ///
@@ -967,7 +979,7 @@ abstract class AppLocalizations {
   /// No description provided for @diagnosticFeedbackQuestion.
   ///
   /// In fr, this message translates to:
-  /// **'Ce conseil vous a-t-il aidé ?'**
+  /// **'Ce conseil vous a-t-il été utile ?'**
   String get diagnosticFeedbackQuestion;
 
   /// No description provided for @diagnosticFeedbackYes.
@@ -2643,6 +2655,138 @@ abstract class AppLocalizations {
   /// In fr, this message translates to:
   /// **'Retour haptique lors des actions'**
   String get hapticsDescription;
+
+  /// No description provided for @moreTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Plus'**
+  String get moreTitle;
+
+  /// No description provided for @moreDiagnostics.
+  ///
+  /// In fr, this message translates to:
+  /// **'Historique des diagnostics'**
+  String get moreDiagnostics;
+
+  /// No description provided for @moreSync.
+  ///
+  /// In fr, this message translates to:
+  /// **'Synchronisation'**
+  String get moreSync;
+
+  /// No description provided for @moreSyncUpToDate.
+  ///
+  /// In fr, this message translates to:
+  /// **'À jour'**
+  String get moreSyncUpToDate;
+
+  /// No description provided for @moreSyncOffline.
+  ///
+  /// In fr, this message translates to:
+  /// **'Hors connexion'**
+  String get moreSyncOffline;
+
+  /// No description provided for @moreSyncPending.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Aucune modification en attente} =1{1 modification en attente} other{{count} modifications en attente}}'**
+  String moreSyncPending(int count);
+
+  /// No description provided for @moreSyncFailed.
+  ///
+  /// In fr, this message translates to:
+  /// **'{count, plural, =0{Aucune refusée} =1{1 refusée} other{{count} refusées}}'**
+  String moreSyncFailed(int count);
+
+  /// No description provided for @morePrivacy.
+  ///
+  /// In fr, this message translates to:
+  /// **'Confidentialité et données'**
+  String get morePrivacy;
+
+  /// No description provided for @moreTerms.
+  ///
+  /// In fr, this message translates to:
+  /// **'Conditions d\'utilisation'**
+  String get moreTerms;
+
+  /// No description provided for @morePrivacyPolicy.
+  ///
+  /// In fr, this message translates to:
+  /// **'Politique de confidentialité'**
+  String get morePrivacyPolicy;
+
+  /// No description provided for @tipsTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Conseils'**
+  String get tipsTitle;
+
+  /// No description provided for @tipsSoonTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Conseiller IA GonaTa'**
+  String get tipsSoonTitle;
+
+  /// No description provided for @tipsSoonBadge.
+  ///
+  /// In fr, this message translates to:
+  /// **'Bientôt'**
+  String get tipsSoonBadge;
+
+  /// No description provided for @tipsSoonBody.
+  ///
+  /// In fr, this message translates to:
+  /// **'Bientôt, posez vos questions agricoles à un assistant.'**
+  String get tipsSoonBody;
+
+  /// No description provided for @tipsRecommendationsTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Vos recommandations'**
+  String get tipsRecommendationsTitle;
+
+  /// No description provided for @tipsEmpty.
+  ///
+  /// In fr, this message translates to:
+  /// **'Aucun conseil pour le moment. Analysez une plante pour recevoir des recommandations.'**
+  String get tipsEmpty;
+
+  /// No description provided for @tipsAnalyze.
+  ///
+  /// In fr, this message translates to:
+  /// **'Analyser une plante'**
+  String get tipsAnalyze;
+
+  /// No description provided for @tipsOffline.
+  ///
+  /// In fr, this message translates to:
+  /// **'Les conseils nécessitent une connexion Internet.'**
+  String get tipsOffline;
+
+  /// No description provided for @tipsLoadMore.
+  ///
+  /// In fr, this message translates to:
+  /// **'Charger plus'**
+  String get tipsLoadMore;
+
+  /// No description provided for @tipsDetailTitle.
+  ///
+  /// In fr, this message translates to:
+  /// **'Conseil'**
+  String get tipsDetailTitle;
+
+  /// No description provided for @tipsSeeDiagnostic.
+  ///
+  /// In fr, this message translates to:
+  /// **'Voir le diagnostic'**
+  String get tipsSeeDiagnostic;
+
+  /// No description provided for @feedbackApplied.
+  ///
+  /// In fr, this message translates to:
+  /// **'Appliqué'**
+  String get feedbackApplied;
 }
 
 class _AppLocalizationsDelegate

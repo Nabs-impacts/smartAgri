@@ -40,7 +40,10 @@
   "errorGeneric": "Une erreur est survenue. Veuillez réessayer.",
   "retry": "Réessayer",
   "navHome": "Accueil",
-  "navSearch": "Recherche",
+  "navFarms": "Champs",
+  "navScan": "Scanner",
+  "navTips": "Conseils",
+  "navMore": "Plus",
   "navProfile": "Profil",
   "homeGreeting": "Bonjour",
   "homeWeatherRain": "Risque de pluie ({percent}%)",
@@ -65,7 +68,6 @@
   "homeDemoData": "Données de démonstration",
   "homeNewDiagnostic": "Faire un diagnostic",
   "diagnosticComingSoon": "Le diagnostic arrive à l'étape suivante",
-  "searchComingSoon": "Bientôt disponible",
   "profileLanguage": "Langue",
   "profileUsage": "Mon utilisation",
   "profileQuotaPlots": "parcelles",
@@ -172,7 +174,7 @@
   "diagnosticNewDiagnostic": "Nouveau diagnostic",
   "diagnosticTimeout": "L'analyse prend plus de temps que prévu",
   "diagnosticRefresh": "Actualiser",
-  "diagnosticFeedbackQuestion": "Ce conseil vous a-t-il aidé ?",
+  "diagnosticFeedbackQuestion": "Ce conseil vous a-t-il été utile ?",
   "diagnosticFeedbackYes": "Oui",
   "diagnosticFeedbackNo": "Non",
   "diagnosticFeedbackThanks": "Merci pour votre retour.",
@@ -623,5 +625,41 @@
   "appearanceLight": "Clair",
   "appearanceDark": "Sombre",
   "hapticsTitle": "Vibrations",
-  "hapticsDescription": "Retour haptique lors des actions"
+  "hapticsDescription": "Retour haptique lors des actions",
+  "moreTitle": "Plus",
+  "moreDiagnostics": "Historique des diagnostics",
+  "moreSync": "Synchronisation",
+  "moreSyncUpToDate": "À jour",
+  "moreSyncOffline": "Hors connexion",
+  "moreSyncPending": "{count, plural, =0{Aucune modification en attente} =1{1 modification en attente} other{{count} modifications en attente}}",
+  "@moreSyncPending": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "moreSyncFailed": "{count, plural, =0{Aucune refusée} =1{1 refusée} other{{count} refusées}}",
+  "@moreSyncFailed": {
+    "placeholders": {
+      "count": {
+        "type": "int"
+      }
+    }
+  },
+  "morePrivacy": "Confidentialité et données",
+  "moreTerms": "Conditions d'utilisation",
+  "morePrivacyPolicy": "Politique de confidentialité",
+  "tipsTitle": "Conseils",
+  "tipsSoonTitle": "Conseiller IA GonaTa",
+  "tipsSoonBadge": "Bientôt",
+  "tipsSoonBody": "Bientôt, posez vos questions agricoles à un assistant.",
+  "tipsRecommendationsTitle": "Vos recommandations",
+  "tipsEmpty": "Aucun conseil pour le moment. Analysez une plante pour recevoir des recommandations.",
+  "tipsAnalyze": "Analyser une plante",
+  "tipsOffline": "Les conseils nécessitent une connexion Internet.",
+  "tipsLoadMore": "Charger plus",
+  "tipsDetailTitle": "Conseil",
+  "tipsSeeDiagnostic": "Voir le diagnostic",
+  "feedbackApplied": "Appliqué"
 }
